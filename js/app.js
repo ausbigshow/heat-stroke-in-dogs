@@ -33,6 +33,10 @@ class CourseApp {
     if (screenKey === 'act0') {
       this.renderAct0Placeholder();
     }
+
+    if (this.editor && this.editor.state) {
+      this.editor.state.emit('screen_changed', screenKey);
+    }
   }
 
   renderAct0Placeholder() {

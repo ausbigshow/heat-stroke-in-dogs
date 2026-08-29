@@ -112,8 +112,10 @@ Capabilities:
     1. Open / Pending Feedback: Default state when created by the user, representing feedback, instructions, or desired adjustments for the AI assistant.
     2. Implemented: Visually marked with an "Implemented" status indicator/badge. The AI agent reads pending notes on future passes, implements the requested changes in code, and sets the status to "Implemented".
     3. Resolved: The human author can mark notes as "Resolved" when satisfied with the resulting implementation (dimming, checking off, or archiving the note).
+- Screen Scoping:
+    Notes must only be visible on the specific screen/scene on which they were created. When navigating across different screens, scenes, or acts, notes created for other screens must remain hidden.
 - Persistence:
-    Sticky notes, their target element connections, and their status must be saved permanently to project storage (e.g. `data/notes.json`) so they persist across page refreshes, browser restarts, and version control checkpoints.
+    Sticky notes, their target element connections, associated screen IDs, and their status must be saved permanently to project storage (e.g. `data/notes.json`) so they persist across page refreshes, browser restarts, and version control checkpoints.
     When Edit Mode is OFF, sticky notes and connecting arrows must be completely hidden from learners.
 
 7. BUTTONS AND INTERACTIVE ELEMENTS
@@ -318,11 +320,30 @@ When Edit Mode is OFF:
 
 The experience should return completely to normal.
 
-18. KEYBOARD SHORTCUT
-Please add a convenient shortcut for toggling Edit Mode.
-Suggested:
-Command/Ctrl + Shift + E
-Make sure it does not conflict with an existing important shortcut in the project.
+18. KEYBOARD SHORTCUTS
+Edit Mode must support conventional keyboard shortcuts for all major editing, navigation, and persistence functions:
+
+    • Toggle Edit Mode: Ctrl/Cmd + Shift + E
+    • Save Changes: Ctrl/Cmd + S (prevents default browser dialog and triggers surgical save to source)
+    • Undo: Ctrl/Cmd + Z
+    • Redo: Ctrl/Cmd + Y or Ctrl/Cmd + Shift + Z
+    • Delete Selected Element: Delete or Backspace
+    • Select / Move Tool: V (or M)
+    • Resize Tool: R
+    • Edit Buttons Tool: B
+    • Edit Containers Tool: C
+    • Edit Text Tool: T
+    • Add Sticky Note / Comment: N
+    • Lock / Unlock Selected Element: L or Ctrl/Cmd + L
+    • Bring Layer Forward: Ctrl/Cmd + ]
+    • Send Layer Backward: Ctrl/Cmd + [
+    • Reset Selected Element: Alt/Option + R
+    • Version Snapshots Modal: Ctrl/Cmd + Shift + V
+    • Nudge Selected Element: Arrow Keys (1px nudge)
+    • Large Nudge: Shift + Arrow Keys (10px nudge)
+    • Deselect / Cancel / Close Modal: Escape
+
+Shortcuts must only trigger when Edit Mode is active and must be ignored when typing inside text inputs, textareas, or contentEditable blocks.
 
 19. EDITOR ARCHITECTURE
 Keep the editor code modular.

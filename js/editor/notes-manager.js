@@ -43,6 +43,15 @@ export class NotesManager {
     });
 
     this.state.on('selection_changed', () => this.renderArrows());
+    this.state.on('screen_changed', () => this.renderAllNotes());
+  }
+
+  getCurrentScreenId() {
+    const activeSection = document.querySelector('section.opening-screen') || document.querySelector('section[id^="screen-"]');
+    if (activeSection && activeSection.id) {
+      return activeSection.id.replace('screen-', '');
+    }
+    return window.__courseApp?.currentScreen || 'opening';
   }
 
   initContainer() {
@@ -132,13 +141,17 @@ export class NotesManager {
   renderAllNotes() {
     if (!this.container) return;
     this.container.innerHTML = '';
-    this.notes.forEach(note => this.renderNote(note));
+    const currentScreen = this.getCurrentScreenId();
+    const visibleNotes = this.notes.filter(note => (note.screenId || 'opening') === currentScreen);
+    visibleNotes.forEach(note => this.renderNote(note));
     this.renderArrows();
   }
 
   createNote(x = 120, y = 120) {
+    const currentScreen = this.getCurrentScreenId();
     const note = {
       id: `note_${Date.now()}`,
+      screenId: currentScreen,
       x: Math.max(20, Math.min(window.innerWidth - 300, x)),
       y: Math.max(60, Math.min(window.innerHeight - 220, y)),
       width: 260,
@@ -369,7 +382,10 @@ export class NotesManager {
     const paths = this.svg.querySelectorAll('.note-arrow-path, .note-arrow-start-dot');
     paths.forEach(p => p.remove());
 
-    this.notes.forEach(note => {
+    const currentScreen = this.getCurrentScreenId();
+    const visibleNotes = this.notes.filter(note => (note.screenId || 'opening') === currentScreen);
+
+    visibleNotes.forEach(note => {
       if (!note.targetElementId && !note.targetPoint) return;
 
       const noteEl = document.getElementById(note.id);
