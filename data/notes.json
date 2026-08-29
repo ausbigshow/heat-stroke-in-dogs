@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "id": "note_1788046651129",
+    "x": 1375,
+    "y": 689,
+    "width": 260,
+    "height": 160,
+    "color": "yellow",
+    "status": "implemented",
+    "text": "the word continue should be centered when not hovered.\n\nthe delay is too long before the pill button appears, cut it to 1.5 seconds.",
+    "createdAt": "2026-08-29T23:37:31.129Z"
+  }
+]

@@ -669,6 +669,66 @@ body.edit-mode-active #notes-container {
   color: #DC2626;
 }
 
+.note-pin-btn {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  padding: 3px 6px;
+  color: #1E293B;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.15s ease;
+}
+
+.note-pin-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: scale(1.05);
+}
+
+.note-pin-btn.has-target {
+  background: #2563EB;
+  color: #FFFFFF;
+  border-color: #1D4ED8;
+}
+
+.note-pin-btn.is-linking {
+  background: #F59E0B;
+  color: #FFFFFF;
+  border-color: #D97706;
+  animation: pulseBadge 1.2s infinite;
+}
+
+/* SVG Arrows Layer */
+#notes-arrows-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 999975;
+  overflow: visible;
+  display: none;
+}
+
+body.edit-mode-active #notes-arrows-svg {
+  display: block;
+}
+
+.note-arrow-path {
+  fill: none;
+  stroke-width: 2.5px;
+  stroke-dasharray: 6 3;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+
+.note-arrow-start-dot {
+  fill: currentColor;
+}
+
 /* Note Body / Text Area */
 .note-body {
   flex: 1;

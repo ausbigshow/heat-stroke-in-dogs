@@ -104,13 +104,17 @@ Capabilities:
 - Manipulation: Move, drag, resize, and delete sticky notes.
 - Color Customization: Change the note's color from a selectable palette (e.g., Warm Yellow, Soft Pink/Coral, Mint Green, Sky Blue, Lavender, Orange).
 - Text Editing: Edit note title, description, or feedback points in-place directly on the note.
+- Directional Arrows & Element Connectors:
+    Users can draw a connecting arrow from any sticky note to point directly at a specific element on screen (or coordinate).
+    The arrow dynamically follows both the note and target element in real time during drag, resize, or viewport changes.
+    Users can link, re-target, or unlink the arrow via a connector/pin control on the note header.
 - Status Lifecycle & Feedback Workflow:
     1. Open / Pending Feedback: Default state when created by the user, representing feedback, instructions, or desired adjustments for the AI assistant.
     2. Implemented: Visually marked with an "Implemented" status indicator/badge. The AI agent reads pending notes on future passes, implements the requested changes in code, and sets the status to "Implemented".
     3. Resolved: The human author can mark notes as "Resolved" when satisfied with the resulting implementation (dimming, checking off, or archiving the note).
 - Persistence:
-    Sticky notes and their status must be saved permanently to project storage (e.g. `data/notes.json`) so they persist across page refreshes, browser restarts, and version control checkpoints.
-    When Edit Mode is OFF, sticky notes must be completely hidden from learners.
+    Sticky notes, their target element connections, and their status must be saved permanently to project storage (e.g. `data/notes.json`) so they persist across page refreshes, browser restarts, and version control checkpoints.
+    When Edit Mode is OFF, sticky notes and connecting arrows must be completely hidden from learners.
 
 7. BUTTONS AND INTERACTIVE ELEMENTS
 I frequently need to reposition, resize, or remove buttons and clickable game elements.
@@ -129,7 +133,7 @@ For example, if a button already has:
 those behaviors must remain exactly as they were.
 Editing position or size should change presentation only.
 
-6. SCROLLING AREAS AND CONTAINERS
+8. SCROLLING AREAS AND CONTAINERS
 Allow me to select scrolling panels and containers.
 For these elements, let me adjust things such as:
 

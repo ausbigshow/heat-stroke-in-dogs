@@ -16,10 +16,10 @@ export class OpeningScreen {
     this.continueBtn = document.getElementById('btn-continue');
     
     if (this.continueBtn) {
-      // 3-second delay before fading into view
+      // 1.5-second delay before fading into view
       this.timer = setTimeout(() => {
         this.revealContinueButton();
-      }, 3000);
+      }, 1500);
 
       this.continueBtn.addEventListener('click', (e) => this.handleContinueClick(e));
     }

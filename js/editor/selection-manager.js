@@ -124,6 +124,7 @@ export class SelectionManager {
     if (this.state.selectedElement) {
       this.updateSelectionBox(this.state.selectedElement);
     }
+    this.state.emit('element_moved');
   }
 
   // Deleting / Removing Element
