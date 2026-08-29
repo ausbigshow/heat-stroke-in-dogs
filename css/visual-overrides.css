@@ -1,2 +1,6 @@
-/* Visual Edit Mode Overrides - Last updated: 2026-08-29T23:38:36.286Z */
+/* Visual Edit Mode Overrides - Last updated: 2026-08-29T23:46:50.491Z */
 
+
+[data-editor-id="act0-back-btn"] {
+  display: inline-flex !important;
+}

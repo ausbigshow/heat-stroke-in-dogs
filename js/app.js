@@ -49,7 +49,7 @@ class CourseApp {
           <p style="color: var(--palette-text-muted); font-size: 1.1rem; line-height: 1.6; margin-bottom: 2rem;" data-editor-id="act0-desc">
             Act 0 video sequence ready to load. Callie and Tay introduce themselves on the couch at home before setting out for the lake.
           </p>
-          <button id="btn-back-opening" class="continue-btn is-visible" style="opacity: 1; pointer-events: auto; display: inline-flex;" data-editor-id="act0-back-btn">
+          <button id="btn-back-opening" class="continue-btn is-visible" style="opacity: 1; pointer-events: auto;" data-editor-id="act0-back-btn">
             <span class="continue-text">Back to Title</span>
           </button>
         </div>
