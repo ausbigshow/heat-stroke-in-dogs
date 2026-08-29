@@ -1,0 +1,78 @@
+/* Global Design System & Variables */
+:root {
+  /* Craft Spec Palette: Warm, Children's-book-adjacent but grown-up flat vector palette */
+  --palette-peach-light: #FDF4ED;
+  --palette-peach: #F6D6C4;
+  --palette-peach-dark: #E4BAA3;
+  --palette-brown-dark: #382418;
+  --palette-brown-med: #5E3D2A;
+  --palette-brown-light: #8D6B53;
+  --palette-sage: #6B8E6D;
+  --palette-sage-light: #E0ECE1;
+  --palette-teal: #366B77;
+  --palette-teal-dark: #244952;
+  --palette-teal-hover: #2B5762;
+  --palette-cream: #FAF6F0;
+  --palette-warm-white: #FFFFFF;
+  --palette-text-dark: #27211E;
+  --palette-text-muted: #6E635C;
+  --palette-shadow: rgba(56, 36, 24, 0.08);
+
+  /* Typography */
+  --font-family-display: 'Outfit', 'Nunito', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-family-body: 'Plus Jakarta Sans', 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  
+  /* Transitions */
+  --transition-fast: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fade: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-family-body);
+  background-color: var(--palette-peach-light);
+  color: var(--palette-text-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* App Viewport Container */
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 80% 20%, #FFF8F3 0%, var(--palette-peach-light) 60%, var(--palette-peach) 100%);
+}
+
+/* Stage Area for Scenes */
+.stage-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Hidden Utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -1,0 +1,13 @@
+{
+  "name": "heatstroke-in-dogs-elearning",
+  "version": "1.0.0",
+  "description": "Interactive e-learning module: Callie and Tay - a story about heat stroke in dogs",
+  "main": "dev-server.js",
+  "scripts": {
+    "start": "node dev-server.js",
+    "dev": "node dev-server.js"
+  },
+  "keywords": ["elearning", "interactive", "heatstroke", "dogs", "veterinary-education"],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Callie & Tay — Heat Stroke in Dogs</title>
+
+  <!-- Google Fonts: Outfit for Display & Plus Jakarta Sans for Body -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Core & Screen Styles -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/opening-screen.css">
+  <link rel="stylesheet" href="css/edit-mode.css">
+  
+  <!-- Visual Overrides (Surgically modified via Edit Mode) -->
+  <link rel="stylesheet" href="css/visual-overrides.css">
+</head>
+<body>
+
+  <!-- Main Viewport Shell -->
+  <main id="app" role="main">
+    
+    <!-- Stage Area -->
+    <div id="stage" class="stage-container">
+      
+      <!-- Opening Screen View -->
+      <section id="screen-opening" class="opening-screen" aria-label="Course Opening Screen">
+        
+        <!-- Header & Title Container at Top -->
+        <header class="opening-title-container" data-editor-id="opening-title-box">
+          <div class="opening-title-badge" data-editor-id="opening-badge">An Interactive Veterinary Story</div>
+          <h1 class="opening-title" data-editor-id="opening-title-text">
+            Callie and Tay:
+            <span class="subtitle-part">a story about heat stroke in dogs.</span>
+          </h1>
+        </header>
+
+        <!-- Main Body Area -->
+        <div class="opening-body">
+          
+          <!-- Characters Container (Placed off-center to the left third of viewport) -->
+          <div class="characters-container" data-editor-id="opening-characters" aria-label="Illustration of Callie and her French Bulldog, Tay">
+            <div class="character-card">
+              <img 
+                src="Assets/Image/CallieAndTay.jpg" 
+                alt="Callie sitting on a couch with her French Bulldog Tay" 
+                class="character-image"
+                data-editor-id="opening-character-img"
+              >
+              <div class="character-label-pill" data-editor-id="opening-character-pill">
+                <span class="dot" aria-hidden="true"></span>
+                <span>Callie & Tay</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Lower Right Continue Button Container -->
+        <div class="continue-btn-container" data-editor-id="opening-continue-container">
+          <button 
+            id="btn-continue" 
+            class="continue-btn" 
+            data-editor-id="opening-continue-btn"
+            aria-label="Continue to introduction"
+          >
+            <span class="continue-text">Continue</span>
+            <span class="continue-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- Edit Mode Mount Point (Managed by JS Editor system) -->
+    <div id="editor-root" aria-hidden="true"></div>
+
+  </main>
+
+  <!-- JavaScript Modules -->
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>
