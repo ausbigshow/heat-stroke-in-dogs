@@ -16,6 +16,7 @@ Include controls for:
     Edit Buttons / Interactive Elements
     Edit Scroll Areas / Containers
     Edit Text
+    Delete Selected Element
     Lock / Unlock Element
     Undo
     Redo
@@ -48,7 +49,7 @@ Selectable elements should include, where practical:
 When selected:
 
     draw a visible bounding box around the element
-    show resize handles when Resize is enabled
+    render distinct, high-contrast, visually prominent resize handles at all 8 bounding points (corners and edges: NW, N, NE, E, SE, S, SW, W)
     identify the element with a small label
     show useful positioning information such as X, Y, width, and height
 
@@ -69,15 +70,33 @@ Support:
 Whenever possible, preserve the element's existing positioning model rather than unnecessarily changing the entire layout system.
 Do not convert unrelated elements to absolute positioning just because one object was moved.
 
-4. RESIZING
-When Resize is active:
-Allow selected images, videos, panels, buttons, and appropriate containers to be resized using visible handles.
+4. RESIZING & VISIBLE HANDLES
+When Resize is active (or whenever an editable element is selected):
+Allow selected images, videos, panels, buttons, and appropriate containers to be resized using clear, visually present handles.
+Handles MUST be visibly rendered on the screen around the bounding box (corners and midpoints) so the user can easily see and grab them without guessing.
 Preserve aspect ratio for media by default.
 Allow holding Shift or using an appropriate control to override the aspect ratio if needed.
 
-5. BUTTONS AND INTERACTIVE ELEMENTS
-I frequently need to reposition buttons and clickable game elements.
-Edit Mode must allow me to move or resize these without destroying their original behavior.
+5. DELETING / REMOVING ELEMENTS
+Edit Mode must provide the ability to delete or remove unwanted elements from the screen, not just move or resize them.
+Allow me to delete the currently selected element using:
+
+    a dedicated "Delete" button in the Edit Mode toolbar
+    the Delete key on the keyboard
+    the Backspace key on the keyboard
+
+Requirements for Deletion:
+
+    Deletion must be non-destructive to the rest of the application.
+    Locked elements must not be deleted accidentally.
+    Undo must immediately restore the deleted element with its exact previous state, styles, and interactions.
+    Redo must re-delete the element.
+    When saved, the deleted state must persist permanently in the source (e.g. surgical CSS display: none / node removal) so the element remains gone after reload.
+    Provide a way to reset/restore elements if needed.
+
+6. BUTTONS AND INTERACTIVE ELEMENTS
+I frequently need to reposition, resize, or remove buttons and clickable game elements.
+Edit Mode must allow me to manipulate these without destroying their original behavior.
 For example, if a button already has:
 
     an onclick handler
@@ -223,7 +242,7 @@ Do not automatically turn everything into fixed pixel coordinates.
 If I manually move an element, determine the least destructive way to represent that adjustment.
 For highly visual game screens where precise placement is intentional, pixel positioning is acceptable.
 
-14. UNDO / REDO
+15. UNDO / REDO
 Maintain an Edit Mode history.
 Undo and Redo should affect editing changes only.
 They must not rewind or alter gameplay state.
@@ -231,6 +250,7 @@ At minimum, track:
 
     movement
     resizing
+    deleting / restoring elements
     text edits
     layer changes
     locking/unlocking

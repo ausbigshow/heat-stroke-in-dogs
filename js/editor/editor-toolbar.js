@@ -62,6 +62,9 @@ export class EditorToolbar {
           <button id="btn-reset-element" class="edit-tool-btn" title="Reset Custom Position/Size Overrides on Selected Element">
             <span>🔄 Reset</span>
           </button>
+          <button id="btn-delete-element" class="edit-tool-btn btn-delete" disabled title="Delete Selected Element (Del / Backspace)">
+            <span>🗑️ Delete</span>
+          </button>
 
           <div class="edit-toolbar-separator"></div>
 
@@ -127,6 +130,7 @@ export class EditorToolbar {
       this.toolbar.style.display = active ? 'flex' : 'none';
       if (active) {
         this.updateLockBtn();
+        this.updateDeleteBtn();
       }
     });
 
@@ -138,8 +142,22 @@ export class EditorToolbar {
       }
     });
 
-    this.state.on('selection_changed', () => this.updateLockBtn());
-    this.state.on('lock_changed', () => this.updateLockBtn());
+    // Delete button
+    const deleteBtn = this.toolbar.querySelector('#btn-delete-element');
+    deleteBtn.addEventListener('click', () => {
+      if (this.state.selectedElement) {
+        this.selection.deleteSelectedElement();
+      }
+    });
+
+    this.state.on('selection_changed', () => {
+      this.updateLockBtn();
+      this.updateDeleteBtn();
+    });
+    this.state.on('lock_changed', () => {
+      this.updateLockBtn();
+      this.updateDeleteBtn();
+    });
 
     // Layer buttons
     this.toolbar.querySelector('#btn-bring-forward').addEventListener('click', () => this.selection.bringForward());
@@ -189,11 +207,19 @@ export class EditorToolbar {
       }
     });
 
-    // Global keyboard shortcut: Ctrl+Shift+E / Cmd+Shift+E
+    // Global keyboard shortcuts
     window.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'E' || e.key === 'e')) {
         e.preventDefault();
         this.state.setActive(!this.state.isActive);
+      }
+
+      // Delete / Backspace key for deleting selected element
+      if ((e.key === 'Delete' || e.key === 'Backspace') && this.state.isActive && this.state.selectedElement) {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && !e.target.isContentEditable) {
+          e.preventDefault();
+          this.selection.deleteSelectedElement();
+        }
       }
 
       // Ctrl+Z / Cmd+Z for Undo
@@ -245,5 +271,13 @@ export class EditorToolbar {
       lockIcon.textContent = isLocked ? '🔒' : '🔓';
       lockLabel.textContent = isLocked ? 'Unlock' : 'Lock';
     }
+  }
+
+  updateDeleteBtn() {
+    const el = this.state.selectedElement;
+    const isLocked = el ? this.state.isElementLocked(el) : false;
+    const deleteBtn = this.toolbar.querySelector('#btn-delete-element');
+    if (!deleteBtn) return;
+    deleteBtn.disabled = !el || isLocked;
   }
 }

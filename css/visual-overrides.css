@@ -1,7 +1,6 @@
-/* Visual Edit Mode Overrides - Last updated: 2026-08-29T23:16:51.879Z */
+/* Visual Edit Mode Overrides - Last updated: 2026-08-29T23:26:06.285Z */
 
 
-[data-editor-id="opening-characters"] {
-  left: 3% !important;
-  bottom: 6% !important;
+[data-editor-id="opening-character-pill"] {
+  display: none !important;
 }

@@ -74,6 +74,20 @@ export class HistoryManager {
       }
     } else if (action.type === 'text') {
       el.innerText = data;
+    } else if (action.type === 'delete') {
+      const displayVal = data.display;
+      if (displayVal === undefined || displayVal === '') {
+        el.style.removeProperty('display');
+        this.state.recordStyleChange(action.elementId, 'display', '');
+      } else {
+        el.style.display = displayVal;
+        this.state.recordStyleChange(action.elementId, 'display', displayVal);
+      }
+      if (displayVal !== 'none') {
+        this.state.setSelectedElement(el);
+      } else {
+        this.state.setSelectedElement(null);
+      }
     } else if (action.type === 'lock') {
       if (data) {
         this.state.lockedElements.add(action.elementId);
@@ -84,6 +98,8 @@ export class HistoryManager {
       }
     }
 
-    this.state.setSelectedElement(el);
+    if (action.type !== 'delete' || data.display !== 'none') {
+      this.state.setSelectedElement(el);
+    }
   }
 }
