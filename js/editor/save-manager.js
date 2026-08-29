@@ -19,7 +19,7 @@ export class SaveManager {
       const inline = el.style;
       const decls = {};
 
-      const properties = ['position', 'left', 'top', 'right', 'bottom', 'width', 'height', 'z-index', 'transform', 'display'];
+      const properties = ['position', 'left', 'top', 'right', 'bottom', 'width', 'height', 'z-index', 'transform'];
       properties.forEach(p => {
         const val = inline.getPropertyValue(p);
         if (val) {
@@ -70,7 +70,7 @@ export class SaveManager {
     if (!el) return;
 
     const id = el.getAttribute('data-editor-id');
-    const properties = ['position', 'left', 'top', 'right', 'bottom', 'width', 'height', 'z-index', 'transform', 'display'];
+    const properties = ['position', 'left', 'top', 'right', 'bottom', 'width', 'height', 'z-index', 'transform'];
     properties.forEach(p => el.style.removeProperty(p));
 
     if (id && this.state.modifiedStyles.has(id)) {

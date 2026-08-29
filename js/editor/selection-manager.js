@@ -106,9 +106,9 @@ export class SelectionManager {
       ${isLocked ? '<span class="badge-locked">🔒 LOCKED</span>' : ''}
     `;
 
-    // Render distinct visible handles on the bounding box whenever selected (unless element is locked)
+    // Toggle handles visibility based on active tool
     const handles = this.box.querySelectorAll('.edit-resize-handle');
-    const showHandles = !isLocked;
+    const showHandles = this.state.activeTool === 'resize' && !isLocked;
     handles.forEach(h => {
       h.style.display = showHandles ? 'block' : 'none';
     });
@@ -124,34 +124,6 @@ export class SelectionManager {
     if (this.state.selectedElement) {
       this.updateSelectionBox(this.state.selectedElement);
     }
-  }
-
-  // Deleting / Removing Element
-  deleteSelectedElement() {
-    const el = this.state.selectedElement;
-    if (!el) return;
-
-    if (this.state.isElementLocked(el)) {
-      alert('Cannot delete a locked element. Unlock it first.');
-      return;
-    }
-
-    const id = el.getAttribute('data-editor-id');
-    if (!id) return;
-
-    const prevDisplay = el.style.display;
-    el.style.display = 'none';
-
-    this.state.recordStyleChange(id, 'display', 'none');
-    this.history.pushAction({
-      type: 'delete',
-      elementId: id,
-      prev: { display: prevDisplay },
-      next: { display: 'none' }
-    });
-
-    this.state.setSelectedElement(null);
-    this.hideSelectionBox();
   }
 
   // Layer Management (Bring Forward / Send Backward)

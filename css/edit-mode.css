@@ -138,18 +138,6 @@ body.edit-mode-active [data-editor-locked="true"] {
   margin: 0 4px;
 }
 
-.edit-tool-btn.btn-delete {
-  background: #7F1D1D;
-  border-color: #991B1B;
-  color: #FCA5A5;
-}
-
-.edit-tool-btn.btn-delete:hover:not(:disabled) {
-  background: #DC2626;
-  border-color: #EF4444;
-  color: #FFFFFF;
-}
-
 /* Save Status Indicator */
 .edit-status-indicator {
   display: inline-flex;
@@ -195,8 +183,7 @@ body.edit-mode-active [data-editor-locked="true"] {
   position: absolute;
   pointer-events: none;
   border: 2px solid #2563EB;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4), 0 0 12px rgba(37, 99, 235, 0.4);
-  background: rgba(37, 99, 235, 0.06);
+  background: rgba(37, 99, 235, 0.08);
   z-index: 999990;
   display: none;
   box-sizing: border-box;
@@ -205,16 +192,16 @@ body.edit-mode-active [data-editor-locked="true"] {
 /* Selection Dimension & ID Label */
 .edit-selection-label {
   position: absolute;
-  top: -30px;
+  top: -28px;
   left: -2px;
   background: #1E2229;
   color: #FFFFFF;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: monospace;
   font-size: 11px;
-  padding: 3px 9px;
+  padding: 3px 8px;
   border-radius: 4px;
   white-space: nowrap;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -236,35 +223,27 @@ body.edit-mode-active [data-editor-locked="true"] {
   font-weight: 700;
 }
 
-/* Resize Handles (8 distinct, prominent, visually present handles) */
+/* Resize Handles (8 points) */
 .edit-resize-handle {
   position: absolute;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   background: #FFFFFF;
-  border: 2.5px solid #2563EB;
-  border-radius: 3px;
+  border: 2px solid #2563EB;
+  border-radius: 2px;
   pointer-events: auto;
-  z-index: 999995;
+  z-index: 999992;
   box-sizing: border-box;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
-  transition: transform 0.1s ease, background-color 0.1s ease;
 }
 
-.edit-resize-handle:hover {
-  transform: scale(1.3);
-  background: #DBEAFE;
-  border-color: #1D4ED8;
-}
-
-.edit-resize-handle.handle-nw { top: -6px; left: -6px; cursor: nwse-resize !important; }
-.edit-resize-handle.handle-n  { top: -6px; left: calc(50% - 6px); cursor: ns-resize !important; }
-.edit-resize-handle.handle-ne { top: -6px; right: -6px; cursor: nesw-resize !important; }
-.edit-resize-handle.handle-e  { top: calc(50% - 6px); right: -6px; cursor: ew-resize !important; }
-.edit-resize-handle.handle-se { bottom: -6px; right: -6px; cursor: nwse-resize !important; }
-.edit-resize-handle.handle-s  { bottom: -6px; left: calc(50% - 6px); cursor: ns-resize !important; }
-.edit-resize-handle.handle-sw { bottom: -6px; left: -6px; cursor: nesw-resize !important; }
-.edit-resize-handle.handle-w  { top: calc(50% - 6px); left: -6px; cursor: ew-resize !important; }
+.edit-resize-handle.handle-nw { top: -5px; left: -5px; cursor: nwse-resize !important; }
+.edit-resize-handle.handle-n  { top: -5px; left: calc(50% - 5px); cursor: ns-resize !important; }
+.edit-resize-handle.handle-ne { top: -5px; right: -5px; cursor: nesw-resize !important; }
+.edit-resize-handle.handle-e  { top: calc(50% - 5px); right: -5px; cursor: ew-resize !important; }
+.edit-resize-handle.handle-se { bottom: -5px; right: -5px; cursor: nwse-resize !important; }
+.edit-resize-handle.handle-s  { bottom: -5px; left: calc(50% - 5px); cursor: ns-resize !important; }
+.edit-resize-handle.handle-sw { bottom: -5px; left: -5px; cursor: nesw-resize !important; }
+.edit-resize-handle.handle-w  { top: calc(50% - 5px); left: -5px; cursor: ew-resize !important; }
 
 /* Version Control Modal */
 .edit-modal-backdrop {
