@@ -447,3 +447,260 @@ body.edit-mode-active [data-editor-locked="true"] {
   border-color: #EF4444;
   color: #FCA5A5;
 }
+
+/* ==========================================================
+   VISUAL COMMENTS / STICKY NOTES STYLES
+   ========================================================== */
+
+#notes-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 999980;
+  display: none;
+}
+
+body.edit-mode-active #notes-container {
+  display: block;
+}
+
+.sticky-note {
+  position: absolute;
+  min-width: 220px;
+  min-height: 140px;
+  width: 260px;
+  border-radius: 12px;
+  box-shadow: 
+    0 12px 28px -4px rgba(0, 0, 0, 0.25),
+    0 4px 10px -2px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+  user-select: none;
+  font-family: var(--font-family-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  transition: box-shadow 0.2s ease, opacity 0.2s ease, border-color 0.2s ease;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+.sticky-note:hover {
+  box-shadow: 
+    0 16px 36px -4px rgba(0, 0, 0, 0.3),
+    0 6px 14px -2px rgba(0, 0, 0, 0.2);
+}
+
+.sticky-note.is-dragging {
+  opacity: 0.9;
+  cursor: grabbing !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Color Palettes */
+.sticky-note.color-yellow {
+  background: #FEF08A;
+  border-color: #EAB308;
+  color: #713F12;
+}
+
+.sticky-note.color-pink {
+  background: #FECDD3;
+  border-color: #F43F5E;
+  color: #881337;
+}
+
+.sticky-note.color-blue {
+  background: #BAE6FD;
+  border-color: #38BDF8;
+  color: #0369A1;
+}
+
+.sticky-note.color-green {
+  background: #BBF7D0;
+  border-color: #4ADE80;
+  color: #14532D;
+}
+
+.sticky-note.color-purple {
+  background: #E9D5FF;
+  border-color: #C084FC;
+  color: #581C87;
+}
+
+.sticky-note.color-orange {
+  background: #FED7AA;
+  border-color: #FB923C;
+  color: #7C2D12;
+}
+
+/* Status States */
+.sticky-note.status-implemented {
+  border-width: 2.5px;
+  border-color: #2563EB;
+}
+
+.sticky-note.status-resolved {
+  opacity: 0.65;
+  border-color: #10B981;
+}
+
+.sticky-note.status-resolved:hover {
+  opacity: 0.95;
+}
+
+.sticky-note.status-resolved .note-body {
+  text-decoration: line-through;
+  opacity: 0.85;
+}
+
+/* Note Header */
+.note-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.05);
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  cursor: grab;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.note-header:active {
+  cursor: grabbing;
+}
+
+.note-header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.note-status-select {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.85);
+  color: #1E293B;
+  cursor: pointer;
+  outline: none;
+}
+
+.note-status-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.note-status-badge.badge-open {
+  background: #F59E0B;
+  color: #FFFFFF;
+}
+
+.note-status-badge.badge-implemented {
+  background: #2563EB;
+  color: #FFFFFF;
+  animation: pulseBadge 2s infinite;
+}
+
+.note-status-badge.badge-resolved {
+  background: #10B981;
+  color: #FFFFFF;
+}
+
+@keyframes pulseBadge {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.note-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Color Swatches Dropdown/Row */
+.note-color-picker {
+  display: flex;
+  gap: 3px;
+  margin-right: 4px;
+}
+
+.color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.color-dot:hover {
+  transform: scale(1.25);
+}
+
+.color-dot.dot-yellow { background: #FEF08A; }
+.color-dot.dot-pink   { background: #FECDD3; }
+.color-dot.dot-blue   { background: #BAE6FD; }
+.color-dot.dot-green  { background: #BBF7D0; }
+.color-dot.dot-purple { background: #E9D5FF; }
+.color-dot.dot-orange { background: #FED7AA; }
+
+.note-delete-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+  color: rgba(0, 0, 0, 0.5);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.note-delete-btn:hover {
+  background: rgba(220, 38, 38, 0.15);
+  color: #DC2626;
+}
+
+/* Note Body / Text Area */
+.note-body {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: inherit;
+  box-sizing: border-box;
+  min-height: 80px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.note-body::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+  font-style: italic;
+}
+
+/* Corner Resize Handle */
+.note-resize-corner {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  border-bottom-right-radius: 10px;
+  background: linear-gradient(135deg, transparent 50%, rgba(0, 0, 0, 0.25) 50%);
+}
+

@@ -4,12 +4,13 @@
  */
 
 export class EditorToolbar {
-  constructor(editorState, selectionManager, historyManager, saveManager, versionManager) {
+  constructor(editorState, selectionManager, historyManager, saveManager, versionManager, notesManager) {
     this.state = editorState;
     this.selection = selectionManager;
     this.history = historyManager;
     this.saveManager = saveManager;
     this.versionManager = versionManager;
+    this.notesManager = notesManager;
 
     this.toolbar = null;
     this.initToolbar();
@@ -45,6 +46,9 @@ export class EditorToolbar {
           </button>
           <button class="edit-tool-btn" data-tool="edit_text" title="Edit Text Content In-Place">
             <span>✏️ Text</span>
+          </button>
+          <button id="btn-add-note" class="edit-tool-btn" title="Add a Visual Comment / Sticky Note for AI Feedback">
+            <span>📝 + Note</span>
           </button>
 
           <div class="edit-toolbar-separator"></div>
@@ -149,6 +153,16 @@ export class EditorToolbar {
         this.selection.deleteSelectedElement();
       }
     });
+
+    // Add Sticky Note button
+    const addNoteBtn = this.toolbar.querySelector('#btn-add-note');
+    if (addNoteBtn) {
+      addNoteBtn.addEventListener('click', () => {
+        if (this.notesManager) {
+          this.notesManager.createNote();
+        }
+      });
+    }
 
     this.state.on('selection_changed', () => {
       this.updateLockBtn();

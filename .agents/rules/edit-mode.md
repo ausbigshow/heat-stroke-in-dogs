@@ -16,6 +16,7 @@ Include controls for:
     Edit Buttons / Interactive Elements
     Edit Scroll Areas / Containers
     Edit Text
+    Add Sticky Note / Visual Comment
     Delete Selected Element
     Lock / Unlock Element
     Undo
@@ -94,7 +95,24 @@ Requirements for Deletion:
     When saved, the deleted state must persist permanently in the source (e.g. surgical CSS display: none / node removal) so the element remains gone after reload.
     Provide a way to reset/restore elements if needed.
 
-6. BUTTONS AND INTERACTIVE ELEMENTS
+6. VISUAL COMMENTS & STICKY NOTES
+Edit Mode must provide the ability to place visual comments and feedback directly onto the screen, formatted like interactive sticky notes.
+These notes serve as a collaborative feedback bridge between the human author and the AI coding assistant.
+
+Capabilities:
+- Creation: Place new sticky notes anywhere on the viewport using a toolbar control.
+- Manipulation: Move, drag, resize, and delete sticky notes.
+- Color Customization: Change the note's color from a selectable palette (e.g., Warm Yellow, Soft Pink/Coral, Mint Green, Sky Blue, Lavender, Orange).
+- Text Editing: Edit note title, description, or feedback points in-place directly on the note.
+- Status Lifecycle & Feedback Workflow:
+    1. Open / Pending Feedback: Default state when created by the user, representing feedback, instructions, or desired adjustments for the AI assistant.
+    2. Implemented: Visually marked with an "Implemented" status indicator/badge. The AI agent reads pending notes on future passes, implements the requested changes in code, and sets the status to "Implemented".
+    3. Resolved: The human author can mark notes as "Resolved" when satisfied with the resulting implementation (dimming, checking off, or archiving the note).
+- Persistence:
+    Sticky notes and their status must be saved permanently to project storage (e.g. `data/notes.json`) so they persist across page refreshes, browser restarts, and version control checkpoints.
+    When Edit Mode is OFF, sticky notes must be completely hidden from learners.
+
+7. BUTTONS AND INTERACTIVE ELEMENTS
 I frequently need to reposition, resize, or remove buttons and clickable game elements.
 Edit Mode must allow me to manipulate these without destroying their original behavior.
 For example, if a button already has:

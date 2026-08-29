@@ -122,6 +122,43 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // GET /api/notes: Return stored sticky notes
+  if (req.method === 'GET' && pathname === '/api/notes') {
+    try {
+      const notesPath = path.join(ROOT_DIR, 'data', 'notes.json');
+      if (fs.existsSync(notesPath)) {
+        const content = fs.readFileSync(notesPath, 'utf8');
+        const notes = JSON.parse(content || '[]');
+        return sendJson(res, 200, { success: true, notes });
+      }
+      return sendJson(res, 200, { success: true, notes: [] });
+    } catch (err) {
+      return sendError(res, 500, 'Failed to read notes', err);
+    }
+  }
+
+  // POST /api/save-notes: Save sticky notes & create git commit
+  if (req.method === 'POST' && pathname === '/api/save-notes') {
+    try {
+      const { notes } = await parseBody(req);
+      const dataDir = path.join(ROOT_DIR, 'data');
+      fs.mkdirSync(dataDir, { recursive: true });
+      const notesPath = path.join(dataDir, 'notes.json');
+      fs.writeFileSync(notesPath, JSON.stringify(notes || [], null, 2), 'utf8');
+
+      runGit('add data/notes.json');
+      try {
+        runGit('commit -m "notes: update visual feedback sticky notes"');
+      } catch (commitErr) {
+        // Clean if no diff
+      }
+
+      return sendJson(res, 200, { success: true, message: 'Notes saved successfully' });
+    } catch (err) {
+      return sendError(res, 500, 'Failed to save notes', err);
+    }
+  }
+
   // POST /api/save-visual-edits: Surgically persist CSS overrides & git commit
   if (req.method === 'POST' && pathname === '/api/save-visual-edits') {
     try {

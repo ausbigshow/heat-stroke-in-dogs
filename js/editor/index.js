@@ -11,6 +11,7 @@ import { TextEditor } from './text-editor.js';
 import { HistoryManager } from './history-manager.js';
 import { SaveManager } from './save-manager.js';
 import { VersionManager } from './version-manager.js';
+import { NotesManager } from './notes-manager.js';
 import { EditorToolbar } from './editor-toolbar.js';
 
 export function initEditMode() {
@@ -22,7 +23,8 @@ export function initEditMode() {
   const textEditor = new TextEditor(state, selection, history);
   const save = new SaveManager(state, selection);
   const version = new VersionManager(state, save);
-  const toolbar = new EditorToolbar(state, selection, history, save, version);
+  const notes = new NotesManager(state, save);
+  const toolbar = new EditorToolbar(state, selection, history, save, version, notes);
 
   console.log('🛠️ Visual Edit Mode Initialized. Press Ctrl+Shift+E (or Cmd+Shift+E) to toggle.');
 
@@ -35,6 +37,7 @@ export function initEditMode() {
     history,
     save,
     version,
+    notes,
     toolbar
   };
 }
