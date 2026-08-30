@@ -298,32 +298,36 @@ Instead show:
 Save failed — source file was not modified
 and provide the relevant error in the developer console.
 
-17. EDIT MODE MUST NOT APPEAR IN THE ACTUAL COURSE
-The learner-facing course should behave exactly as before.
-Edit Mode should only activate through an intentional development mechanism.
-For example:
+17. EDIT MODE ACTIVATION & DEVELOPMENT ACCESS
+The learner-facing course should behave normally, while developers and authors have reliable, multi-channel access to toggle Edit Mode.
+Edit Mode must support multiple activation channels to prevent lockouts across varying browser extensions, OS keybindings, and module load timings:
 
-    keyboard shortcut
-    query parameter such as ?edit=true
-    hidden development control
-    explicit developer toggle
+    1. Keyboard Shortcuts:
+       - Primary: Ctrl/Cmd + Shift + E
+       - Fallbacks: Alt + Shift + E, Ctrl + Alt + E (checked against both e.key and physical e.code === 'KeyE')
+    2. Floating Developer FAB:
+       - A discreet floating developer toggle button ("🛠️ Edit") placed in the bottom-left corner of the viewport when Edit Mode is OFF.
+       - Clicking toggles Edit Mode ON and hides the floating button, revealing the full top toolbar.
+    3. URL Query Parameter & Hash:
+       - Opening with ?edit=true, ?edit=1, or #edit must automatically activate Edit Mode on initial load.
+    4. Global JavaScript API:
+       - Expose window.toggleEditMode() for instant invocation via browser console or automated scripts.
+    5. Robust ReadyState Bootstrap:
+       - Editor initialization must handle both DOMContentLoaded and already interactive/complete document.readyState states to guarantee activation regardless of module load order.
 
-Do not show editing controls to normal learners.
 When Edit Mode is OFF:
-
     no selection outlines
     no resize handles
     no editing toolbar
     no editor labels
     no drag behavior
     no editor-specific cursor behavior
-
-The experience should return completely to normal.
+    (only the discreet development FAB remains for easy re-entry)
 
 18. KEYBOARD SHORTCUTS
 Edit Mode must support conventional keyboard shortcuts for all major editing, navigation, and persistence functions:
 
-    • Toggle Edit Mode: Ctrl/Cmd + Shift + E
+    • Toggle Edit Mode: Ctrl/Cmd + Shift + E (or Alt + Shift + E / Ctrl + Alt + E)
     • Save Changes: Ctrl/Cmd + S (prevents default browser dialog and triggers surgical save to source)
     • Undo: Ctrl/Cmd + Z
     • Redo: Ctrl/Cmd + Y or Ctrl/Cmd + Shift + Z
