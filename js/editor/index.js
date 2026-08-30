@@ -26,9 +26,7 @@ export function initEditMode() {
   const notes = new NotesManager(state, save);
   const toolbar = new EditorToolbar(state, selection, history, save, version, notes);
 
-  console.log('🛠️ Visual Edit Mode Initialized. Press Ctrl+Shift+E (or Cmd+Shift+E) to toggle.');
-
-  return {
+  const editorInstance = {
     state,
     selection,
     drag,
@@ -38,6 +36,14 @@ export function initEditMode() {
     save,
     version,
     notes,
-    toolbar
+    toolbar,
+    toggle: () => state.toggleActive()
   };
+
+  window.__editor = editorInstance;
+  window.toggleEditMode = () => state.toggleActive();
+
+  console.log('🛠️ Visual Edit Mode Initialized. Press Ctrl+Shift+E (or Cmd+Shift+E) to toggle.');
+
+  return editorInstance;
 }

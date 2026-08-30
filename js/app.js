@@ -66,9 +66,16 @@ class CourseApp {
   }
 }
 
-// Bootstrap on DOM loaded
-document.addEventListener('DOMContentLoaded', () => {
+// Bootstrap on DOM loaded or immediately if already ready
+function bootstrap() {
+  if (window.__courseApp) return;
   const app = new CourseApp();
   app.init();
   window.__courseApp = app;
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootstrap);
+} else {
+  bootstrap();
+}

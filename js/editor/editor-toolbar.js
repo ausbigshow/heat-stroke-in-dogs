@@ -106,6 +106,20 @@ export class EditorToolbar {
 
       document.body.appendChild(this.toolbar);
     }
+
+    // Discreet Floating Developer Toggle FAB (Bottom Left)
+    let fab = document.getElementById('edit-mode-fab');
+    if (!fab) {
+      fab = document.createElement('button');
+      fab.id = 'edit-mode-fab';
+      fab.className = 'edit-mode-fab';
+      fab.title = 'Toggle Visual Edit Mode (Ctrl+Shift+E)';
+      fab.innerHTML = '🛠️ Edit';
+      fab.addEventListener('click', () => {
+        this.state.toggleActive();
+      });
+      document.body.appendChild(fab);
+    }
   }
 
   bindEvents() {
@@ -131,6 +145,8 @@ export class EditorToolbar {
     // Active state changes
     this.state.on('active_changed', (active) => {
       this.toolbar.style.display = active ? 'flex' : 'none';
+      const fab = document.getElementById('edit-mode-fab');
+      if (fab) fab.style.display = active ? 'none' : 'flex';
       if (active) {
         this.updateLockBtn();
         this.updateDeleteBtn();
@@ -244,17 +260,20 @@ export class EditorToolbar {
     window.addEventListener('keydown', (e) => {
       const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable;
 
-      // 1. Toggle Edit Mode: Ctrl/Cmd + Shift + E
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'E' || e.key === 'e')) {
+      // 1. Toggle Edit Mode: Ctrl/Cmd + Shift + E, Alt + Shift + E, or Ctrl + Alt + E
+      const isE = e.key === 'E' || e.key === 'e' || e.code === 'KeyE';
+      if (((e.ctrlKey || e.metaKey) && e.shiftKey && isE) ||
+          (e.altKey && e.shiftKey && isE) ||
+          ((e.ctrlKey || e.metaKey) && e.altKey && isE)) {
         e.preventDefault();
-        this.state.setActive(!this.state.isActive);
+        this.state.toggleActive();
         return;
       }
 
       if (!this.state.isActive) return;
 
       // 2. Save Changes: Ctrl/Cmd + S
-      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && (e.key === 's' || e.key === 'S')) {
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && (e.key === 's' || e.key === 'S' || e.code === 'KeyS')) {
         e.preventDefault();
         this.saveManager.saveChanges();
         return;

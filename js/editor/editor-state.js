@@ -37,6 +37,10 @@ export class EditorState {
     this.emit('active_changed', this.isActive);
   }
 
+  toggleActive() {
+    this.setActive(!this.isActive);
+  }
+
   setTool(tool) {
     if (this.activeTool === tool) return;
     this.activeTool = tool;
@@ -46,6 +50,10 @@ export class EditorState {
   setSelectedElement(el) {
     this.selectedElement = el;
     this.emit('selection_changed', this.selectedElement);
+  }
+
+  select(el) {
+    this.setSelectedElement(el);
   }
 
   toggleLock(el) {
