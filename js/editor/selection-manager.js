@@ -9,6 +9,7 @@ export class SelectionManager {
     this.history = historyManager;
     this.box = null;
     this.label = null;
+    this.stemHandle = null;
 
     this.initOverlay();
     this.bindEvents();
@@ -29,7 +30,23 @@ export class SelectionManager {
       this.label.className = 'edit-selection-label';
       this.box.appendChild(this.label);
 
+      // Dedicated Stem Drag Handle
+      this.stemHandle = document.createElement('div');
+      this.stemHandle.className = 'edit-stem-handle';
+      this.stemHandle.title = 'Drag to reposition Speech Bubble Stem';
+      this.stemHandle.innerHTML = '📍';
+      this.box.appendChild(this.stemHandle);
+
       document.body.appendChild(this.box);
+    } else {
+      this.stemHandle = this.box.querySelector('.edit-stem-handle');
+      if (!this.stemHandle) {
+        this.stemHandle = document.createElement('div');
+        this.stemHandle.className = 'edit-stem-handle';
+        this.stemHandle.title = 'Drag to reposition Speech Bubble Stem';
+        this.stemHandle.innerHTML = '📍';
+        this.box.appendChild(this.stemHandle);
+      }
     }
   }
 
@@ -56,6 +73,62 @@ export class SelectionManager {
         this.state.setSelectedElement(null);
       }
     }, true);
+
+    // Stem Handle Drag Interaction
+    if (this.stemHandle) {
+      this.stemHandle.addEventListener('mousedown', (e) => {
+        const bubble = this.state.selectedElement;
+        if (!bubble || this.state.isElementLocked(bubble)) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const initialStemLeft = bubble.style.getPropertyValue('--stem-left');
+        const initialStemRight = bubble.style.getPropertyValue('--stem-right');
+
+        const onMouseMove = (ev) => {
+          const rect = bubble.getBoundingClientRect();
+          const rawX = ev.clientX - rect.left;
+          const clampedX = Math.max(16, Math.min(rect.width - 16, rawX));
+
+          if (bubble.classList.contains('callie-bubble')) {
+            const fromRight = Math.round(rect.width - clampedX);
+            bubble.style.setProperty('--stem-right', `${fromRight}px`);
+            bubble.style.removeProperty('--stem-left');
+            this.state.recordStyleChange(bubble.getAttribute('data-editor-id'), '--stem-right', `${fromRight}px`);
+          } else {
+            const fromLeft = Math.round(clampedX);
+            bubble.style.setProperty('--stem-left', `${fromLeft}px`);
+            bubble.style.removeProperty('--stem-right');
+            this.state.recordStyleChange(bubble.getAttribute('data-editor-id'), '--stem-left', `${fromLeft}px`);
+          }
+          this.refresh();
+        };
+
+        const onMouseUp = () => {
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+
+          const id = bubble.getAttribute('data-editor-id');
+          if (id) {
+            this.state.setDirty(true);
+            this.history.pushAction({
+              type: 'style',
+              elementId: id,
+              prev: { '--stem-left': initialStemLeft, '--stem-right': initialStemRight },
+              next: { 
+                '--stem-left': bubble.style.getPropertyValue('--stem-left'),
+                '--stem-right': bubble.style.getPropertyValue('--stem-right')
+              }
+            });
+          }
+          this.refresh();
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+    }
 
     // Reposition bounding box on window resize / scroll
     window.addEventListener('resize', () => this.refresh());
@@ -100,11 +173,62 @@ export class SelectionManager {
     const w = Math.round(rect.width);
     const h = Math.round(rect.height);
 
+    const isBubble = el.classList.contains('speech-bubble') || el.closest('.speech-bubble');
+    const bubble = isBubble ? (el.classList.contains('speech-bubble') ? el : el.closest('.speech-bubble')) : null;
+
+    let stemControls = '';
+    if (bubble && !isLocked) {
+      stemControls = `
+        <span class="edit-selection-stem-controls">
+          <span style="color:#F59E0B;font-weight:700;">📍 Stem:</span>
+          <button class="stem-btn" data-stem-pos="left" title="Move stem to left">◀</button>
+          <button class="stem-btn" data-stem-pos="center" title="Center stem">⯀</button>
+          <button class="stem-btn" data-stem-pos="right" title="Move stem to right">▶</button>
+        </span>
+      `;
+    }
+
     this.label.innerHTML = `
       <span class="badge-id">#${id}</span>
-      <span class="badge-dims">${w}×${h} (${x}, ${y})</span>
+      <span class="badge-dims">${w}×${h}</span>
+      ${stemControls}
       ${isLocked ? '<span class="badge-locked">🔒 LOCKED</span>' : ''}
     `;
+
+    // Bind preset buttons if present
+    if (bubble && !isLocked) {
+      this.label.querySelectorAll('[data-stem-pos]').forEach(btn => {
+        btn.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          const pos = btn.getAttribute('data-stem-pos');
+          this.applyStemPreset(bubble, pos);
+        });
+      });
+
+      // Update Stem Handle position
+      if (this.stemHandle) {
+        this.stemHandle.style.display = 'flex';
+        const computed = window.getComputedStyle(bubble);
+        const stemLeft = bubble.style.getPropertyValue('--stem-left') || computed.getPropertyValue('--stem-left');
+        const stemRight = bubble.style.getPropertyValue('--stem-right') || computed.getPropertyValue('--stem-right');
+
+        let handleX = 24;
+        if (stemLeft && stemLeft.trim() !== '' && stemLeft !== 'auto') {
+          handleX = parseFloat(stemLeft);
+        } else if (stemRight && stemRight.trim() !== '' && stemRight !== 'auto') {
+          handleX = rect.width - parseFloat(stemRight);
+        } else if (bubble.classList.contains('callie-bubble')) {
+          handleX = rect.width - 28;
+        } else {
+          handleX = 24;
+        }
+
+        this.stemHandle.style.bottom = '-24px';
+        this.stemHandle.style.left = `${Math.round(handleX - 9)}px`;
+      }
+    } else if (this.stemHandle) {
+      this.stemHandle.style.display = 'none';
+    }
 
     // Render distinct visible handles on the bounding box whenever selected (unless element is locked)
     const handles = this.box.querySelectorAll('.edit-resize-handle');
@@ -112,6 +236,41 @@ export class SelectionManager {
     handles.forEach(h => {
       h.style.display = showHandles ? 'block' : 'none';
     });
+  }
+
+  applyStemPreset(bubble, pos) {
+    const id = bubble.getAttribute('data-editor-id');
+    const prevLeft = bubble.style.getPropertyValue('--stem-left');
+    const prevRight = bubble.style.getPropertyValue('--stem-right');
+
+    if (pos === 'left') {
+      bubble.style.setProperty('--stem-left', '24px');
+      bubble.style.removeProperty('--stem-right');
+      if (id) this.state.recordStyleChange(id, '--stem-left', '24px');
+    } else if (pos === 'center') {
+      bubble.style.setProperty('--stem-left', 'calc(50% - 10px)');
+      bubble.style.removeProperty('--stem-right');
+      if (id) this.state.recordStyleChange(id, '--stem-left', 'calc(50% - 10px)');
+    } else if (pos === 'right') {
+      bubble.style.setProperty('--stem-right', '28px');
+      bubble.style.removeProperty('--stem-left');
+      if (id) this.state.recordStyleChange(id, '--stem-right', '28px');
+    }
+
+    if (id) {
+      this.state.setDirty(true);
+      this.history.pushAction({
+        type: 'style',
+        elementId: id,
+        prev: { '--stem-left': prevLeft, '--stem-right': prevRight },
+        next: {
+          '--stem-left': bubble.style.getPropertyValue('--stem-left'),
+          '--stem-right': bubble.style.getPropertyValue('--stem-right')
+        }
+      });
+    }
+
+    this.refresh();
   }
 
   hideSelectionBox() {

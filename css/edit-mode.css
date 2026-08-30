@@ -266,6 +266,57 @@ body.edit-mode-active [data-editor-locked="true"] {
 .edit-resize-handle.handle-sw { bottom: -6px; left: -6px; cursor: nesw-resize !important; }
 .edit-resize-handle.handle-w  { top: calc(50% - 6px); left: -6px; cursor: ew-resize !important; }
 
+/* Dedicated Speech Bubble Stem Drag Handle */
+.edit-stem-handle {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: #F59E0B;
+  border: 2.5px solid #FFFFFF;
+  border-radius: 50%;
+  pointer-events: auto;
+  z-index: 999998;
+  box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  cursor: ew-resize !important;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.edit-stem-handle:hover {
+  transform: scale(1.35);
+  background: #D97706;
+}
+
+.edit-selection-stem-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  padding-left: 8px;
+  border-left: 1px solid #475569;
+}
+
+.stem-btn {
+  background: #334155;
+  border: 1px solid #475569;
+  color: #F8FAFC;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.stem-btn:hover {
+  background: #2563EB;
+  border-color: #60A5FA;
+  transform: scale(1.05);
+}
+
 /* Version Control Modal */
 .edit-modal-backdrop {
   position: fixed;

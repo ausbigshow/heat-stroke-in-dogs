@@ -19,10 +19,19 @@ export class SaveManager {
       const inline = el.style;
       const decls = {};
 
-      const properties = ['position', 'left', 'top', 'right', 'bottom', 'width', 'height', 'z-index', 'transform', 'display'];
-      properties.forEach(p => {
-        const val = inline.getPropertyValue(p);
+      // Collect all properties set in style
+      for (let i = 0; i < inline.length; i++) {
+        const prop = inline[i];
+        const val = inline.getPropertyValue(prop);
         if (val) {
+          decls[prop] = val;
+        }
+      }
+
+      const properties = ['position', 'left', 'top', 'right', 'bottom', 'width', 'height', 'z-index', 'transform', 'display', '--stem-left', '--stem-right'];
+      properties.forEach(p => {
+        const val = inline.getPropertyValue(p) || inline[p];
+        if (val && typeof val === 'string' && val.trim() !== '') {
           decls[p] = val;
         }
       });
@@ -70,8 +79,9 @@ export class SaveManager {
     if (!el) return;
 
     const id = el.getAttribute('data-editor-id');
-    const properties = ['position', 'left', 'top', 'right', 'bottom', 'width', 'height', 'z-index', 'transform', 'display'];
-    properties.forEach(p => el.style.removeProperty(p));
+    for (let i = el.style.length - 1; i >= 0; i--) {
+      el.style.removeProperty(el.style[i]);
+    }
 
     if (id && this.state.modifiedStyles.has(id)) {
       this.state.modifiedStyles.delete(id);

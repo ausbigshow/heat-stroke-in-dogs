@@ -19,23 +19,10 @@
     "y": 120,
     "width": 260,
     "height": 160,
-    "color": "yellow",
-    "status": "implemented",
-    "text": "the stem for every text box looks visually like a separate shape, not as part of the full box.",
+    "color": "pink",
+    "status": "open",
+    "text": "this text box as well as step2 are too far away from callie's face. ",
     "targetElementId": "act0-bubble-step1",
     "createdAt": "2026-08-30T00:31:21.103Z"
-  },
-  {
-    "id": "note_1788049938856",
-    "screenId": "act0",
-    "x": 262,
-    "y": 414,
-    "width": 260,
-    "height": 160,
-    "color": "blue",
-    "status": "implemented",
-    "text": "This text box cover's callie's face, and should be moved out of the way. same with step6, step8, step9, step11, and step12.",
-    "targetElementId": "act0-bubble-step4",
-    "createdAt": "2026-08-30T00:32:18.856Z"
   }
 ]
