@@ -218,7 +218,7 @@ export class EditorToolbar {
     redoBtn.addEventListener('click', () => this.history.redo());
 
     // History state updates
-    this.history.on('history_changed', ({ canUndo, canRedo }) => {
+    this.state.on('history_changed', ({ canUndo, canRedo }) => {
       undoBtn.disabled = !canUndo;
       redoBtn.disabled = !canRedo;
     });

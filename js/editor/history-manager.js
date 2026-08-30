@@ -11,6 +11,14 @@ export class HistoryManager {
     this.maxHistory = 50;
   }
 
+  on(event, cb) {
+    this.state.on(event, cb);
+  }
+
+  emit(event, data) {
+    this.state.emit(event, data);
+  }
+
   pushAction(action) {
     this.undoStack.push(action);
     if (this.undoStack.length > this.maxHistory) {
