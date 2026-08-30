@@ -28,7 +28,7 @@ export class Act0Screen {
         speaker: 'callie',
         name: 'Callie',
         text: "This is Tay.",
-        style: 'top: 10%; left: 20%; max-width: min(260px, 20vw);'
+        style: 'top: 11%; left: 24%; max-width: min(250px, 20vw);'
       },
       {
         id: 'step3',
