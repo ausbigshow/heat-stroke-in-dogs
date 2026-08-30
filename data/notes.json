@@ -13,28 +13,15 @@
     "createdAt": "2026-08-29T23:43:21.590Z"
   },
   {
-    "id": "note_1788051471723",
-    "screenId": "act0",
-    "x": 120,
-    "y": 120,
-    "width": 260,
-    "height": 160,
-    "color": "yellow",
-    "status": "implemented",
-    "text": "This button, along with the tile button and progress counter, change their y postion when the next button becomes \"begin act 1.\" they should stay in place.",
-    "targetElementId": "act0-btn-prev",
-    "createdAt": "2026-08-30T00:57:51.723Z"
-  },
-  {
     "id": "note_1788051523910",
     "screenId": "act0",
     "x": 1444,
     "y": 550,
     "width": 260,
-    "height": 160,
+    "height": 200,
     "color": "green",
     "status": "implemented",
-    "text": "",
+    "text": "the text in \"begin act 1\" hover state is unreadable, please use high contrast colors between the background and text.",
     "targetElementId": "act0-btn-start-act1",
     "createdAt": "2026-08-30T00:58:43.910Z"
   }

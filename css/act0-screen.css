@@ -251,14 +251,23 @@
 }
 
 .act0-hud-btn.btn-start {
-  background: #FB923C;
-  color: #382418;
-  border-color: #FED7AA;
+  background: #EA580C;
+  color: #FFFFFF;
+  border: 2px solid #FDBA74;
   font-size: 1rem;
+  font-weight: 800;
   height: 40px;
   padding: 0 1.4rem;
-  box-shadow: 0 6px 20px rgba(251, 146, 60, 0.45);
+  box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4);
   animation: pulseStartBtn 1.8s infinite;
+}
+
+.act0-hud-btn.btn-start:hover {
+  background: #9A3412 !important;
+  color: #FFFFFF !important;
+  border-color: #FFFFFF !important;
+  box-shadow: 0 8px 24px rgba(154, 52, 18, 0.6) !important;
+  transform: translateY(-2px);
 }
 
 @keyframes pulseStartBtn {
