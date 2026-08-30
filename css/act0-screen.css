@@ -1,0 +1,354 @@
+/* Act 0 Introduction Scene Styles */
+
+.act0-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2rem 3.5rem;
+  box-sizing: border-box;
+  background: radial-gradient(circle at 80% 20%, #FFF8F3 0%, var(--palette-peach-light) 60%, var(--palette-peach) 100%);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Header Section */
+.act0-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.act0-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--palette-peach);
+  color: var(--palette-brown-dark);
+  font-family: var(--font-family-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.4rem 1.1rem;
+  border-radius: 100px;
+  box-shadow: 0 2px 8px rgba(56, 36, 24, 0.06);
+}
+
+.act0-progress-indicator {
+  font-family: var(--font-family-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--palette-brown-light);
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0.35rem 0.9rem;
+  border-radius: 100px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Main Layout Grid */
+.act0-main-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 3rem;
+  align-items: center;
+  flex: 1;
+  max-width: 1300px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Character Card (Left Side) */
+.act0-media-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.act0-couch-card {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 4 / 3.2;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 
+    0 20px 45px -10px rgba(56, 36, 24, 0.25),
+    0 4px 15px rgba(56, 36, 24, 0.1);
+  border: 4px solid #FFFFFF;
+  background: #FFFFFF;
+  transition: transform 0.3s ease;
+}
+
+.act0-couch-card:hover {
+  transform: translateY(-3px) scale(1.01);
+}
+
+.act0-couch-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.act0-character-tag {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  padding: 0.4rem 1.1rem;
+  border-radius: 100px;
+  font-family: var(--font-family-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--palette-brown-dark);
+  box-shadow: 0 4px 12px rgba(56, 36, 24, 0.15);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Dialogue & Speech Bubbles Container (Right Side) */
+.act0-dialogue-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.25rem;
+  min-height: 380px;
+}
+
+/* Speech Bubble Base */
+.speech-bubble {
+  position: relative;
+  padding: 1.4rem 1.8rem;
+  border-radius: 20px;
+  background: #FFFFFF;
+  box-shadow: 0 10px 25px -4px rgba(56, 36, 24, 0.12);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: bubbleEntrance 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes bubbleEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.speech-bubble-speaker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-family-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 6px;
+}
+
+.speech-bubble-text {
+  font-family: var(--font-family-display);
+  font-size: 1.35rem;
+  line-height: 1.45;
+  color: var(--palette-brown-dark);
+  font-weight: 600;
+}
+
+/* Callie Speech Bubble Styling */
+.speech-bubble.callie-bubble {
+  background: #FFFFFF;
+  border-left: 5px solid var(--palette-teal);
+  border-radius: 18px 24px 24px 8px;
+}
+
+.speech-bubble.callie-bubble .speech-bubble-speaker {
+  background: rgba(54, 107, 119, 0.12);
+  color: var(--palette-teal-dark);
+}
+
+/* Tay Subtitle / Dog Speech Bubble Styling */
+.speech-bubble.tay-bubble {
+  background: #FFF5EE;
+  border: 2px solid #F5C6AA;
+  border-left: 6px solid #FB923C;
+  border-radius: 8px 24px 24px 18px;
+  box-shadow: 0 12px 28px -4px rgba(251, 146, 60, 0.15);
+}
+
+.speech-bubble.tay-bubble .speech-bubble-speaker {
+  background: #FFE2D1;
+  color: #C2410C;
+}
+
+.speech-bubble.tay-bubble .speech-bubble-text {
+  font-family: var(--font-family-body);
+  font-style: italic;
+  font-weight: 700;
+  color: #7C2D12;
+  font-size: 1.3rem;
+}
+
+/* Stage Direction / Action Cue */
+.act0-stage-direction {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--palette-brown-light);
+  background: rgba(255, 255, 255, 0.6);
+  padding: 0.6rem 1.1rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(141, 107, 83, 0.3);
+  animation: bubbleEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Action Controls at Bottom of Panel */
+.act0-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.act0-nav-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.act0-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.4rem;
+  border-radius: 100px;
+  font-family: var(--font-family-display);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 2px solid transparent;
+  background: #FFFFFF;
+  color: var(--palette-brown-dark);
+  box-shadow: 0 4px 12px rgba(56, 36, 24, 0.08);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.act0-nav-btn:hover:not(:disabled) {
+  background: var(--palette-peach-light);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(56, 36, 24, 0.12);
+}
+
+.act0-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.act0-nav-btn.btn-primary {
+  background: var(--palette-teal);
+  color: var(--palette-warm-white);
+  box-shadow: 0 8px 20px -3px rgba(54, 107, 119, 0.35);
+}
+
+.act0-nav-btn.btn-primary:hover {
+  background: var(--palette-brown-dark);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.act0-nav-btn.btn-start-act1 {
+  background: var(--palette-brown-dark);
+  color: var(--palette-warm-white);
+  padding: 0.9rem 1.8rem;
+  font-size: 1.15rem;
+  box-shadow: 0 10px 25px rgba(56, 36, 24, 0.35);
+  animation: pulsePrimary 1.8s infinite;
+}
+
+@keyframes pulsePrimary {
+  0%, 100% { box-shadow: 0 10px 25px rgba(56, 36, 24, 0.35); }
+  50% { box-shadow: 0 14px 32px rgba(56, 36, 24, 0.5); transform: translateY(-1px); }
+}
+
+/* Bottom Actions (e.g. Back to Title) */
+.act0-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.btn-text-link {
+  background: none;
+  border: none;
+  font-family: var(--font-family-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--palette-text-muted);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: color 0.15s ease;
+}
+
+.btn-text-link:hover {
+  color: var(--palette-brown-dark);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  .act0-screen {
+    padding: 1.5rem 2rem;
+  }
+  .act0-main-layout {
+    gap: 2rem;
+  }
+  .speech-bubble-text {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .act0-screen {
+    padding: 1rem 1.25rem;
+    height: auto;
+    min-height: 100vh;
+  }
+  .act0-main-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .act0-couch-card {
+    max-width: 100%;
+    aspect-ratio: 16 / 10;
+  }
+  .speech-bubble-text {
+    font-size: 1.1rem;
+  }
+  .act0-controls {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .act0-nav-btn {
+    width: 100%;
+  }
+}
