@@ -21,14 +21,14 @@ export class Act0Screen {
         speaker: 'callie',
         name: 'Callie',
         text: "Hey. I'm Callie.",
-        style: 'top: 12%; left: 15%; max-width: min(260px, 20vw);'
+        style: 'top: 10%; left: 20%; max-width: min(260px, 20vw);'
       },
       {
         id: 'step2',
         speaker: 'callie',
         name: 'Callie',
         text: "This is Tay.",
-        style: 'top: 12%; left: 15%; max-width: min(260px, 20vw);'
+        style: 'top: 10%; left: 20%; max-width: min(260px, 20vw);'
       },
       {
         id: 'step3',
