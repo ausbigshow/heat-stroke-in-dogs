@@ -349,8 +349,8 @@ Edit Mode must support conventional keyboard shortcuts for all major editing, na
 
 Shortcuts must only trigger when Edit Mode is active and must be ignored when typing inside text inputs, textareas, or contentEditable blocks.
 
-19. EDITOR ARCHITECTURE
-Keep the editor code modular.
+19. EDITOR ARCHITECTURE & EVENT SYSTEM
+Keep the editor code modular and resilient.
 Prefer something conceptually like:
 
     editorState
@@ -359,9 +359,18 @@ Prefer something conceptually like:
     resizeManager
     historyManager
     saveManager
+    versionManager
+    notesManager
+    editorToolbar
 
 rather than scattering editing logic throughout the lesson code.
 Editor functionality should be isolated from the gameplay system as much as possible.
+
+Event Bus & State Synchronization Rules:
+- The central `EditorState` serves as the primary event bus and state coordinator.
+- Core lifecycle and action events must be routed consistently through `EditorState` (e.g. `active_changed`, `tool_changed`, `selection_changed`, `lock_changed`, `dirty_changed`, `history_changed`, `screen_changed`, `element_moved`).
+- Managers that emit or listen to events must maintain unified event signatures, or provide defensive delegation methods (`on` and `emit`), preventing broken method calls or unhandled TypeErrors.
+- Event binding in `EditorToolbar` and all managers must be resilient: an isolated error in one listener must never interrupt or disable subsequent toolbar click bindings, modal triggers, or global keyboard shortcuts.
 
 20. IMPORTANT DEVELOPMENT RULE
 From this point forward, whenever you modify this project:

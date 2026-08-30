@@ -2,13 +2,13 @@
   {
     "id": "note_1788047001590",
     "screenId": "opening",
-    "x": 1280,
-    "y": 195,
-    "width": 260,
-    "height": 160,
+    "x": 1146,
+    "y": 461,
+    "width": 359,
+    "height": 193,
     "color": "yellow",
-    "status": "implemented",
-    "text": "The word continue is not centered vertically  in the hover state.",
+    "status": "open",
+    "text": "while the word may be centered in code, visually it does not appear so. please iterate again.",
     "targetElementId": "opening-continue-btn",
     "createdAt": "2026-08-29T23:43:21.590Z"
   },
@@ -20,8 +20,8 @@
     "width": 260,
     "height": 160,
     "color": "pink",
-    "status": "implemented",
-    "text": "the text is not centered in either state on either axis.",
+    "status": "open",
+    "text": "the text appears below visual center vertically.",
     "targetElementId": "act0-back-btn",
     "createdAt": "2026-08-29T23:45:11.628Z"
   }
