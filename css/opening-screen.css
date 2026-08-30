@@ -176,7 +176,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 1.1rem 2.4rem;
+  padding: 1.1rem 2.6rem;
   font-family: var(--font-family-display);
   font-size: 1.25rem;
   font-weight: 700;
@@ -200,8 +200,7 @@
     transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
     background-color 0.25s ease,
     border-color 0.25s ease,
-    box-shadow 0.25s ease,
-    padding 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow 0.25s ease;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -225,9 +224,9 @@
 
 .continue-btn .continue-arrow {
   position: absolute;
-  right: 1.35rem;
+  right: 1.1rem;
   top: 50%;
-  transform: translateY(-50%) translateX(-8px);
+  transform: translateY(-50%) translateX(-6px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -250,7 +249,7 @@
 /* HOVER STATE REQUIREMENTS:
    1. Button's color changes
    2. Arrow fades in next to the word "continue"
-   3. The word "continue" becomes underlined and increases slightly in size, remaining centered vertically
+   3. The word "continue" becomes underlined and increases slightly in size, remaining centered
 */
 .continue-btn:hover {
   background-color: var(--palette-brown-dark);
@@ -265,12 +264,7 @@
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
-  transform: scale(1.06);
-}
-
-.continue-btn:has(.continue-arrow):hover {
-  padding-right: 3rem;
-  padding-left: 2rem;
+  transform: scale(1.05);
 }
 
 .continue-btn:hover .continue-arrow {

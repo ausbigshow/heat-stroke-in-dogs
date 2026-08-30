@@ -7,22 +7,35 @@
     "width": 359,
     "height": 193,
     "color": "yellow",
-    "status": "open",
+    "status": "implemented",
     "text": "while the word may be centered in code, visually it does not appear so. please iterate again.",
     "targetElementId": "opening-continue-btn",
     "createdAt": "2026-08-29T23:43:21.590Z"
   },
   {
-    "id": "note_1788047111628",
+    "id": "note_1788049881103",
     "screenId": "act0",
     "x": 120,
     "y": 120,
     "width": 260,
     "height": 160,
-    "color": "pink",
-    "status": "open",
-    "text": "the text appears below visual center vertically.",
-    "targetElementId": "act0-back-btn",
-    "createdAt": "2026-08-29T23:45:11.628Z"
+    "color": "yellow",
+    "status": "implemented",
+    "text": "the stem for every text box looks visually like a separate shape, not as part of the full box.",
+    "targetElementId": "act0-bubble-step1",
+    "createdAt": "2026-08-30T00:31:21.103Z"
+  },
+  {
+    "id": "note_1788049938856",
+    "screenId": "act0",
+    "x": 262,
+    "y": 414,
+    "width": 260,
+    "height": 160,
+    "color": "blue",
+    "status": "implemented",
+    "text": "This text box cover's callie's face, and should be moved out of the way. same with step6, step8, step9, step11, and step12.",
+    "targetElementId": "act0-bubble-step4",
+    "createdAt": "2026-08-30T00:32:18.856Z"
   }
 ]

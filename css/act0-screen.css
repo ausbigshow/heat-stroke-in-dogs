@@ -50,28 +50,27 @@
 }
 
 /* ==========================================================
-   AUTHENTIC SPEECH BUBBLES WITH ANGLED DIRECTIONAL STEMS
+   AUTHENTIC SEAMLESS SPEECH BUBBLES WITH UNIFIED STEMS
    ========================================================== */
 
 .speech-bubble {
   position: absolute;
-  padding: 1rem 1.4rem;
-  border-radius: 22px;
+  padding: 1.1rem 1.4rem;
+  border-radius: 24px;
   box-shadow: 
     0 16px 36px -4px rgba(56, 36, 24, 0.28),
     0 4px 12px rgba(56, 36, 24, 0.15);
   pointer-events: auto;
   cursor: default;
-  max-width: min(380px, 42vw);
   box-sizing: border-box;
-  animation: bubblePop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation: bubblePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
   z-index: 20;
 }
 
 @keyframes bubblePop {
   0% {
     opacity: 0;
-    transform: scale(0.88) translateY(8px);
+    transform: scale(0.92) translateY(6px);
   }
   100% {
     opacity: 1;
@@ -93,13 +92,13 @@
 
 .speech-bubble-text {
   font-family: var(--font-family-display);
-  font-size: clamp(1.05rem, 1.45vw, 1.35rem);
-  line-height: 1.4;
+  font-size: clamp(1.02rem, 1.35vw, 1.28rem);
+  line-height: 1.42;
   margin: 0;
   font-weight: 600;
 }
 
-/* --- Callie's Speech Bubble (White / Dark Brown, stem angled toward Callie) --- */
+/* --- Callie's Speech Bubble (White / Dark Brown, seamless stem pointing toward Callie) --- */
 .speech-bubble.callie-bubble {
   background: #FFFFFF;
   border: 3px solid var(--palette-brown-dark);
@@ -110,21 +109,34 @@
   color: var(--palette-teal-dark);
 }
 
-/* Callie Angled Stem (SVG) */
-.bubble-stem {
+/* Callie Seamless Angled Stem: Outer border + Inner mask */
+.speech-bubble.callie-bubble::before {
+  content: '';
   position: absolute;
-  overflow: visible;
-  pointer-events: none;
-}
-
-.callie-stem {
   bottom: -22px;
-  right: 32px;
-  width: 28px;
-  height: 24px;
+  right: 28px;
+  width: 0;
+  height: 0;
+  border-left: 18px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 22px solid var(--palette-brown-dark);
+  z-index: 1;
 }
 
-/* --- Tay's Speech Bubble (Peach / Orange, stem angled down-left toward Tay) --- */
+.speech-bubble.callie-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -18px;
+  right: 30px;
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 19px solid #FFFFFF;
+  z-index: 2;
+}
+
+/* --- Tay's Speech Bubble (Peach / Orange, seamless stem pointing toward Tay) --- */
 .speech-bubble.tay-bubble {
   background: #FFF8F3;
   border: 3px solid #C2410C;
@@ -145,6 +157,7 @@
   color: #C2410C;
   font-style: normal;
   display: inline;
+  margin-right: 0.2rem;
 }
 
 .speech-bubble.tay-bubble .tay-sub-dialogue {
@@ -153,11 +166,31 @@
   display: inline;
 }
 
-.tay-stem {
-  bottom: -24px;
-  left: 20px;
-  width: 28px;
-  height: 26px;
+/* Tay Seamless Angled Stem: Outer border + Inner mask */
+.speech-bubble.tay-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -22px;
+  left: 24px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 18px solid transparent;
+  border-top: 22px solid #C2410C;
+  z-index: 1;
+}
+
+.speech-bubble.tay-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -18px;
+  left: 26px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 19px solid #FFF8F3;
+  z-index: 2;
 }
 
 /* ==========================================================

@@ -13,20 +13,22 @@ export class Act0Screen {
     this.container = null;
 
     // Single-bubble sequence steps verbatim from Act 0 Dialogue Script
+    // Callie is at ~39% X, 33% Y -> her bubbles sit strictly on the left wall (left: 4% - 6%)
+    // Tay is at ~53% X, 54% Y -> her bubbles sit in the upper right window area (left: 58%)
     this.steps = [
       {
         id: 'step1',
         speaker: 'callie',
         name: 'Callie',
         text: "Hey. I'm Callie.",
-        style: 'top: 12%; left: 20%; max-width: 320px;'
+        style: 'top: 12%; left: 6%; max-width: min(300px, 26vw);'
       },
       {
         id: 'step2',
         speaker: 'callie',
         name: 'Callie',
         text: "This is Tay.",
-        style: 'top: 12%; left: 22%; max-width: 300px;'
+        style: 'top: 12%; left: 6%; max-width: min(300px, 26vw);'
       },
       {
         id: 'step3',
@@ -34,14 +36,14 @@ export class Act0Screen {
         name: 'Tay',
         onomatopoeia: 'Bark!',
         dialogue: "that's me! that's my name!",
-        style: 'top: 20%; left: 56%; max-width: 340px;'
+        style: 'top: 18%; left: 58%; max-width: min(330px, 28vw);'
       },
       {
         id: 'step4',
         speaker: 'callie',
         name: 'Callie',
         text: "She's a French Bulldog. She loves snacks, the lake, and me. In whatever order you want.",
-        style: 'top: 8%; left: 16%; max-width: 380px;'
+        style: 'top: 6%; left: 5%; max-width: min(330px, 26vw);'
       },
       {
         id: 'step5',
@@ -49,14 +51,14 @@ export class Act0Screen {
         name: 'Tay',
         onomatopoeia: 'Yip!',
         dialogue: 'snacks. definitely snacks first.',
-        style: 'top: 20%; left: 56%; max-width: 330px;'
+        style: 'top: 18%; left: 58%; max-width: min(330px, 28vw);'
       },
       {
         id: 'step6',
         speaker: 'callie',
         name: 'Callie',
         text: "She's also never once known when something's wrong with her.",
-        style: 'top: 10%; left: 16%; max-width: 360px;'
+        style: 'top: 8%; left: 5%; max-width: min(330px, 26vw);'
       },
       {
         id: 'step7',
@@ -64,21 +66,21 @@ export class Act0Screen {
         name: 'Tay',
         onomatopoeia: 'Huff!',
         dialogue: 'i feel amazing! i always feel amazing!',
-        style: 'top: 20%; left: 56%; max-width: 350px;'
+        style: 'top: 18%; left: 58%; max-width: min(340px, 28vw);'
       },
       {
         id: 'step8',
         speaker: 'callie',
         name: 'Callie',
         text: "A couple summers ago, we drove out to the lake. It was a good day. Right up until it wasn't.",
-        style: 'top: 8%; left: 16%; max-width: 400px;'
+        style: 'top: 6%; left: 5%; max-width: min(330px, 26vw);'
       },
       {
         id: 'step9',
         speaker: 'callie',
         name: 'Callie',
         text: "Tay had heat stroke. It almost killed her.",
-        style: 'top: 12%; left: 20%; max-width: 350px;'
+        style: 'top: 10%; left: 5%; max-width: min(320px, 26vw);'
       },
       {
         id: 'step10',
@@ -86,21 +88,21 @@ export class Act0Screen {
         name: 'Tay',
         onomatopoeia: 'Woof!',
         dialogue: 'i was having such a good day!',
-        style: 'top: 20%; left: 56%; max-width: 330px;'
+        style: 'top: 18%; left: 58%; max-width: min(330px, 28vw);'
       },
       {
         id: 'step11',
         speaker: 'callie',
         name: 'Callie',
         text: "You were. That was kind of the problem.",
-        style: 'top: 12%; left: 18%; max-width: 340px;'
+        style: 'top: 10%; left: 5%; max-width: min(320px, 26vw);'
       },
       {
         id: 'step12',
         speaker: 'callie',
         name: 'Callie',
         text: "She felt it before I saw it. So she's telling this part.",
-        style: 'top: 10%; left: 16%; max-width: 360px;'
+        style: 'top: 8%; left: 5%; max-width: min(330px, 26vw);'
       },
       {
         id: 'step13',
@@ -108,7 +110,7 @@ export class Act0Screen {
         name: 'Tay',
         onomatopoeia: 'Bark!',
         dialogue: "i'll tell it! i'll tell it so good!",
-        style: 'top: 20%; left: 56%; max-width: 340px;'
+        style: 'top: 18%; left: 58%; max-width: min(340px, 28vw);'
       }
     ];
 
@@ -135,21 +137,6 @@ export class Act0Screen {
     const isFirstStep = this.currentStepIndex === 0;
     const isLastStep = this.currentStepIndex === totalSteps - 1;
     const isTay = step.speaker === 'tay';
-
-    // Stem SVG angled toward character:
-    // Callie: Stem on bottom-right angled down-right toward Callie (head ~39%, 33%)
-    // Tay: Stem on bottom-left angled down-left toward Tay (head ~53%, 54%)
-    const stemSvg = isTay ? `
-      <svg class="bubble-stem tay-stem" viewBox="0 0 28 26" aria-hidden="true">
-        <path d="M 22 0 C 17 12, 6 20, 0 26 C 9 18, 15 8, 8 0 Z" fill="#FFF8F3" stroke="#C2410C" stroke-width="3" stroke-linejoin="round" />
-        <path d="M 7 0 L 23 0 L 15 8 Z" fill="#FFF8F3" />
-      </svg>
-    ` : `
-      <svg class="bubble-stem callie-stem" viewBox="0 0 28 24" aria-hidden="true">
-        <path d="M 5 0 C 11 10, 22 18, 28 24 C 18 16, 12 8, 20 0 Z" fill="#FFFFFF" stroke="var(--palette-brown-dark)" stroke-width="3" stroke-linejoin="round" />
-        <path d="M 4 0 L 21 0 L 13 8 Z" fill="#FFFFFF" />
-      </svg>
-    `;
 
     // Render formatted text
     let bubbleContent = '';
@@ -178,7 +165,6 @@ export class Act0Screen {
           <span>${step.name}</span>
         </div>
         ${bubbleContent}
-        ${stemSvg}
       </div>
     `;
 
