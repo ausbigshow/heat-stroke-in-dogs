@@ -1,135 +1,114 @@
 /**
  * Act 0 Screen Logic & Dialogue Player
- * - Displays CallieAndTay-Home.jpg front and center, taking up the majority of the viewport.
- * - Overlays authentic character speech bubbles with directional tails atop the image.
- * - Dialogue-only presentation verbatim from the Act 0 script.
+ * - Displays CallieAndTay-Home.jpg front and center across the majority of the viewport.
+ * - Shows exactly ONE speech bubble at a time in sequence.
+ * - Bubble stems are angled directly toward Callie or Tay.
+ * - Tay's lines formatted with dog onomatopoeias + parenthetical dialogue: Bark! (that's me!)
  */
 
 export class Act0Screen {
   constructor(app) {
     this.app = app;
-    this.currentBeatIndex = 0;
+    this.currentStepIndex = 0;
     this.container = null;
 
-    // Verbatim dialogue lines from Craft document (Act 0 — Dialogue Script)
-    // Pure dialogue only, positioned dynamically over Callie and Tay
-    this.beats = [
+    // Single-bubble sequence steps verbatim from Act 0 Dialogue Script
+    this.steps = [
       {
-        id: 'beat1',
-        bubbles: [
-          {
-            speaker: 'callie',
-            name: 'Callie',
-            text: "Hey. I'm Callie.",
-            style: 'top: 14%; left: 24%;'
-          }
-        ]
+        id: 'step1',
+        speaker: 'callie',
+        name: 'Callie',
+        text: "Hey. I'm Callie.",
+        style: 'top: 12%; left: 20%; max-width: 320px;'
       },
       {
-        id: 'beat2',
-        bubbles: [
-          {
-            speaker: 'callie',
-            name: 'Callie',
-            text: "This is Tay.",
-            style: 'top: 14%; left: 26%;'
-          }
-        ]
+        id: 'step2',
+        speaker: 'callie',
+        name: 'Callie',
+        text: "This is Tay.",
+        style: 'top: 12%; left: 22%; max-width: 300px;'
       },
       {
-        id: 'beat3',
-        bubbles: [
-          {
-            speaker: 'tay',
-            name: 'Tay',
-            text: "That's me! That's my name!",
-            style: 'top: 22%; left: 54%;'
-          }
-        ]
+        id: 'step3',
+        speaker: 'tay',
+        name: 'Tay',
+        onomatopoeia: 'Bark!',
+        dialogue: "that's me! that's my name!",
+        style: 'top: 20%; left: 56%; max-width: 340px;'
       },
       {
-        id: 'beat4',
-        bubbles: [
-          {
-            speaker: 'callie',
-            name: 'Callie',
-            text: "She's a French Bulldog. She loves snacks, the lake, and me. In whatever order you want.",
-            style: 'top: 8%; left: 16%; max-width: 380px;'
-          }
-        ]
+        id: 'step4',
+        speaker: 'callie',
+        name: 'Callie',
+        text: "She's a French Bulldog. She loves snacks, the lake, and me. In whatever order you want.",
+        style: 'top: 8%; left: 16%; max-width: 380px;'
       },
       {
-        id: 'beat5',
-        bubbles: [
-          {
-            speaker: 'tay',
-            name: 'Tay',
-            text: "Snacks. Definitely snacks first.",
-            style: 'top: 22%; left: 54%;'
-          }
-        ]
+        id: 'step5',
+        speaker: 'tay',
+        name: 'Tay',
+        onomatopoeia: 'Yip!',
+        dialogue: 'snacks. definitely snacks first.',
+        style: 'top: 20%; left: 56%; max-width: 330px;'
       },
       {
-        id: 'beat6',
-        bubbles: [
-          {
-            speaker: 'callie',
-            name: 'Callie',
-            text: "She's also never once known when something's wrong with her.",
-            style: 'top: 10%; left: 14%; max-width: 340px;'
-          },
-          {
-            speaker: 'tay',
-            name: 'Tay',
-            text: "I feel amazing! I always feel amazing!",
-            style: 'top: 26%; left: 54%; max-width: 320px;'
-          }
-        ]
+        id: 'step6',
+        speaker: 'callie',
+        name: 'Callie',
+        text: "She's also never once known when something's wrong with her.",
+        style: 'top: 10%; left: 16%; max-width: 360px;'
       },
       {
-        id: 'beat7',
-        bubbles: [
-          {
-            speaker: 'callie',
-            name: 'Callie',
-            text: "A couple summers ago, we drove out to the lake. It was a good day. Right up until it wasn't.",
-            style: 'top: 8%; left: 16%; max-width: 400px;'
-          }
-        ]
+        id: 'step7',
+        speaker: 'tay',
+        name: 'Tay',
+        onomatopoeia: 'Huff!',
+        dialogue: 'i feel amazing! i always feel amazing!',
+        style: 'top: 20%; left: 56%; max-width: 350px;'
       },
       {
-        id: 'beat8',
-        bubbles: [
-          {
-            speaker: 'callie',
-            name: 'Callie',
-            text: "Tay had heat stroke. It almost killed her.",
-            style: 'top: 12%; left: 22%; max-width: 360px;'
-          }
-        ]
+        id: 'step8',
+        speaker: 'callie',
+        name: 'Callie',
+        text: "A couple summers ago, we drove out to the lake. It was a good day. Right up until it wasn't.",
+        style: 'top: 8%; left: 16%; max-width: 400px;'
       },
       {
-        id: 'beat9',
-        bubbles: [
-          {
-            speaker: 'tay',
-            name: 'Tay',
-            text: "I was having such a good day!",
-            style: 'top: 16%; left: 54%; max-width: 280px;'
-          },
-          {
-            speaker: 'callie',
-            name: 'Callie',
-            text: "She felt it before I saw it. So she's telling this part.",
-            style: 'top: 10%; left: 14%; max-width: 340px;'
-          },
-          {
-            speaker: 'tay',
-            name: 'Tay',
-            text: "I'll tell it! I'll tell it so good!",
-            style: 'top: 36%; left: 56%; max-width: 300px;'
-          }
-        ]
+        id: 'step9',
+        speaker: 'callie',
+        name: 'Callie',
+        text: "Tay had heat stroke. It almost killed her.",
+        style: 'top: 12%; left: 20%; max-width: 350px;'
+      },
+      {
+        id: 'step10',
+        speaker: 'tay',
+        name: 'Tay',
+        onomatopoeia: 'Woof!',
+        dialogue: 'i was having such a good day!',
+        style: 'top: 20%; left: 56%; max-width: 330px;'
+      },
+      {
+        id: 'step11',
+        speaker: 'callie',
+        name: 'Callie',
+        text: "You were. That was kind of the problem.",
+        style: 'top: 12%; left: 18%; max-width: 340px;'
+      },
+      {
+        id: 'step12',
+        speaker: 'callie',
+        name: 'Callie',
+        text: "She felt it before I saw it. So she's telling this part.",
+        style: 'top: 10%; left: 16%; max-width: 360px;'
+      },
+      {
+        id: 'step13',
+        speaker: 'tay',
+        name: 'Tay',
+        onomatopoeia: 'Bark!',
+        dialogue: "i'll tell it! i'll tell it so good!",
+        style: 'top: 20%; left: 56%; max-width: 340px;'
       }
     ];
 
@@ -151,49 +130,75 @@ export class Act0Screen {
   render() {
     if (!this.container) return;
 
-    const beat = this.beats[this.currentBeatIndex];
-    const totalBeats = this.beats.length;
-    const isFirstBeat = this.currentBeatIndex === 0;
-    const isLastBeat = this.currentBeatIndex === totalBeats - 1;
+    const step = this.steps[this.currentStepIndex];
+    const totalSteps = this.steps.length;
+    const isFirstStep = this.currentStepIndex === 0;
+    const isLastStep = this.currentStepIndex === totalSteps - 1;
+    const isTay = step.speaker === 'tay';
 
-    // Generate speech bubbles overlaid directly on top of the image
-    const bubblesHtml = beat.bubbles.map((bubble, idx) => {
-      const isTay = bubble.speaker === 'tay';
-      const bubbleClass = isTay ? 'tay-bubble' : 'callie-bubble';
-      const editorId = `act0-bubble-${beat.id}-${idx}`;
+    // Stem SVG angled toward character:
+    // Callie: Stem on bottom-right angled down-right toward Callie (head ~39%, 33%)
+    // Tay: Stem on bottom-left angled down-left toward Tay (head ~53%, 54%)
+    const stemSvg = isTay ? `
+      <svg class="bubble-stem tay-stem" viewBox="0 0 28 26" aria-hidden="true">
+        <path d="M 22 0 C 17 12, 6 20, 0 26 C 9 18, 15 8, 8 0 Z" fill="#FFF8F3" stroke="#C2410C" stroke-width="3" stroke-linejoin="round" />
+        <path d="M 7 0 L 23 0 L 15 8 Z" fill="#FFF8F3" />
+      </svg>
+    ` : `
+      <svg class="bubble-stem callie-stem" viewBox="0 0 28 24" aria-hidden="true">
+        <path d="M 5 0 C 11 10, 22 18, 28 24 C 18 16, 12 8, 20 0 Z" fill="#FFFFFF" stroke="var(--palette-brown-dark)" stroke-width="3" stroke-linejoin="round" />
+        <path d="M 4 0 L 21 0 L 13 8 Z" fill="#FFFFFF" />
+      </svg>
+    `;
 
-      return `
-        <div 
-          class="speech-bubble ${bubbleClass}" 
-          style="${bubble.style}" 
-          data-editor-id="${editorId}"
-        >
-          <div class="speech-bubble-speaker">
-            <span>${isTay ? '🐶' : '👩'}</span>
-            <span>${bubble.name}</span>
-          </div>
-          <p class="speech-bubble-text">${bubble.text}</p>
-        </div>
+    // Render formatted text
+    let bubbleContent = '';
+    if (isTay) {
+      bubbleContent = `
+        <p class="speech-bubble-text">
+          <span class="tay-onomatopoeia">${step.onomatopoeia}</span>
+          <span class="tay-sub-dialogue">(${step.dialogue})</span>
+        </p>
       `;
-    }).join('');
+    } else {
+      bubbleContent = `
+        <p class="speech-bubble-text">${step.text}</p>
+      `;
+    }
+
+    const singleBubbleHtml = `
+      <div 
+        id="act0-active-bubble"
+        class="speech-bubble ${isTay ? 'tay-bubble' : 'callie-bubble'}" 
+        style="${step.style}" 
+        data-editor-id="act0-bubble-${step.id}"
+      >
+        <div class="speech-bubble-speaker">
+          <span>${isTay ? '🐶' : '👩'}</span>
+          <span>${step.name}</span>
+        </div>
+        ${bubbleContent}
+        ${stemSvg}
+      </div>
+    `;
 
     this.container.innerHTML = `
       <div class="act0-container" data-editor-id="act0-screen-container">
         
         <!-- Main Front-and-Center Viewport Card -->
-        <div id="act0-card" class="act0-viewport-card" data-editor-id="act0-viewport-card">
+        <div id="act0-card" class="act0-viewport-card" data-editor-id="act0-viewport-card" title="Click anywhere to continue">
           
           <!-- Background Scene Illustration -->
           <img 
             src="Assets/Image/CallieAndTay-Home.jpg" 
-            alt="Callie and Tay sitting on the living room couch" 
+            alt="Callie and Tay sitting together on the living room couch" 
             class="act0-scene-img"
             data-editor-id="act0-home-img"
           />
 
-          <!-- Overlaid Speech Bubbles Layer -->
+          <!-- Single Overlaid Speech Bubble Layer -->
           <div class="act0-speech-layer" data-editor-id="act0-speech-layer">
-            ${bubblesHtml}
+            ${singleBubbleHtml}
           </div>
 
           <!-- Bottom Navigation HUD -->
@@ -202,9 +207,9 @@ export class Act0Screen {
               <button 
                 id="act0-btn-prev" 
                 class="act0-hud-btn" 
-                ${isFirstBeat ? 'disabled' : ''}
+                ${isFirstStep ? 'disabled' : ''}
                 data-editor-id="act0-btn-prev"
-                title="Previous Beat (ArrowLeft)"
+                title="Previous Line (ArrowLeft)"
               >
                 ◀ Back
               </button>
@@ -219,16 +224,16 @@ export class Act0Screen {
             </div>
 
             <div class="act0-progress-badge" data-editor-id="act0-progress">
-              ${this.currentBeatIndex + 1} / ${totalBeats}
+              ${this.currentStepIndex + 1} / ${totalSteps}
             </div>
 
             <div class="act0-nav-group">
-              ${!isLastBeat ? `
+              ${!isLastStep ? `
                 <button 
                   id="act0-btn-next" 
                   class="act0-hud-btn" 
                   data-editor-id="act0-btn-next"
-                  title="Next Beat (Space / ArrowRight / Click Image)"
+                  title="Next Line (Space / ArrowRight / Click Image)"
                 >
                   Next ▶
                 </button>
@@ -258,9 +263,9 @@ export class Act0Screen {
     if (card) {
       card.addEventListener('click', (e) => {
         if (this.isEditModeActive()) return;
-        // If clicking on HUD buttons or speech bubbles, do not auto-advance from the background click
-        if (e.target.closest('.act0-nav-bar') || e.target.closest('.speech-bubble')) return;
-        this.nextBeat();
+        // Do not advance if clicking inside HUD or bubble in edit mode
+        if (e.target.closest('.act0-nav-bar')) return;
+        this.nextStep();
       });
     }
 
@@ -269,7 +274,7 @@ export class Act0Screen {
       prevBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (this.isEditModeActive()) return;
-        this.prevBeat();
+        this.prevStep();
       });
     }
 
@@ -278,7 +283,7 @@ export class Act0Screen {
       nextBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (this.isEditModeActive()) return;
-        this.nextBeat();
+        this.nextStep();
       });
     }
 
@@ -307,9 +312,9 @@ export class Act0Screen {
     return document.body.classList.contains('edit-mode-active');
   }
 
-  nextBeat() {
-    if (this.currentBeatIndex < this.beats.length - 1) {
-      this.currentBeatIndex++;
+  nextStep() {
+    if (this.currentStepIndex < this.steps.length - 1) {
+      this.currentStepIndex++;
       this.render();
       if (this.app?.editor?.selection) {
         this.app.editor.selection.refresh();
@@ -317,9 +322,9 @@ export class Act0Screen {
     }
   }
 
-  prevBeat() {
-    if (this.currentBeatIndex > 0) {
-      this.currentBeatIndex--;
+  prevStep() {
+    if (this.currentStepIndex > 0) {
+      this.currentStepIndex--;
       this.render();
       if (this.app?.editor?.selection) {
         this.app.editor.selection.refresh();
@@ -341,14 +346,14 @@ export class Act0Screen {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
     if (e.key === 'ArrowRight' || e.key === 'Space') {
-      if (this.currentBeatIndex < this.beats.length - 1) {
+      if (this.currentStepIndex < this.steps.length - 1) {
         e.preventDefault();
-        this.nextBeat();
+        this.nextStep();
       }
     } else if (e.key === 'ArrowLeft') {
-      if (this.currentBeatIndex > 0) {
+      if (this.currentStepIndex > 0) {
         e.preventDefault();
-        this.prevBeat();
+        this.prevStep();
       }
     }
   }

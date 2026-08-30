@@ -50,7 +50,7 @@
 }
 
 /* ==========================================================
-   AUTHENTIC SPEECH BUBBLES WITH DIRECTIONAL TAILS
+   AUTHENTIC SPEECH BUBBLES WITH ANGLED DIRECTIONAL STEMS
    ========================================================== */
 
 .speech-bubble {
@@ -71,7 +71,7 @@
 @keyframes bubblePop {
   0% {
     opacity: 0;
-    transform: scale(0.85) translateY(10px);
+    transform: scale(0.88) translateY(8px);
   }
   100% {
     opacity: 1;
@@ -99,7 +99,7 @@
   font-weight: 600;
 }
 
-/* --- Callie's Speech Bubble (White / Teal, tail pointing down toward Callie) --- */
+/* --- Callie's Speech Bubble (White / Dark Brown, stem angled toward Callie) --- */
 .speech-bubble.callie-bubble {
   background: #FFFFFF;
   border: 3px solid var(--palette-brown-dark);
@@ -110,32 +110,21 @@
   color: var(--palette-teal-dark);
 }
 
-/* Callie Speech Tail */
-.speech-bubble.callie-bubble::before {
-  content: '';
+/* Callie Angled Stem (SVG) */
+.bubble-stem {
   position: absolute;
-  bottom: -19px;
-  left: 42px;
-  width: 0;
-  height: 0;
-  border-left: 12px solid transparent;
-  border-right: 12px solid transparent;
-  border-top: 18px solid var(--palette-brown-dark);
+  overflow: visible;
+  pointer-events: none;
 }
 
-.speech-bubble.callie-bubble::after {
-  content: '';
-  position: absolute;
-  bottom: -14px;
-  left: 44px;
-  width: 0;
-  height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-top: 15px solid #FFFFFF;
+.callie-stem {
+  bottom: -22px;
+  right: 32px;
+  width: 28px;
+  height: 24px;
 }
 
-/* --- Tay's Speech Bubble (Peach / Orange, tail pointing down toward Tay) --- */
+/* --- Tay's Speech Bubble (Peach / Orange, stem angled down-left toward Tay) --- */
 .speech-bubble.tay-bubble {
   background: #FFF8F3;
   border: 3px solid #C2410C;
@@ -148,40 +137,33 @@
 
 .speech-bubble.tay-bubble .speech-bubble-text {
   font-family: var(--font-family-body);
-  font-style: italic;
   font-weight: 700;
 }
 
-/* Tay Speech Tail */
-.speech-bubble.tay-bubble::before {
-  content: '';
-  position: absolute;
-  bottom: -19px;
-  left: 38px;
-  width: 0;
-  height: 0;
-  border-left: 12px solid transparent;
-  border-right: 12px solid transparent;
-  border-top: 18px solid #C2410C;
+.speech-bubble.tay-bubble .tay-onomatopoeia {
+  font-weight: 800;
+  color: #C2410C;
+  font-style: normal;
+  display: inline;
 }
 
-.speech-bubble.tay-bubble::after {
-  content: '';
-  position: absolute;
-  bottom: -14px;
-  left: 40px;
-  width: 0;
-  height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-top: 15px solid #FFF8F3;
+.speech-bubble.tay-bubble .tay-sub-dialogue {
+  font-style: italic;
+  color: #7C2D12;
+  display: inline;
+}
+
+.tay-stem {
+  bottom: -24px;
+  left: 20px;
+  width: 28px;
+  height: 26px;
 }
 
 /* ==========================================================
-   NAVIGATION OVERLAYS & PROGRESS
+   NAVIGATION OVERLAYS & HUD
    ========================================================== */
 
-/* Bottom Navigation Bar */
 .act0-nav-bar {
   position: absolute;
   bottom: 1.25rem;
@@ -258,16 +240,6 @@
   pointer-events: auto;
 }
 
-/* Click-to-advance subtle hint */
-.act0-click-hint {
-  font-family: var(--font-family-body);
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-  pointer-events: none;
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .act0-container {
@@ -280,7 +252,7 @@
     max-height: 88vh;
   }
   .speech-bubble {
-    max-width: 75vw;
+    max-width: 78vw;
     padding: 0.8rem 1rem;
   }
   .speech-bubble-text {
