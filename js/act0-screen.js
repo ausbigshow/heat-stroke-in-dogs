@@ -1,7 +1,8 @@
 /**
  * Act 0 Screen Logic & Dialogue Player
- * Renders the couch scene with Callie and Tay, presenting the intro dialogue
- * as distinct speech bubbles for each respective character.
+ * - Displays CallieAndTay-Home.jpg front and center, taking up the majority of the viewport.
+ * - Overlays authentic character speech bubbles with directional tails atop the image.
+ * - Dialogue-only presentation verbatim from the Act 0 script.
  */
 
 export class Act0Screen {
@@ -10,83 +11,125 @@ export class Act0Screen {
     this.currentBeatIndex = 0;
     this.container = null;
 
-    // Verbatim dialogue beats from Craft document (Act 0 — Dialogue Script)
+    // Verbatim dialogue lines from Craft document (Act 0 — Dialogue Script)
+    // Pure dialogue only, positioned dynamically over Callie and Tay
     this.beats = [
       {
         id: 'beat1',
-        title: 'Beat 1 — Hello',
-        dialogue: [
-          { speaker: 'callie', name: 'Callie', text: "Hey. I'm Callie." }
-        ],
-        direction: 'Wave to camera. Tay\'s tail thumping steadily beside her.'
+        bubbles: [
+          {
+            speaker: 'callie',
+            name: 'Callie',
+            text: "Hey. I'm Callie.",
+            style: 'top: 14%; left: 24%;'
+          }
+        ]
       },
       {
         id: 'beat2',
-        title: 'Beat 2 — The Name',
-        dialogue: [
-          { speaker: 'callie', name: 'Callie', text: "This is Tay." }
-        ],
-        direction: 'Callie\'s hand goes to Tay\'s back. Ears perk hard at her own name.'
+        bubbles: [
+          {
+            speaker: 'callie',
+            name: 'Callie',
+            text: "This is Tay.",
+            style: 'top: 14%; left: 26%;'
+          }
+        ]
       },
       {
         id: 'beat3',
-        title: 'Beat 3 — Tay Introduces Herself',
-        dialogue: [
-          { speaker: 'tay', name: 'Tay (Subtitles)', text: "That's me! That's my name!" }
-        ],
-        direction: 'Two quick high excited barks. Whole body wiggling, tongue out, staring straight down the lens.'
+        bubbles: [
+          {
+            speaker: 'tay',
+            name: 'Tay',
+            text: "That's me! That's my name!",
+            style: 'top: 22%; left: 54%;'
+          }
+        ]
       },
       {
         id: 'beat4',
-        title: 'Beat 4 — Who She Is',
-        dialogue: [
-          { speaker: 'callie', name: 'Callie', text: "She's a French Bulldog. She loves snacks, the lake, and me. In whatever order you want." }
-        ],
-        direction: 'Callie smiling warmly, gesturing toward Tay.'
+        bubbles: [
+          {
+            speaker: 'callie',
+            name: 'Callie',
+            text: "She's a French Bulldog. She loves snacks, the lake, and me. In whatever order you want.",
+            style: 'top: 8%; left: 16%; max-width: 380px;'
+          }
+        ]
       },
       {
         id: 'beat5',
-        title: 'Beat 5 — The Order',
-        dialogue: [
-          { speaker: 'tay', name: 'Tay (Subtitles)', text: "Snacks. Definitely snacks first." }
-        ],
-        direction: 'One bright, clipped yip. Sharp head tilt, ears swiveling.'
+        bubbles: [
+          {
+            speaker: 'tay',
+            name: 'Tay',
+            text: "Snacks. Definitely snacks first.",
+            style: 'top: 22%; left: 54%;'
+          }
+        ]
       },
       {
         id: 'beat6',
-        title: 'Beat 6 — The Thesis Joke',
-        dialogue: [
-          { speaker: 'callie', name: 'Callie', text: "She's also never once known when something's wrong with her." },
-          { speaker: 'tay', name: 'Tay (Subtitles)', text: "I feel amazing! I always feel amazing!" }
-        ],
-        direction: 'Happy huff-bark under Callie\'s words. Tay looking up at her, tail going, thrilled to be discussed.'
+        bubbles: [
+          {
+            speaker: 'callie',
+            name: 'Callie',
+            text: "She's also never once known when something's wrong with her.",
+            style: 'top: 10%; left: 14%; max-width: 340px;'
+          },
+          {
+            speaker: 'tay',
+            name: 'Tay',
+            text: "I feel amazing! I always feel amazing!",
+            style: 'top: 26%; left: 54%; max-width: 320px;'
+          }
+        ]
       },
       {
         id: 'beat7',
-        title: 'Beat 7 — The Turn',
-        dialogue: [
-          { speaker: 'callie', name: 'Callie', text: "A couple summers ago, we drove out to the lake. It was a good day. Right up until it wasn't." }
-        ],
-        direction: 'Her smile fades to something plainer. Room tone only. Tay\'s chin lowers onto Callie\'s leg.'
+        bubbles: [
+          {
+            speaker: 'callie',
+            name: 'Callie',
+            text: "A couple summers ago, we drove out to the lake. It was a good day. Right up until it wasn't.",
+            style: 'top: 8%; left: 16%; max-width: 400px;'
+          }
+        ]
       },
       {
         id: 'beat8',
-        title: 'Beat 8 — The Serious Fact',
-        dialogue: [
-          { speaker: 'callie', name: 'Callie', text: "Tay had heat stroke. It almost killed her." }
-        ],
-        direction: 'Total silence under the line. Hold two full seconds.'
+        bubbles: [
+          {
+            speaker: 'callie',
+            name: 'Callie',
+            text: "Tay had heat stroke. It almost killed her.",
+            style: 'top: 12%; left: 22%; max-width: 360px;'
+          }
+        ]
       },
       {
         id: 'beat9',
-        title: 'Beat 9 — Handing Off',
-        dialogue: [
-          { speaker: 'tay', name: 'Tay (Subtitles)', text: "I was having such a good day!" },
-          { speaker: 'callie', name: 'Callie', text: "You were. That was kind of the problem." },
-          { speaker: 'callie', name: 'Callie', text: "She felt it before I saw it. So she's telling this part." },
-          { speaker: 'tay', name: 'Tay (Subtitles)', text: "I'll tell it! I'll tell it so good!" }
-        ],
-        direction: 'One bright bark. Callie looks at her, then back to camera, smiling despite herself.'
+        bubbles: [
+          {
+            speaker: 'tay',
+            name: 'Tay',
+            text: "I was having such a good day!",
+            style: 'top: 16%; left: 54%; max-width: 280px;'
+          },
+          {
+            speaker: 'callie',
+            name: 'Callie',
+            text: "She felt it before I saw it. So she's telling this part.",
+            style: 'top: 10%; left: 14%; max-width: 340px;'
+          },
+          {
+            speaker: 'tay',
+            name: 'Tay',
+            text: "I'll tell it! I'll tell it so good!",
+            style: 'top: 36%; left: 56%; max-width: 300px;'
+          }
+        ]
       }
     ];
 
@@ -113,109 +156,97 @@ export class Act0Screen {
     const isFirstBeat = this.currentBeatIndex === 0;
     const isLastBeat = this.currentBeatIndex === totalBeats - 1;
 
-    // Generate speech bubbles markup for current beat
-    const bubblesHtml = beat.dialogue.map((item, idx) => {
-      const isTay = item.speaker === 'tay';
+    // Generate speech bubbles overlaid directly on top of the image
+    const bubblesHtml = beat.bubbles.map((bubble, idx) => {
+      const isTay = bubble.speaker === 'tay';
       const bubbleClass = isTay ? 'tay-bubble' : 'callie-bubble';
-      const avatarIcon = isTay ? '🐶' : '👩';
       const editorId = `act0-bubble-${beat.id}-${idx}`;
 
       return `
-        <div class="speech-bubble ${bubbleClass}" data-editor-id="${editorId}">
+        <div 
+          class="speech-bubble ${bubbleClass}" 
+          style="${bubble.style}" 
+          data-editor-id="${editorId}"
+        >
           <div class="speech-bubble-speaker">
-            <span>${avatarIcon}</span>
-            <span>${item.name}</span>
+            <span>${isTay ? '🐶' : '👩'}</span>
+            <span>${bubble.name}</span>
           </div>
-          <p class="speech-bubble-text">${item.text}</p>
+          <p class="speech-bubble-text">${bubble.text}</p>
         </div>
       `;
     }).join('');
 
     this.container.innerHTML = `
-      <div class="act0-screen" data-editor-id="act0-screen-container">
-        <!-- Header -->
-        <header class="act0-header" data-editor-id="act0-header">
-          <div class="act0-badge" data-editor-id="act0-badge">
-            <span>📖</span>
-            <span>Act 0 — Introduction</span>
-          </div>
-          <div class="act0-progress-indicator" data-editor-id="act0-progress">
-            <span>Beat ${this.currentBeatIndex + 1} of ${totalBeats}</span>
-          </div>
-        </header>
+      <div class="act0-container" data-editor-id="act0-screen-container">
+        
+        <!-- Main Front-and-Center Viewport Card -->
+        <div id="act0-card" class="act0-viewport-card" data-editor-id="act0-viewport-card">
+          
+          <!-- Background Scene Illustration -->
+          <img 
+            src="Assets/Image/CallieAndTay-Home.jpg" 
+            alt="Callie and Tay sitting on the living room couch" 
+            class="act0-scene-img"
+            data-editor-id="act0-home-img"
+          />
 
-        <!-- Main Layout: Couch Illustration on Left, Speech Bubbles on Right -->
-        <div class="act0-main-layout" data-editor-id="act0-main-layout">
-          <!-- Left Media Panel -->
-          <div class="act0-media-panel" data-editor-id="act0-media-panel">
-            <div class="act0-couch-card" data-editor-id="act0-couch-card">
-              <img 
-                src="Assets/Image/CallieAndTay.jpg" 
-                alt="Callie and Tay sitting together on the couch at home" 
-                class="act0-couch-img"
-                data-editor-id="act0-couch-image"
-              />
-              <div class="act0-character-tag" data-editor-id="act0-character-tag">
-                <span>🛋️</span>
-                <span>Callie & Tay — Living Room</span>
-              </div>
-            </div>
+          <!-- Overlaid Speech Bubbles Layer -->
+          <div class="act0-speech-layer" data-editor-id="act0-speech-layer">
+            ${bubblesHtml}
           </div>
 
-          <!-- Right Dialogue Panel -->
-          <div class="act0-dialogue-panel" data-editor-id="act0-dialogue-panel">
-            <div id="act0-bubbles-container" class="act0-bubbles-container">
-              ${bubblesHtml}
+          <!-- Bottom Navigation HUD -->
+          <nav class="act0-nav-bar" data-editor-id="act0-nav-bar">
+            <div class="act0-nav-group">
+              <button 
+                id="act0-btn-prev" 
+                class="act0-hud-btn" 
+                ${isFirstBeat ? 'disabled' : ''}
+                data-editor-id="act0-btn-prev"
+                title="Previous Beat (ArrowLeft)"
+              >
+                ◀ Back
+              </button>
+              <button 
+                id="act0-btn-title" 
+                class="act0-hud-btn" 
+                data-editor-id="act0-btn-title"
+                title="Return to Title Screen"
+              >
+                🏠 Title
+              </button>
             </div>
 
-            <!-- Stage Direction Note -->
-            <div class="act0-stage-direction" data-editor-id="act0-direction">
-              <span>🎬</span>
-              <span>${beat.direction}</span>
+            <div class="act0-progress-badge" data-editor-id="act0-progress">
+              ${this.currentBeatIndex + 1} / ${totalBeats}
             </div>
 
-            <!-- Navigation Controls -->
-            <div class="act0-controls" data-editor-id="act0-controls">
-              <div class="act0-nav-btn-group">
+            <div class="act0-nav-group">
+              ${!isLastBeat ? `
                 <button 
-                  id="act0-prev-btn" 
-                  class="act0-nav-btn" 
-                  ${isFirstBeat ? 'disabled' : ''}
-                  data-editor-id="act0-prev-btn"
-                  title="Previous Beat (ArrowLeft)"
+                  id="act0-btn-next" 
+                  class="act0-hud-btn" 
+                  data-editor-id="act0-btn-next"
+                  title="Next Beat (Space / ArrowRight / Click Image)"
                 >
-                  ⬅ Back
+                  Next ▶
                 </button>
-                ${!isLastBeat ? `
-                  <button 
-                    id="act0-next-btn" 
-                    class="act0-nav-btn btn-primary" 
-                    data-editor-id="act0-next-btn"
-                    title="Next Beat (Space / ArrowRight)"
-                  >
-                    Next ➔
-                  </button>
-                ` : `
-                  <button 
-                    id="act0-start-act1-btn" 
-                    class="act0-nav-btn btn-start-act1" 
-                    data-editor-id="act0-start-act1-btn"
-                    title="Proceed to Act 1: The Lake Trip"
-                  >
-                    🐾 Begin Act 1: The Lake Trip ➔
-                  </button>
-                `}
-              </div>
+              ` : `
+                <button 
+                  id="act0-btn-start-act1" 
+                  class="act0-hud-btn btn-start" 
+                  data-editor-id="act0-btn-start-act1"
+                  title="Begin Act 1: The Lake Trip"
+                >
+                  🐾 Begin Act 1 ➔
+                </button>
+              `}
             </div>
-          </div>
+          </nav>
+
         </div>
 
-        <!-- Footer -->
-        <footer class="act0-footer" data-editor-id="act0-footer">
-          <button id="act0-back-to-title-btn" class="btn-text-link" data-editor-id="act0-back-title">
-            ⟵ Back to Title Screen
-          </button>
-        </footer>
       </div>
     `;
 
@@ -223,37 +254,51 @@ export class Act0Screen {
   }
 
   bindEvents() {
-    const prevBtn = this.container.querySelector('#act0-prev-btn');
+    const card = this.container.querySelector('#act0-card');
+    if (card) {
+      card.addEventListener('click', (e) => {
+        if (this.isEditModeActive()) return;
+        // If clicking on HUD buttons or speech bubbles, do not auto-advance from the background click
+        if (e.target.closest('.act0-nav-bar') || e.target.closest('.speech-bubble')) return;
+        this.nextBeat();
+      });
+    }
+
+    const prevBtn = this.container.querySelector('#act0-btn-prev');
     if (prevBtn) {
       prevBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         if (this.isEditModeActive()) return;
         this.prevBeat();
       });
     }
 
-    const nextBtn = this.container.querySelector('#act0-next-btn');
+    const nextBtn = this.container.querySelector('#act0-btn-next');
     if (nextBtn) {
       nextBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         if (this.isEditModeActive()) return;
         this.nextBeat();
       });
     }
 
-    const startAct1Btn = this.container.querySelector('#act0-start-act1-btn');
-    if (startAct1Btn) {
-      startAct1Btn.addEventListener('click', (e) => {
-        if (this.isEditModeActive()) return;
-        this.startAct1();
-      });
-    }
-
-    const backTitleBtn = this.container.querySelector('#act0-back-to-title-btn');
-    if (backTitleBtn) {
-      backTitleBtn.addEventListener('click', (e) => {
+    const titleBtn = this.container.querySelector('#act0-btn-title');
+    if (titleBtn) {
+      titleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         if (this.isEditModeActive()) return;
         if (this.app && typeof this.app.navigateTo === 'function') {
           this.app.navigateTo('opening');
         }
+      });
+    }
+
+    const startAct1Btn = this.container.querySelector('#act0-btn-start-act1');
+    if (startAct1Btn) {
+      startAct1Btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.isEditModeActive()) return;
+        this.startAct1();
       });
     }
   }
