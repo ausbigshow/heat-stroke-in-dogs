@@ -1,2 +1,12 @@
-/* Visual Edit Mode Overrides - Last updated: 2026-08-30T00:13:29.445Z */
+/* Visual Edit Mode Overrides - Last updated: 2026-08-30T00:49:07.742Z */
 
+
+[data-editor-id="act0-bubble-step12"] {
+  top: 60px !important;
+  left: 186px !important;
+  max-width: min(330px, 26vw) !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 278px !important;
+  height: 121px !important;
+}

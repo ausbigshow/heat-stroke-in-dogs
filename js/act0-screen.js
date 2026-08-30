@@ -13,22 +13,22 @@ export class Act0Screen {
     this.container = null;
 
     // Single-bubble sequence steps verbatim from Act 0 Dialogue Script
-    // Callie is at ~39% X, 33% Y -> her bubbles sit strictly on the left wall (left: 4% - 6%)
-    // Tay is at ~53% X, 54% Y -> her bubbles sit in the upper right window area (left: 58%)
+    // Callie is at ~39% X, 33% Y -> her bubbles sit closely to her left/above without obstructing face/hair
+    // Tay is at ~53% X, 54% Y -> her bubbles sit closely above her head/ears at left: 48%, top: 24%
     this.steps = [
       {
         id: 'step1',
         speaker: 'callie',
         name: 'Callie',
         text: "Hey. I'm Callie.",
-        style: 'top: 12%; left: 6%; max-width: min(300px, 26vw);'
+        style: 'top: 12%; left: 15%; max-width: min(260px, 20vw);'
       },
       {
         id: 'step2',
         speaker: 'callie',
         name: 'Callie',
         text: "This is Tay.",
-        style: 'top: 12%; left: 6%; max-width: min(300px, 26vw);'
+        style: 'top: 12%; left: 15%; max-width: min(260px, 20vw);'
       },
       {
         id: 'step3',
@@ -36,14 +36,14 @@ export class Act0Screen {
         name: 'Tay',
         onomatopoeia: 'Bark!',
         dialogue: "that's me! that's my name!",
-        style: 'top: 18%; left: 58%; max-width: min(330px, 28vw);'
+        style: 'top: 24%; left: 48%; max-width: min(290px, 22vw);'
       },
       {
         id: 'step4',
         speaker: 'callie',
         name: 'Callie',
         text: "She's a French Bulldog. She loves snacks, the lake, and me. In whatever order you want.",
-        style: 'top: 6%; left: 5%; max-width: min(330px, 26vw);'
+        style: 'top: 7%; left: 11%; max-width: min(310px, 23vw);'
       },
       {
         id: 'step5',
@@ -51,14 +51,14 @@ export class Act0Screen {
         name: 'Tay',
         onomatopoeia: 'Yip!',
         dialogue: 'snacks. definitely snacks first.',
-        style: 'top: 18%; left: 58%; max-width: min(330px, 28vw);'
+        style: 'top: 24%; left: 48%; max-width: min(290px, 22vw);'
       },
       {
         id: 'step6',
         speaker: 'callie',
         name: 'Callie',
         text: "She's also never once known when something's wrong with her.",
-        style: 'top: 8%; left: 5%; max-width: min(330px, 26vw);'
+        style: 'top: 9%; left: 12%; max-width: min(300px, 22vw);'
       },
       {
         id: 'step7',
@@ -66,21 +66,21 @@ export class Act0Screen {
         name: 'Tay',
         onomatopoeia: 'Huff!',
         dialogue: 'i feel amazing! i always feel amazing!',
-        style: 'top: 18%; left: 58%; max-width: min(340px, 28vw);'
+        style: 'top: 24%; left: 48%; max-width: min(300px, 23vw);'
       },
       {
         id: 'step8',
         speaker: 'callie',
         name: 'Callie',
         text: "A couple summers ago, we drove out to the lake. It was a good day. Right up until it wasn't.",
-        style: 'top: 6%; left: 5%; max-width: min(330px, 26vw);'
+        style: 'top: 7%; left: 11%; max-width: min(310px, 23vw);'
       },
       {
         id: 'step9',
         speaker: 'callie',
         name: 'Callie',
         text: "Tay had heat stroke. It almost killed her.",
-        style: 'top: 10%; left: 5%; max-width: min(320px, 26vw);'
+        style: 'top: 10%; left: 13%; max-width: min(290px, 22vw);'
       },
       {
         id: 'step10',
@@ -88,21 +88,21 @@ export class Act0Screen {
         name: 'Tay',
         onomatopoeia: 'Woof!',
         dialogue: 'i was having such a good day!',
-        style: 'top: 18%; left: 58%; max-width: min(330px, 28vw);'
+        style: 'top: 24%; left: 48%; max-width: min(290px, 22vw);'
       },
       {
         id: 'step11',
         speaker: 'callie',
         name: 'Callie',
         text: "You were. That was kind of the problem.",
-        style: 'top: 10%; left: 5%; max-width: min(320px, 26vw);'
+        style: 'top: 10%; left: 13%; max-width: min(290px, 22vw);'
       },
       {
         id: 'step12',
         speaker: 'callie',
         name: 'Callie',
         text: "She felt it before I saw it. So she's telling this part.",
-        style: 'top: 8%; left: 5%; max-width: min(330px, 26vw);'
+        style: 'top: 9%; left: 12%; max-width: min(300px, 22vw);'
       },
       {
         id: 'step13',
@@ -110,7 +110,7 @@ export class Act0Screen {
         name: 'Tay',
         onomatopoeia: 'Bark!',
         dialogue: "i'll tell it! i'll tell it so good!",
-        style: 'top: 18%; left: 58%; max-width: min(340px, 28vw);'
+        style: 'top: 24%; left: 48%; max-width: min(300px, 23vw);'
       }
     ];
 

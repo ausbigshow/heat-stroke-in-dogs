@@ -11,18 +11,5 @@
     "text": "while the word may be centered in code, visually it does not appear so. please iterate again.",
     "targetElementId": "opening-continue-btn",
     "createdAt": "2026-08-29T23:43:21.590Z"
-  },
-  {
-    "id": "note_1788049881103",
-    "screenId": "act0",
-    "x": 120,
-    "y": 120,
-    "width": 260,
-    "height": 160,
-    "color": "pink",
-    "status": "open",
-    "text": "this text box as well as step2 are too far away from callie's face. ",
-    "targetElementId": "act0-bubble-step1",
-    "createdAt": "2026-08-30T00:31:21.103Z"
   }
 ]
