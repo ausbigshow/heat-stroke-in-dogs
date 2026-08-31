@@ -1776,7 +1776,18 @@ export class Act2Screen {
       this.stopTowelTimer();
       this.render();
     });
-    on('#act2-btn-act3', () => this.app?.navigateTo('act3'));
+    // Act 3's central claim is that every number lands on a decision the learner already
+    // made, so the playthrough travels with them. Without this the survival payoff has to
+    // fall back to its neutral variant. See Act3Screen.applyHandoff().
+    on('#act2-btn-act3', () => this.app?.navigateTo('act3', {
+      handoff: {
+        decisionChoice: this.decisionChoice,
+        checkReportOrder: [...this.checkReportOrder],
+        hintsDropped: this.hintsDropped,
+        rewetCount: this.rewetCount,
+        coolingWrongCount: this.coolingWrongCount
+      }
+    }));
   }
 
   // =======================================================================

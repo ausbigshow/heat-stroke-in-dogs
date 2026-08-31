@@ -261,8 +261,7 @@
 #screen-act2 .act2-cool-feedback button:focus-visible,
 #screen-act2 .act2-transport-panel button:focus-visible,
 #screen-act2 .act2-transport-panel [role="switch"]:focus-visible,
-#screen-act2 .act2-handoff-card button:focus-visible,
-#screen-act3-placeholder button:focus-visible {
+#screen-act2 .act2-handoff-card button:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring-on-light);
   outline-offset: var(--focus-ring-offset);
 }
@@ -1848,46 +1847,4 @@
   }
 }
 
-/* ==========================================================
-   ACT 3 PLACEHOLDER — where Act 2's transport sequence hands off.
-   Lives here (not act1-screen.css) so Act 2 owns everything it renders into.
-   ========================================================== */
 
-.act3-placeholder-modal {
-  position: relative;
-  width: min(560px, 88%);
-  background: var(--palette-cream);
-  border: 3px solid var(--palette-warm-white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--elev-modal);
-  padding: 2rem 2.2rem;
-  text-align: center;
-}
-
-.act3-placeholder-icon {
-  font-size: 3rem;
-  line-height: 1;
-  margin-bottom: 0.6rem;
-}
-
-.act3-placeholder-title {
-  font-family: var(--font-family-display);
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: var(--palette-brown-dark);
-  margin-bottom: 0.7rem;
-}
-
-.act3-placeholder-text {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: var(--palette-text-muted);
-  margin-bottom: 1.4rem;
-}
-
-.act3-placeholder-actions {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}

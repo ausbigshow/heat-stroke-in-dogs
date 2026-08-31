@@ -1,0 +1,1735 @@
+/* ==========================================================
+   ACT 3: AT THE CLINIC, THEN HOME
+   Callie and Tay: A Story About Heat Stroke in Dogs
+
+   Built to docs/design-language.md §9. Same 16:9 viewport card, same HUD pill and button
+   geometry, same speech-bubble components as Acts 0–2, so the module reads as one piece.
+
+   WHAT CHANGES HERE is the direction of travel. Act 1's HUD was warm and playful; Act 2's
+   was cooled and clinical because the learner had gone outside the dog. Act 3 runs that
+   backwards: it opens at Act 2's drained saturation under a cool clinical wash, and warms
+   continuously back to full colour as Tay recovers — the Visual Asset Brief's
+   "saturation returns at recovery in Act 3", carried on one custom property
+   (--act3-saturation) rather than switched at a beat boundary.
+
+   Every colour in this file comes from css/main.css. No new literals.
+   ========================================================== */
+
+.act3-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 30%, #FFFDFB 0%, var(--palette-peach-light) 65%, var(--palette-peach) 100%);
+  padding: 1rem;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Geometry matched to .act1-viewport-card / .act2-viewport-card.
+   `isolation: isolate` keeps this screen's z-index scale (10 / 20 / 30 / 40 / 50) local, so
+   it can never end up in an arms race with the Edit Mode chrome layered above the stage. */
+.act3-viewport-card {
+  position: relative;
+  isolation: isolate;
+  width: min(94vw, 1300px);
+  aspect-ratio: 16 / 9;
+  max-height: 84vh;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--elev-card);
+  border: 4px solid var(--palette-warm-white);
+  background: var(--surface-card-dark);
+  user-select: none;
+}
+
+.act3-scene-img,
+.act3-lobby-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  z-index: 10;
+  /* Recovery ramp. 54% at the lobby door, 100% by the time she is climbing Callie. */
+  filter: saturate(var(--act3-saturation, 100%));
+  transition: filter var(--dur-escalation) ease;
+}
+
+/* ==========================================================
+   LIGHT WASH
+   One element, three moods. Never a decorative gradient on a character — this is ambient
+   room light over a whole scene, which is what the asset brief specifies for each location.
+   ========================================================== */
+
+.act3-wash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 12;
+  transition: opacity var(--dur-escalation) ease-in-out;
+}
+
+/* Lobby: fluorescent, cold, slightly drained. Fades out as she recovers. */
+.act3-wash.wash-clinical {
+  background:
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.35) 0%, rgba(148, 163, 184, 0.12) 46%, transparent 100%),
+    radial-gradient(circle at 76% 42%, rgba(186, 230, 253, 0.28) 0%, transparent 60%);
+  opacity: var(--act3-cool-opacity, 0.42);
+  mix-blend-mode: multiply;
+}
+
+/* Exam room: nothing on top of it. She is fine and the room is allowed to look it. */
+.act3-wash.wash-clear {
+  opacity: 0;
+}
+
+/* That evening. Warm, low, and dim at the edges — the Act 0 room after dark. */
+.act3-wash.wash-evening {
+  background:
+    radial-gradient(circle at 30% 42%, rgba(255, 214, 150, 0.55) 0%, rgba(180, 102, 60, 0.5) 38%, rgba(64, 44, 60, 0.72) 100%),
+    linear-gradient(to bottom, rgba(40, 30, 52, 0.45) 0%, rgba(58, 38, 44, 0.2) 42%, rgba(28, 20, 36, 0.6) 100%);
+  opacity: 1;
+  mix-blend-mode: multiply;
+}
+
+/* A second pass in screen mode puts the lamp back, so the room goes dim rather than muddy. */
+.act3-wash.wash-evening::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 26% 46%, rgba(255, 196, 128, 0.3) 0%, transparent 52%);
+  mix-blend-mode: screen;
+}
+
+/* ==========================================================
+   HUD — TOP BAR (geometry matched to .act2-hud-bar)
+   ========================================================== */
+
+.act3-hud-bar {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.5rem;
+  right: 1.5rem;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.act3-nav-bar {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 1.5rem;
+  right: 1.5rem;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.act3-hud-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  pointer-events: auto;
+}
+
+.act3-hud-pill {
+  background: var(--surface-hud);
+  backdrop-filter: blur(10px);
+  color: var(--text-inverse);
+  border: 1.5px solid var(--hairline-light);
+  font-family: var(--font-family-display);
+  font-size: 0.88rem;
+  font-weight: 700;
+  height: 38px;
+  padding: 0 1rem;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  box-shadow: var(--elev-3);
+  box-sizing: border-box;
+}
+
+.act3-hud-pill.clock-pill {
+  background: var(--surface-clock);
+  border-color: var(--color-amber-tint);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tay's status. §6.1: a pill that changes state changes its TEXT — IN BACK → STABLE →
+   GOING HOME is the real signal, and the colour is only reinforcement. */
+.act3-hud-pill.status-pill {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  transition: background-color var(--dur-base) var(--ease-out-expo),
+              border-color var(--dur-base) var(--ease-out-expo);
+}
+
+/* Unresolved. Deliberately neutral slate, not amber and not red — the lobby does not know
+   anything yet and the interface must not pretend to. This is Beat 3A's whole engine. */
+.act3-hud-pill.status-pill.tone-unknown {
+  background: var(--surface-clock);
+  border-color: var(--hairline-light);
+  color: var(--text-on-dark-muted);
+}
+
+.act3-hud-pill.status-pill.tone-stable,
+.act3-hud-pill.status-pill.tone-home {
+  background: var(--color-success);
+  border-color: var(--color-success-pale);
+  color: var(--text-inverse);
+}
+
+.act3-hud-pill.act3-nudge-pill {
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+/* ==========================================================
+   BUTTONS (geometry matched to .act2-hud-btn)
+   ========================================================== */
+
+.act3-hud-btn {
+  background: var(--surface-hud-btn);
+  backdrop-filter: blur(8px);
+  color: var(--text-inverse);
+  border: 1.5px solid var(--hairline-light);
+  font-family: var(--font-family-display);
+  font-size: 0.92rem;
+  font-weight: 700;
+  height: 40px;
+  padding: 0 1.2rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  box-sizing: border-box;
+  box-shadow: var(--elev-2);
+  pointer-events: auto;
+  transition: background-color var(--dur-fast) var(--ease-out-expo),
+              border-color var(--dur-fast) var(--ease-out-expo),
+              opacity var(--dur-fast) var(--ease-out-expo),
+              transform var(--dur-fast) var(--ease-out-expo);
+}
+
+.act3-hud-btn:hover:not(:disabled),
+.act3-hud-btn:focus-visible:not(:disabled) {
+  background: var(--surface-hud-btn-hover);
+  border-color: var(--hairline-light-strong);
+  transform: translateY(-2px);
+}
+
+.act3-hud-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* The way out of Beat 3A. Present and focusable from the first frame — a deliberate wait
+   is fine, a trap is not (design-language.md §7.5, and Nielsen's user control heuristic). */
+.act3-hud-btn.act3-btn-quiet {
+  height: 34px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-color: var(--hairline-light-soft);
+  box-shadow: var(--elev-1);
+}
+
+.act3-hud-btn.btn-action-primary {
+  /* --color-heat, NOT --color-heat-bright: white on #EA580C is 3.56 and fails AA. */
+  background: var(--color-heat);
+  color: var(--text-inverse);
+  border: 2px solid var(--color-amber-tint);
+  font-weight: 800;
+  box-shadow: 0 6px 20px rgba(194, 65, 12, 0.4);
+}
+
+.act3-hud-btn.btn-action-primary:hover:not(:disabled),
+.act3-hud-btn.btn-action-primary:focus-visible:not(:disabled) {
+  background: var(--color-heat-hover);
+  border-color: var(--palette-warm-white);
+  transform: translateY(-2px);
+}
+
+.act3-hud-btn.btn-action-primary.pulse-btn {
+  animation: act3PulseBtn 1.8s infinite;
+}
+
+/* An invitation, not decoration (§5.2): it says "this is the control that continues the
+   story". Elevation only — no coloured halo. */
+@keyframes act3PulseBtn {
+  0%, 100% { box-shadow: 0 6px 20px rgba(194, 65, 12, 0.4); }
+  50% { box-shadow: 0 6px 28px rgba(194, 65, 12, 0.7); }
+}
+
+/* Focus rings, by ground (§7.2). Amber over the scene and the dark case file; teal on the
+   cream cards. Offset stays at 3px so the ring is never clipped by the card's overflow. */
+#screen-act3 button:focus-visible,
+#screen-act3 [role="button"]:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-on-dark);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-sm);
+}
+
+#screen-act3 .act3-prevention-card button:focus-visible,
+#screen-act3 .act3-end-card button:focus-visible,
+#screen-act3 .act3-wait-panel button:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-on-light);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* ==========================================================
+   SPEECH LAYER
+   ========================================================== */
+
+.act3-speech-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 30;
+}
+
+/* A modal's z-index is only ever local to this layer (that is the point of keeping the scale
+   contained). When the layer holds a scrimmed dialog it has to out-rank the HUD itself, or
+   the chrome draws over the dialog and stays visually live while it is inert. */
+.act3-speech-layer.has-modal {
+  z-index: 45;
+}
+
+/* Transparent grouping element only — it must not become a layout or hit-testing box. */
+.act3-recheck-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* --- Dr. Reyes's bubble ------------------------------------------------
+   The third speaking voice in the module. §1.3 reserves warm/ember for Tay and
+   white-with-brown-ink for Callie, and keeps dark-slate-and-amber for the truth stamp — a
+   voice with no person attached. Reyes is a person in the room, so she keeps Callie's white
+   ground and takes the cool/ink family's teal: teal-dark border and ink, info-blue speaker
+   label. With the sound off and the text blurred she is still identifiable, which is the
+   test §1.3 sets.
+
+   Contrast: #244952 on #FFFFFF = 9.77 (text and border); #0369A1 on #FFFFFF = 5.93 (label).
+
+   Her stem reads --stem-left, because Edit Mode writes --stem-left for every bubble that is
+   not .callie-bubble (§8.2) — a variant that hardcoded `left` here would silently swallow
+   the author's saved stem position. */
+.speech-bubble.reyes-bubble {
+  background: var(--palette-warm-white);
+  border: 3px solid var(--palette-teal-dark);
+  color: var(--palette-teal-dark);
+}
+
+.speech-bubble.reyes-bubble .speech-bubble-speaker {
+  color: var(--color-info-strong);
+}
+
+#screen-act3 .speech-bubble .speech-bubble-speaker {
+  flex-wrap: wrap;
+  row-gap: 0.1rem;
+}
+
+/* The report footer's byline is a single inline run — no wrapping there. */
+.act3-report-who .act3-business,
+.act3-prevention-reply .act3-business {
+  flex: none;
+}
+
+.speech-bubble.reyes-bubble .act3-reyes-dialogue {
+  color: var(--palette-teal-dark);
+}
+
+.speech-bubble.reyes-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -22px;
+  left: var(--stem-left, 24px);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 18px solid transparent;
+  border-top: 22px solid var(--palette-teal-dark);
+  z-index: 1;
+}
+
+.speech-bubble.reyes-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -18px;
+  left: calc(var(--stem-left, 24px) + 2px);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 19px solid var(--palette-warm-white);
+  z-index: 2;
+}
+
+/* Her stage direction, riding the speaker label. She is never standing still and reciting. */
+.act3-business {
+  flex: 1 1 100%;
+  font-family: var(--font-family-body);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  font-style: italic;
+  color: var(--palette-text-muted);
+}
+
+/* Bubble placement, per room. Positioned with left/top/right so Edit Mode's !important
+   overrides land on properties that actually move the element (§8.2), and the stem offsets
+   are custom properties for the same reason. */
+.scene-lobby .act3-callie-bubble {
+  top: 26%;
+  right: 48%;
+  max-width: min(340px, 28%);
+  --stem-right: 30%;
+}
+
+.scene-lobby .act3-reyes-bubble {
+  top: 13%;
+  left: 60%;
+  max-width: min(420px, 36%);
+  --stem-left: 58%;
+}
+
+.scene-exam .act3-callie-bubble {
+  top: 22%;
+  right: 60%;
+  max-width: min(320px, 28%);
+  --stem-right: 8%;
+}
+
+.scene-exam .act3-reyes-bubble {
+  top: 7%;
+  left: 56%;
+  max-width: min(400px, 34%);
+  --stem-left: 30%;
+}
+
+/* While the discharge sheet is out it owns the right-hand column, so the bubbles pull in and
+   stop fighting it for the same space. The stem moves with them and still lands on Reyes. */
+.scene-exam .has-sheet .act3-reyes-bubble {
+  top: 8%;
+  left: 42%;
+  max-width: min(300px, 28%);
+  --stem-left: 78%;
+}
+
+.scene-exam .has-sheet .act3-callie-bubble {
+  top: 8%;
+  right: 62%;
+  max-width: min(280px, 26%);
+}
+
+.scene-exam .act3-tay-bubble {
+  top: 17%;
+  left: 34%;
+  max-width: min(380px, 32%);
+  --stem-left: 72%;
+}
+
+.scene-home .act3-callie-bubble {
+  top: 15%;
+  right: 58%;
+  max-width: min(330px, 28%);
+  --stem-right: 6%;
+}
+
+.scene-home .act3-tay-bubble {
+  top: 10%;
+  left: 46%;
+  max-width: min(340px, 30%);
+  --stem-left: 30%;
+}
+
+/* The Act 0 callback. Written for the learner — recognition is the payoff, so it names
+   where they heard the line, not the shot number. Same component as Act 2's line tag. */
+.act3-callback-tag {
+  display: block;
+  margin-top: 0.5rem;
+  padding-top: 0.45rem;
+  border-top: 1px dashed rgba(124, 45, 18, 0.35);
+  font-family: var(--font-family-display);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-heat-hover);
+}
+
+/* ==========================================================
+   STAGE / HOLD CARDS
+   The unspoken beats. Dark slate so they read as "the film", not as somebody talking.
+   ========================================================== */
+
+.act3-stage-card,
+.act3-hold-card,
+.act3-door-card {
+  position: absolute;
+  bottom: 5.5rem;
+  left: 50%;
+  width: min(680px, 76%);
+  transform: translateX(-50%);
+  background: var(--surface-stamp);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--hairline-light-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1.15rem;
+  box-shadow: var(--elev-4);
+  pointer-events: auto;
+  /* Ends on translateX(-50%): X-axis centring only, so this is the stampSlam shape,
+     never the stampSlamCentered one (§6.4). */
+  animation: act3SlideUpX 0.35s var(--ease-out-expo) forwards;
+}
+
+.act3-stage-card {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+}
+
+.act3-stage-mark {
+  color: var(--color-amber-tint);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.act3-stage-line {
+  font-family: var(--font-family-body);
+  font-size: clamp(0.86rem, 1.1vw, 0.98rem);
+  line-height: 1.5;
+  color: var(--text-on-dark);
+  font-style: italic;
+}
+
+.act3-hold-card {
+  border-left: 4px solid var(--color-amber);
+  text-align: center;
+}
+
+.act3-hold-line {
+  font-family: var(--font-family-display);
+  font-size: clamp(1rem, 1.3vw, 1.16rem);
+  font-weight: 700;
+  color: var(--text-on-dark);
+}
+
+.act3-hold-sub {
+  margin-top: 0.35rem;
+  font-family: var(--font-family-body);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--text-on-dark-dim);
+}
+
+.act3-door-card {
+  border-left: 4px solid var(--color-success-pale);
+  text-align: center;
+}
+
+.act3-door-line {
+  font-family: var(--font-family-display);
+  font-size: clamp(1.05rem, 1.5vw, 1.35rem);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--text-on-dark);
+}
+
+/* ==========================================================
+   BEAT 3A — THE WAIT
+   Twelve seconds of nothing, which is what makes the vet's entrance land. Nothing here
+   teaches, nothing here is scored, and the only control does nothing at all.
+   ========================================================== */
+
+/* Anchored right, not centred: Callie and the towel own the left of the frame for the whole
+   beat, and the copy sits beside her instead of on top of her. No transform of its own, so
+   its entrance keyframe must not carry one either (§6.4). */
+.act3-wait-panel {
+  position: absolute;
+  right: 3.5rem;
+  bottom: 4.5rem;
+  width: min(430px, 40%);
+  background: var(--palette-cream);
+  border: 3px solid var(--palette-warm-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-modal);
+  padding: 1.15rem 1.35rem 1.25rem;
+  text-align: center;
+  pointer-events: auto;
+  animation: act3SlideUp 0.35s var(--ease-out-expo) forwards;
+}
+
+.act3-wait-badge {
+  display: inline-block;
+  background: var(--palette-teal-dark);
+  color: var(--text-inverse);
+  font-family: var(--font-family-display);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.6rem;
+  border-radius: var(--radius-xs);
+  margin-bottom: 0.7rem;
+}
+
+.act3-wait-line {
+  font-family: var(--font-family-body);
+  font-size: clamp(0.92rem, 1.2vw, 1.04rem);
+  line-height: 1.55;
+  color: var(--palette-brown-dark);
+  min-height: 3.2em; /* four lines of copy of different lengths, one fixed box: no jump */
+}
+
+.act3-wait-sub {
+  margin-top: 0.55rem;
+  font-family: var(--font-family-display);
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--palette-text-muted);
+}
+
+.act3-fold-btn {
+  margin-top: 0.9rem;
+  background: var(--palette-warm-white);
+  border: 1.5px solid var(--palette-peach-dark);
+  color: var(--palette-brown-med);
+  font-family: var(--font-family-display);
+  font-size: 0.84rem;
+  font-weight: 700;
+  height: 36px;
+  padding: 0 1rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: background-color var(--dur-fast) var(--ease-out-expo),
+              border-color var(--dur-fast) var(--ease-out-expo),
+              transform var(--dur-fast) var(--ease-out-expo);
+}
+
+.act3-fold-btn:hover,
+.act3-fold-btn:focus-visible {
+  background: var(--palette-sage-light);
+  border-color: var(--palette-sage);
+  transform: translateY(-1px);
+}
+
+.act3-fold-btn:active {
+  transform: translateY(0);
+}
+
+/* Not a loading bar — a wait, shown honestly so it does not read as a hang. It is
+   aria-hidden because the skip control in the nav is the accessible way past it. */
+.act3-wait-bar {
+  margin-top: 1rem;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--palette-peach-dark);
+  overflow: hidden;
+}
+
+.act3-wait-bar-fill {
+  display: block;
+  height: 100%;
+  width: var(--act3-wait-progress, 0%);
+  background: var(--palette-teal-dark);
+  border-radius: var(--radius-pill);
+  transition: width 1s linear;
+}
+
+/* ==========================================================
+   TRUTH STAMP — the flat third voice (§6.5)
+   One measurement, one sentence, no argument. Four of them in this act, and every one is
+   attached to something Callie did.
+   ========================================================== */
+
+.act3-truth-stamp {
+  position: absolute;
+  bottom: 4rem;
+  left: 50%;
+  width: min(680px, 86%);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--surface-stamp);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  border-left: 4px solid var(--color-amber);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 1rem;
+  box-shadow: var(--elev-5);
+  pointer-events: auto;
+  z-index: 35;
+  animation: act3StampIn 0.4s var(--ease-out-expo) 0.25s both;
+}
+
+/* The measurement. --color-amber-pale on --color-amber-deep is 4.51 — it passes by 0.01,
+   so neither value may be nudged (Appendix A watch list). */
+.act3-truth-stamp-metric {
+  flex-shrink: 0;
+  background: var(--color-amber-deep);
+  color: var(--color-amber-pale);
+  border: 1px solid var(--color-amber-tint-2);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-family-display);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 0.3rem 0.6rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.act3-truth-stamp-line {
+  font-family: var(--font-family-body);
+  font-size: clamp(0.82rem, 1.1vw, 0.94rem);
+  line-height: 1.45;
+  color: var(--text-on-dark);
+}
+
+/* Inside the case file the stamp is a block in the flow, not a floating element. */
+.act3-report-body .act3-truth-stamp {
+  position: static;
+  transform: none;
+  width: 100%;
+  animation: act3FadeIn var(--dur-base) var(--ease-out-expo) forwards;
+}
+
+/* ==========================================================
+   BEAT 3C — THE REPORT CARD
+   Act 1's counter and Act 2's four checks on one screen for the first and only time. Built
+   as the dark case file (§6.4) because that is exactly the component this is a callback to —
+   the same document the learner opened in Act 1, now filled in.
+   ========================================================== */
+
+.act3-report-modal,
+.act3-end-modal {
+  position: absolute;
+  inset: 0;
+  background: var(--surface-scrim);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.25rem 1.5rem;
+  pointer-events: auto;
+  z-index: 50;
+  animation: act3FadeIn var(--dur-fast) ease forwards;
+}
+
+/* Flex-centred, so there is no transform to be replaced by an entrance keyframe — the
+   stampSlam / stampSlamCentered trap in §6.4 cannot bite here. */
+/* Fixed to the available height rather than sized to its content: the file fills up as Reyes
+   talks, and the card does not resize under the learner between the five steps. */
+.act3-report-card {
+  width: min(980px, 100%);
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-card-dark);
+  border: 2px solid var(--color-info);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-modal), 0 0 40px -12px rgba(56, 189, 248, 0.5);
+  overflow: hidden;
+  animation: act3CardRise var(--dur-base) var(--ease-out-expo) forwards;
+}
+
+.act3-report-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.4rem 0.85rem;
+  border-bottom: 1px solid var(--hairline-light-soft);
+}
+
+.act3-report-badge {
+  background: var(--color-info-strong);
+  color: var(--text-inverse);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-family-display);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  padding: 0.3rem 0.55rem;
+}
+
+.act3-report-title {
+  flex: 1;
+  min-width: 14rem;
+  font-family: var(--font-family-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text-inverse);
+}
+
+.act3-report-subtitle {
+  display: block;
+  margin-top: 0.2rem;
+  font-family: var(--font-family-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--text-on-dark-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Act 1's counter, cashed out one last time. Text carries the count, not the colour. */
+.act3-report-hints {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--color-success);
+  color: var(--text-inverse);
+  border: 1px solid var(--color-success-pale);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-family-display);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  padding: 0.32rem 0.75rem;
+}
+
+.act3-report-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.85rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-info-mid) transparent;
+}
+
+.act3-report-body::-webkit-scrollbar { width: 6px; }
+.act3-report-body::-webkit-scrollbar-thumb {
+  background: var(--color-info-mid);
+  border-radius: var(--radius-pill);
+}
+
+.act3-report-panel {
+  border: 1px solid var(--hairline-light-faint);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.9rem;
+  animation: act3FadeIn var(--dur-base) var(--ease-out-expo) forwards;
+}
+
+.act3-panel-title {
+  font-family: var(--font-family-display);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-amber-tint);
+  margin-bottom: 0.5rem;
+}
+
+.act3-panel-foot {
+  margin-top: 0.7rem;
+  font-family: var(--font-family-display);
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-on-dark-muted);
+}
+
+/* --- The four checks --------------------------------------------------- */
+
+.act3-report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-family-body);
+}
+
+.act3-report-table th,
+.act3-report-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.38rem 0.6rem;
+  border-bottom: 1px solid var(--hairline-light-faint);
+}
+
+.act3-report-table thead th {
+  font-family: var(--font-family-display);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-on-dark-dim);
+}
+
+.act3-report-table tbody tr:last-child th,
+.act3-report-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.act3-cell-sign {
+  font-family: var(--font-family-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-amber-tint);
+  white-space: nowrap;
+}
+
+.act3-cell-reported {
+  font-size: clamp(0.82rem, 1.1vw, 0.92rem);
+  line-height: 1.4;
+  color: var(--text-on-dark-muted);
+}
+
+.act3-cell-note {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.74rem;
+  color: var(--text-on-dark-dim);
+  font-style: italic;
+}
+
+.act3-cell-stage { white-space: nowrap; }
+
+/* Stage is a NUMERAL and a WORD before it is a colour (§7.3). This module is about a
+   colour-read symptom; the interface does not get to model bad practice. */
+.act3-stage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-family-display);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.5rem;
+}
+
+/* A ring, not a translucent plate. The plate lightened the chip's own ground under the
+   numeral and dropped it to 3.06:1 — on the one element that carries the stage signal without
+   relying on colour, which is exactly the element that cannot fail. With the ring the numeral
+   sits on the chip's own ground and inherits its audited pairing. */
+.act3-stage-no {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: var(--radius-xs);
+  border: 1.5px solid currentColor;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --color-amber-pale on --color-amber-deep = 4.51 (do not nudge either value). */
+.act3-stage-chip.stage-1 {
+  background: var(--color-amber-deep);
+  color: var(--color-amber-pale);
+}
+
+/* #FFFFFF on --color-heat = 5.18. */
+.act3-stage-chip.stage-2 {
+  background: var(--color-heat);
+  color: var(--text-inverse);
+}
+
+/* #FFFFFF on --color-danger = 6.04. */
+.act3-stage-chip.stage-3 {
+  background: var(--color-danger);
+  color: var(--text-inverse);
+}
+
+/* --- How often each sign is logged ------------------------------------- */
+
+.act3-prevalence-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.act3-prevalence-row {
+  display: grid;
+  grid-template-columns: 7rem 1fr 3.2rem;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.act3-prevalence-label {
+  font-family: var(--font-family-display);
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-on-dark-muted);
+}
+
+.act3-prevalence-track {
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+/* Bar LENGTH and the numeral both carry the value, so the chart survives being read in
+   greyscale — the same construction as Act 1's temperature gauge (§6.8). */
+.act3-prevalence-fill {
+  display: block;
+  height: 100%;
+  background: var(--color-info);
+  border-radius: var(--radius-pill);
+}
+
+.act3-prevalence-value {
+  font-family: var(--font-family-display);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-on-dark);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Her afternoon ------------------------------------------------------ */
+
+.act3-report-timeline {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.act3-timeline-item {
+  display: grid;
+  grid-template-columns: 4.6rem 1.6rem 1fr;
+  align-items: start;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--radius-xs);
+  border-left: 3px solid transparent;
+}
+
+.act3-timeline-item.is-widest {
+  border-left-color: var(--color-amber);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.act3-timeline-time {
+  font-family: var(--font-family-display);
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--color-amber-tint);
+  font-variant-numeric: tabular-nums;
+}
+
+.act3-timeline-icon { font-size: 0.95rem; }
+
+.act3-timeline-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-family: var(--font-family-body);
+  font-size: 0.84rem;
+  line-height: 1.4;
+  color: var(--text-on-dark-dim);
+}
+
+.act3-timeline-copy strong {
+  font-family: var(--font-family-display);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-on-dark-muted);
+}
+
+.act3-timeline-flag {
+  grid-column: 3;
+  margin-top: 0.25rem;
+  font-family: var(--font-family-display);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-amber-tint);
+}
+
+/* --- Reyes and Callie, under the chart ---------------------------------- */
+
+.act3-report-footer {
+  border-top: 1px solid var(--hairline-light-soft);
+  padding: 0.75rem 1.4rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: var(--surface-card-darkest);
+}
+
+/* Capped so the chart above it always keeps the majority of the card — the panels are the
+   point of this beat, the dialogue is the walk-through. */
+.act3-report-dialogue {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 17vh;
+  overflow-y: auto;
+}
+
+.act3-report-line {
+  border-left: 3px solid var(--hairline-light-soft);
+  padding-left: 0.7rem;
+}
+
+.act3-report-line.line-reyes { border-left-color: var(--color-info); }
+.act3-report-line.line-callie { border-left-color: var(--color-amber-tint); }
+
+.act3-report-who {
+  display: block;
+  font-family: var(--font-family-display);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-on-dark-dim);
+  margin-bottom: 0.2rem;
+}
+
+.act3-report-who .act3-business { color: var(--text-on-dark-dim); }
+
+.act3-report-text {
+  font-family: var(--font-family-body);
+  font-size: clamp(0.88rem, 1.15vw, 1rem);
+  line-height: 1.5;
+  color: var(--text-on-dark);
+  /* §9: body copy gets a measure. */
+  max-width: 68ch;
+}
+
+.act3-report-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.act3-beat-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.act3-beat-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--hairline-light-soft);
+}
+
+.act3-beat-dot.seen { background: var(--color-info-mid); }
+
+.act3-beat-dot.current {
+  background: var(--color-amber);
+  width: 18px;
+  border-radius: var(--radius-pill);
+}
+
+/* ==========================================================
+   BEAT 3D — TAY'S RETURN
+   ========================================================== */
+
+/* Her voice has been gone since one line in Act 2. That absence is the mechanism; this
+   names it once, on her first line, and then gets out of the way. */
+.act3-voice-return-banner {
+  position: absolute;
+  top: 5.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface-glass-light);
+  backdrop-filter: blur(6px);
+  border: 2px solid var(--color-heat);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 1rem;
+  box-shadow: var(--elev-4);
+  font-family: var(--font-family-display);
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--palette-brown-dark);
+  pointer-events: auto;
+  animation: act3SlideUpX 0.35s var(--ease-out-expo) forwards;
+}
+
+.act3-voice-return-mark { color: var(--color-heat); }
+
+/* ==========================================================
+   BEAT 3E — NEXT TIME
+   Prevention framed forward. Every option is correct: this is Callie deciding what changes,
+   not a quiz, so nothing here is marked wrong and nothing is required.
+   ========================================================== */
+
+.act3-prevention-card,
+.act3-end-card {
+  width: min(720px, 88%);
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--palette-cream);
+  border: 3px solid var(--palette-warm-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-modal);
+  padding: 1.25rem 1.5rem 1.4rem;
+  pointer-events: auto;
+}
+
+/* The prevention card is NOT modal — it is a choice the learner makes with the room still
+   live behind it, so it has no scrim and the HUD stays reachable. It positions itself, which
+   means it is centred on both axes and its entrance must end on translate(-50%, -50%). The
+   X-only keyframe here would drop the vertical centring the moment it finished (§6.4). */
+.act3-prevention-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-height: 82%;
+  z-index: 45;
+  transform: translate(-50%, -50%);
+  animation: act3CardInCentered var(--dur-base) var(--ease-out-expo) forwards;
+}
+
+/* The close screen is flex-centred by its own scrim, so it has no transform to preserve. */
+.act3-end-card {
+  animation: act3CardRise var(--dur-base) var(--ease-out-expo) forwards;
+}
+
+.act3-prevention-badge,
+.act3-end-badge {
+  display: inline-block;
+  background: var(--palette-teal-dark);
+  color: var(--text-inverse);
+  font-family: var(--font-family-display);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.6rem;
+  border-radius: var(--radius-xs);
+}
+
+.act3-prevention-title {
+  margin-top: 0.7rem;
+  font-family: var(--font-family-display);
+  font-size: clamp(1.1rem, 1.7vw, 1.45rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--palette-brown-dark);
+}
+
+.act3-prevention-sub {
+  margin-top: 0.4rem;
+  font-family: var(--font-family-body);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--palette-text-muted);
+}
+
+.act3-prevention-count {
+  font-family: var(--font-family-display);
+  font-weight: 800;
+  color: var(--palette-teal-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+.act3-prevention-options {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.act3-prevention-option {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1.6rem 1fr;
+  grid-template-areas:
+    'icon label'
+    '.    state';
+  align-items: start;
+  gap: 0.2rem 0.6rem;
+  text-align: left;
+  background: var(--palette-warm-white);
+  border: 2px solid var(--palette-peach-dark);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem 0.9rem;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out-expo),
+              border-color var(--dur-fast) var(--ease-out-expo),
+              transform var(--dur-fast) var(--ease-out-expo);
+}
+
+.act3-prevention-option:hover,
+.act3-prevention-option:focus-visible {
+  border-color: var(--palette-teal);
+  transform: translateY(-2px);
+}
+
+.act3-prevention-option:active { transform: translateY(0); }
+
+/* Chosen is a glyph AND a word before it is a colour (§7.3), and aria-pressed carries it
+   to assistive tech. The green is the third signal, not the only one. */
+.act3-prevention-option.is-chosen {
+  background: var(--palette-sage-light);
+  border-color: var(--color-success);
+}
+
+.act3-prevention-icon {
+  grid-area: icon;
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+
+.act3-prevention-label {
+  grid-area: label;
+  font-family: var(--font-family-display);
+  font-size: 0.94rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--palette-brown-dark);
+}
+
+.act3-prevention-state {
+  grid-area: state;
+  margin-top: 0.3rem;
+  font-family: var(--font-family-display);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--palette-text-muted);
+}
+
+.act3-prevention-option.is-chosen .act3-prevention-state {
+  color: var(--palette-brown-dark);
+}
+
+.act3-prevention-reply {
+  margin-top: 1rem;
+  background: var(--palette-warm-white);
+  border-left: 5px solid var(--palette-teal-dark);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.95rem;
+  box-shadow: var(--elev-1);
+  animation: act3FadeIn var(--dur-base) var(--ease-out-expo) forwards;
+}
+
+.act3-prevention-reply .act3-report-who { color: var(--color-info-strong); }
+.act3-prevention-reply .act3-report-text { color: var(--palette-brown-dark); }
+
+/* ==========================================================
+   BEAT 3F — THE DISCHARGE SHEET
+   An in-world object: the chart Reyes has been writing on all act, torn off and handed over.
+   Deliberately NOT a printable job aid — the beats doc cuts the glovebox card, so this
+   leaves with Callie, not with the learner.
+   ========================================================== */
+
+.act3-discharge-sheet {
+  position: absolute;
+  bottom: 5rem;
+  right: 1.75rem;
+  width: min(280px, 24%);
+  background: var(--palette-warm-white);
+  border: 1px solid var(--palette-peach-dark);
+  border-top: 5px solid var(--palette-teal-dark);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--elev-4);
+  padding: 0.85rem 1rem 0.95rem;
+  pointer-events: auto;
+  z-index: 32;
+  animation: act3SlideInRight var(--dur-base) var(--ease-out-expo) forwards;
+}
+
+.act3-discharge-header {
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--palette-peach);
+  margin-bottom: 0.6rem;
+}
+
+.act3-discharge-badge {
+  display: block;
+  font-family: var(--font-family-display);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--palette-teal-dark);
+}
+
+.act3-discharge-patient {
+  display: block;
+  margin-top: 0.15rem;
+  font-family: var(--font-family-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--palette-text-muted);
+}
+
+.act3-discharge-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.act3-discharge-item {
+  display: grid;
+  grid-template-columns: 1.3rem 1fr;
+  gap: 0.5rem;
+  align-items: start;
+}
+
+.act3-discharge-glyph {
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.act3-discharge-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  font-family: var(--font-family-body);
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: var(--palette-text-muted);
+}
+
+.act3-discharge-copy strong {
+  font-family: var(--font-family-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--palette-brown-dark);
+}
+
+/* ==========================================================
+   THE CLOSE
+   Not a score. The act's whole claim is that every number is a verdict on this playthrough,
+   so the last screen states what this learner actually did and then gets out of the way.
+   ========================================================== */
+
+.act3-end-card { text-align: center; width: min(640px, 88%); }
+
+.act3-end-title {
+  margin-top: 0.7rem;
+  font-family: var(--font-family-display);
+  font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--palette-brown-dark);
+}
+
+.act3-end-line {
+  margin: 0.6rem auto 0;
+  max-width: 46ch;
+  font-family: var(--font-family-body);
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--palette-text-muted);
+}
+
+.act3-end-recap {
+  list-style: none;
+  margin: 1.1rem 0;
+  border-top: 1px solid var(--palette-peach);
+  text-align: left;
+}
+
+.act3-end-recap li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0.2rem;
+  border-bottom: 1px solid var(--palette-peach);
+}
+
+.act3-end-recap-label {
+  font-family: var(--font-family-body);
+  font-size: 0.88rem;
+  color: var(--palette-text-muted);
+}
+
+.act3-end-recap-value {
+  font-family: var(--font-family-display);
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--palette-brown-dark);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.act3-end-close {
+  margin: 0 auto 1.2rem;
+  max-width: 44ch;
+  font-family: var(--font-family-body);
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: var(--palette-brown-med);
+}
+
+.act3-end-close strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-family: var(--font-family-display);
+  font-weight: 800;
+  color: var(--palette-brown-dark);
+}
+
+.act3-end-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================
+   MOTION
+   Entrances are 0.25–0.35s on --ease-out-expo (§5.2). Only one loop exists on this screen —
+   the primary-button pulse — and it is an invitation, which is the only thing a loop is
+   allowed to be.
+   ========================================================== */
+
+@keyframes act3FadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* No centring transform to preserve — for elements that position themselves with
+   left/right/bottom rather than a translate. */
+@keyframes act3SlideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* X-axis centring only. Ends on translateX(-50%). */
+@keyframes act3SlideUpX {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes act3StampIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(14px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Both axes. Ends on translate(-50%, -50%). */
+@keyframes act3CardInCentered {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* No transform to preserve — the report card is flex-centred by its scrim. */
+@keyframes act3CardRise {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes act3SlideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Reduced motion (§5.3). Loops are killed outright; entrances are SHORTENED, never removed,
+   because act3SlideUpX / act3StampIn / act3CardInCentered each carry the element's centring
+   transform in their final frame. Remove them and the element jumps. */
+@media (prefers-reduced-motion: reduce) {
+  #screen-act3 .act3-hud-btn.btn-action-primary.pulse-btn {
+    animation: none;
+  }
+
+  #screen-act3 .act3-stage-card,
+  #screen-act3 .act3-hold-card,
+  #screen-act3 .act3-door-card,
+  #screen-act3 .act3-wait-panel,
+  #screen-act3 .act3-voice-return-banner,
+  #screen-act3 .act3-truth-stamp,
+  #screen-act3 .act3-report-modal,
+  #screen-act3 .act3-report-card,
+  #screen-act3 .act3-end-modal,
+  #screen-act3 .act3-report-panel,
+  #screen-act3 .act3-prevention-card,
+  #screen-act3 .act3-prevention-reply,
+  #screen-act3 .act3-discharge-sheet,
+  #screen-act3 .act3-end-card,
+  #screen-act3 .speech-bubble {
+    animation-duration: 0.01s;
+    animation-delay: 0s;
+  }
+
+  #screen-act3 .act3-scene-img,
+  #screen-act3 .act3-lobby-svg,
+  #screen-act3 .act3-wash,
+  #screen-act3 .act3-wait-bar-fill {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   RESPONSIVE (§9)
+   ========================================================== */
+
+@media (max-width: 768px) {
+  .act3-viewport-card { aspect-ratio: 4 / 3; }
+
+  .act3-hud-bar,
+  .act3-nav-bar {
+    left: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .act3-hud-pill {
+    height: 32px;
+    font-size: 0.76rem;
+    padding: 0 0.7rem;
+  }
+
+  .act3-hud-btn {
+    height: 34px;
+    font-size: 0.8rem;
+    padding: 0 0.8rem;
+  }
+
+  /* Bubbles stop trying to point at people on a 4:3 crop and stack along the bottom. */
+  .act3-callie-bubble,
+  .act3-reyes-bubble,
+  .act3-tay-bubble {
+    top: auto !important;
+    bottom: 5rem;
+    left: 4% !important;
+    right: auto !important;
+    max-width: 92% !important;
+  }
+
+  .act3-wait-panel {
+    left: 4%;
+    right: 4%;
+    width: auto;
+  }
+
+  /* On a 4:3 phone card there is not enough height to pin a header, scroll a body and pin a
+     footer — the header alone consumed the whole card. The case file becomes one scrolling
+     column instead, so all of it is reachable at the cost of seeing less at once. */
+  .act3-report-modal,
+  .act3-end-modal {
+    padding: 0.6rem;
+  }
+
+  .act3-report-card {
+    display: block;
+    overflow-y: auto;
+  }
+
+  .act3-report-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--surface-card-dark);
+    padding: 0.6rem 0.8rem 0.5rem;
+    gap: 0.4rem;
+  }
+
+  .act3-report-badge { font-size: 0.62rem; padding: 0.22rem 0.4rem; }
+
+  .act3-report-title {
+    min-width: 0;
+    flex: 1 1 100%;
+    font-size: 1rem;
+  }
+
+  .act3-report-subtitle { font-size: 0.7rem; }
+  .act3-report-hints { font-size: 0.66rem; padding: 0.22rem 0.5rem; }
+
+  .act3-report-body {
+    overflow: visible;
+    padding: 0.6rem 0.8rem;
+  }
+
+  .act3-report-footer {
+    position: sticky;
+    bottom: 0;
+    padding: 0.6rem 0.8rem;
+  }
+
+  .act3-report-dialogue { max-height: none; overflow: visible; }
+  .act3-report-panel { padding: 0.55rem 0.65rem; }
+
+  .act3-report-card,
+  .act3-prevention-card,
+  .act3-end-card {
+    width: 96%;
+  }
+
+  .act3-prevention-options { grid-template-columns: 1fr; }
+
+  .act3-report-table thead { display: none; }
+
+  .act3-report-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.2rem 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--hairline-light-faint);
+  }
+
+  .act3-report-table th,
+  .act3-report-table td {
+    border-bottom: 0;
+    padding: 0.15rem 0;
+  }
+
+  .act3-cell-reported { grid-column: 1 / -1; }
+
+  .act3-prevalence-row { grid-template-columns: 5.5rem 1fr 2.8rem; }
+
+  .act3-discharge-sheet {
+    position: static;
+    width: auto;
+    margin: 5.5rem 1rem 0;
+  }
+}
+
+@media (max-height: 700px) {
+  .act3-report-card,
+  .act3-prevention-card,
+  .act3-end-card {
+    padding: 0.9rem 1.1rem;
+  }
+
+  .act3-report-header { padding: 0.7rem 1rem 0.6rem; }
+  .act3-report-body { padding: 0.7rem 1rem; gap: 0.7rem; }
+  .act3-report-footer { padding: 0.7rem 1rem; }
+  .act3-report-dialogue { max-height: 22vh; }
+  .act3-end-recap li { padding: 0.4rem 0.2rem; }
+}
