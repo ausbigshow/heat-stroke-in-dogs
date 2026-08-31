@@ -78,7 +78,6 @@ export class Act2Screen {
     this.coolingIndex = 0;
     this.coolingFeedback = null; // { optionId, correct }
     this.coolingWrongCount = 0;
-    this.wesOverruled = false;
 
     // ---- Beat 2D: the towel micro-sim ------------------------------------
     this.towelWarmth = 0; // 0 = just re-wet and cool, 100 = at body temperature
@@ -205,7 +204,7 @@ export class Act2Screen {
             id: 'shade_air',
             label: 'Get her out of the sun and get air moving over her',
             correct: true,
-            result: "You haul the canopy over her and start fanning with your shirt. Wes drops the umbrella from his chair on the other side of her. She is out of the sun in about eight seconds.",
+            result: "You haul the canopy over her, drag the beach umbrella around to close the gap, and start fanning her with your shirt. It is a stupid-looking way to move air and it is moving air. She is out of the sun in about eight seconds.",
             stamp: {
               metric: 'Shade first, then airflow',
               line: "Stop the heat going in before you start taking heat out. Moving air over a panting dog cools her, and it costs nothing."
@@ -225,14 +224,13 @@ export class Act2Screen {
         stepLabel: 'Water source',
         smePending: true,
         techPrompt: "Now water. What have you got, and what are you using?",
-        wesLine: "I've got a whole chest of ice right here. Pack it on her — cool her down fast.",
-        wesPivot: "…Lake water. Yeah. Okay, I'm on it.",
+        commonBelief: "She's overheating, so pack her in ice. Coldest thing you've got, straight onto the dog — that's how you bring a temperature down fast.",
         options: [
           {
             id: 'lake_water',
             label: 'Cool lake water, twenty feet away',
             correct: true,
-            result: "You send Wes for the lake with the towel and the bowl. The water is 72°F — cool, not cold. It is the one thing at this lake Tay looked at four times and walked away from.",
+            result: "You take the towel and the bowl to the water and back at a dead run. It is 72°F — cool, not cold. It is the one thing at this lake Tay looked at four times and walked away from.",
             stamp: {
               metric: '72°F lake water',
               line: "Cool water, not ice water. This is the hotspot she dismissed all afternoon, and it is the thing that helps her now."
@@ -243,7 +241,7 @@ export class Act2Screen {
             label: 'Ice out of the cooler — pack it against her',
             correct: false,
             smePending: true,
-            consequence: "Wes has the lid open before you finish the sentence. Ice against her skin makes the surface vessels clamp down, and heat that needs to leave her core stays in it. She feels cold to your hand and is no cooler inside.",
+            consequence: "You have the lid up before you finish the thought — the same cooler she spent ninety minutes pressed against. Ice against her skin makes the surface vessels clamp down, and heat that needs to leave her core stays in it. She feels cold to your hand and is no cooler inside.",
             correction: "Cool water, not ice, and not ice packs. Extreme cold constricts the vessels near the skin and traps the heat where you least want it. The lake is right there."
           }
         ]
@@ -257,7 +255,7 @@ export class Act2Screen {
             id: 'belly_groin',
             label: 'Belly, armpits, groin, paws',
             correct: true,
-            result: "You turn her enough to get the wet towel against her belly and press cool water into her armpits and groin, then her paws. Wes keeps running the towel back to the lake.",
+            result: "You turn her enough to get the wet towel against her belly and press cool water into her armpits and groin, then her paws. Every time it goes slack and warm you run it back to the lake.",
             stamp: {
               metric: 'Belly, armpits, groin, paws',
               line: "These are the places blood runs closest to the surface, so this is where cool water actually takes heat out of her instead of just off her."
@@ -300,14 +298,13 @@ export class Act2Screen {
         id: 'covering',
         stepLabel: 'Covering her for the drive',
         techPrompt: "Get her in the car. What is on her when you do?",
-        wesLine: "Wrap her up good and tight. Keep the cold on her the whole way in.",
-        wesPivot: "Loose. Re-wet it. Got it — take my cap for the water.",
+        commonBelief: "Wrap her up good and tight and keep the cold on her the whole way in. Tuck it under her so none of it gets out.",
         options: [
           {
             id: 'wet_towel_rewet',
             label: 'A cool wet towel laid over her, and you plan to re-wet it',
             correct: true,
-            result: "You lay the soaked towel across her belly and flank, loose, and put the bowl in the footwell to re-wet it from. Wes wrings out a second one and drops it on the passenger seat.",
+            result: "You lay the soaked towel across her belly and flank, loose, and put the bowl in the footwell to re-wet it from. A second towel goes on the passenger seat, wrung out and waiting.",
             stamp: {
               metric: 'Wet towel, re-wet often',
               line: "A cool wet towel is the practical option in a car. It only works while it is still cool — the towel is a tool, not a blanket."
@@ -550,7 +547,7 @@ export class Act2Screen {
           <!-- Persistent Top HUD Bar -->
           ${this.renderHudBar()}
 
-          <!-- In-scene layer: Tay on the ground, Callie, Wes, the observation hotspots -->
+          <!-- In-scene layer: Tay on the ground, Callie, the cooler, the observation hotspots -->
           ${this.renderSceneLayer()}
 
           <!-- Dialogue / modal layer -->
@@ -711,33 +708,9 @@ export class Act2Screen {
     `;
   }
 
-  // PLACEHOLDER ART — Wes, the friend at the lake. Distinct silhouette: broad, ball cap,
-  // sunglasses on the forehead, sage trunks, white tank. Per the Visual Asset Brief.
-  renderWesFigure(state = 'idle') {
-    return `
-      <svg class="act2-wes-svg wes-${state}" viewBox="0 0 160 300" data-editor-id="act2-art-wes"
-           role="img" aria-label="Wes, Callie's friend at the lake, standing by the cooler">
-        <ellipse cx="80" cy="288" rx="46" ry="9" fill="rgba(30, 41, 30, 0.26)" />
-        <rect x="60" y="196" width="20" height="86" rx="8" fill="#9C6A4A" />
-        <rect x="84" y="196" width="20" height="86" rx="8" fill="#8A5C3F" />
-        <path d="M52,150 C52,178 56,196 60,204 L104,204 C108,192 110,170 110,150 Z" fill="#7C9A6B" />
-        <path d="M46,92 C46,74 60,64 80,64 C100,64 116,74 116,92 L114,154 C100,160 62,160 48,154 Z" fill="#F7F4EE" />
-        <path d="M44,96 C32,120 28,142 30,156 C31,166 42,168 46,158 C50,142 54,120 58,110 Z" fill="#C08A62" />
-        <path d="M118,96 C132,118 138,140 136,154 C135,164 124,166 120,156 C116,140 112,118 108,108 Z" fill="#C08A62" />
-        <circle cx="36" cy="162" r="10" fill="#C08A62" />
-        <circle cx="128" cy="160" r="10" fill="#C08A62" />
-        <path d="M58,36 C58,18 102,18 104,38 C106,56 100,66 90,68 C76,70 62,64 60,52 Z" fill="#C08A62" />
-        <path d="M62,54 C68,66 96,66 102,54 C104,64 98,72 82,72 C66,72 60,64 62,54 Z" fill="#4A3428" />
-        <path d="M54,32 C54,12 110,10 110,32 L110,38 L54,38 Z" fill="#3F5F49" />
-        <path d="M108,34 L142,40 L142,32 L108,26 Z" fill="#3F5F49" />
-        <rect x="58" y="24" width="48" height="9" rx="4" fill="#27211E" />
-        <ellipse cx="72" cy="50" rx="3" ry="3.6" fill="#27211E" />
-        <ellipse cx="92" cy="50" rx="3" ry="3.6" fill="#27211E" />
-      </svg>
-    `;
-  }
-
-  // PLACEHOLDER ART — the ice chest Wes keeps reaching for.
+  // PLACEHOLDER ART — Callie's own ice chest. It is the Act 1 "cooler" lead, still sitting in
+  // the sun where Tay spent ninety minutes pressed against it, and it is the thing the learner
+  // will be tempted to open in Beat 2C. Set dressing that makes an argument.
   renderIceChest() {
     return `
       <svg class="act2-cooler-svg" viewBox="0 0 140 100" data-editor-id="act2-art-ice-chest" aria-hidden="true">
@@ -957,19 +930,20 @@ export class Act2Screen {
 
     // The four observation hotspots are live only while the checks hub is on screen.
     const hotspotsLive = this.currentBeat === 'checks';
-    const showWes = ['cooling', 'checks', 'gate', 'payoff', 'decision', 'waiting'].includes(this.currentBeat);
-    const wesActive = this.currentBeat === 'cooling'
-      && this.coolingSteps[this.coolingIndex]?.wesLine
+    const showCooler = ['cooling', 'checks', 'gate', 'payoff', 'decision', 'waiting'].includes(this.currentBeat);
+    // The cooler leans into frame on exactly the step where reaching for it is the wrong move.
+    const coolerTempting = this.currentBeat === 'cooling'
+      && this.coolingSteps[this.coolingIndex]?.id === 'water_source'
       && !this.coolingFeedback;
 
     return `
       <div class="act2-scene-layer" data-editor-id="act2-scene-layer">
 
-        <!-- Wes and his cooler, planted at the edge of frame. He is never an obstacle. -->
-        ${showWes ? `
-          <div class="act2-wes-group ${wesActive ? 'is-speaking' : ''}" data-editor-id="act2-wes-group">
-            ${this.renderWesFigure(wesActive ? 'speaking' : 'idle')}
-            <div class="act2-cooler-prop" data-editor-id="act2-cooler-prop">${this.renderIceChest()}</div>
+        <!-- Callie's cooler, at the edge of frame. Nobody is holding it and nobody is arguing
+             for it — the pull toward the ice is the learner's own, which is the point. -->
+        ${showCooler ? `
+          <div class="act2-cooler-group ${coolerTempting ? 'is-tempting' : ''}" data-editor-id="act2-cooler-group">
+            ${this.renderIceChest()}
           </div>
         ` : ''}
 
@@ -1400,8 +1374,9 @@ export class Act2Screen {
           <span class="act2-waiting-badge">You waited</span>
           <h2 class="act2-waiting-title">3:05 PM ➔ 3:10 PM</h2>
           <p class="act2-waiting-line">
-            You sit down next to her and put your hand on her side. Wes goes quiet.
-            Nothing about the five minutes feels like it's helping, and you watch all of it.
+            You sit down next to her and put your hand on her side. The lake carries on
+            behind you without noticing. Nothing about the five minutes feels like it's
+            helping, and you watch all of it.
           </p>
           <div class="act2-waiting-delta" data-editor-id="act2-waiting-delta">
             <div class="act2-delta-row">
@@ -1470,11 +1445,6 @@ export class Act2Screen {
               <span class="act2-truth-stamp-metric">${opt.stamp.metric}</span>
               <span class="act2-truth-stamp-line">${opt.stamp.line}</span>
             </div>
-            ${step.wesLine && this.wesOverruled ? `
-              <p class="act2-wes-line is-pivot" data-editor-id="act2-wes-pivot">
-                <span class="act2-wes-who">Wes</span>"${step.wesPivot}"
-              </p>
-            ` : ''}
           ` : `
             <div class="act2-cool-correction" data-editor-id="act2-cool-correction">
               <span class="act2-cool-correction-tag">What to do instead</span>
@@ -1511,9 +1481,9 @@ export class Act2Screen {
           "${step.techPrompt}"
         </p>
 
-        ${step.wesLine ? `
-          <p class="act2-wes-line" data-editor-id="act2-wes-line">
-            <span class="act2-wes-who">Wes</span>"${step.wesLine}"
+        ${step.commonBelief ? `
+          <p class="act2-belief-line" data-editor-id="act2-belief-line">
+            <span class="act2-belief-who">What everyone knows</span>${step.commonBelief}
           </p>
         ` : ''}
 
@@ -1941,9 +1911,6 @@ export class Act2Screen {
       this.coolingWrongCount += 1;
       this.elapsedSeconds += 45;
       this.severity = Math.min(1, this.severity + 0.05);
-    } else if (step.wesLine) {
-      // Wes was pushing the other option and has just been overruled. He pivots instantly.
-      this.wesOverruled = true;
     }
 
     this.coolingFeedback = { optionId, correct: !!opt.correct };
@@ -1952,7 +1919,6 @@ export class Act2Screen {
 
   advanceCooling() {
     this.coolingFeedback = null;
-    this.wesOverruled = false;
     if (this.coolingIndex < this.coolingSteps.length - 1) {
       this.coolingIndex++;
       this.render();

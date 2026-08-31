@@ -94,7 +94,7 @@ export class Act3Screen {
     // No dialogue. The towel is the only thing in the scene and the only thing to touch.
     this.foldLines = [
       'You fold the towel. It is still damp and it is still cold and there is nothing to do with it.',
-      'You unfold it. Fold it again, smaller. The edge is fraying where Wes wrung it out.',
+      'You unfold it. Fold it again, smaller. The edge is fraying where you wrung it out at the lake.',
       'Somewhere behind the desk a phone rings twice and stops. A door opens somewhere that is not this door.',
       'You put the towel on the chair beside you. Then you pick it back up.'
     ];

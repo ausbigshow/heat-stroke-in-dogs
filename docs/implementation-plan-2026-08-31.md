@@ -34,8 +34,10 @@ not face → sips not forced → wet towel re-wet loop) → transport (AC, windo
 
 - Ice-chest guidance built as written per author's decision, with copy tagged
   `smePending: true` in the data for the Dr. Clark string-swap.
-- Friend-at-the-lake pushing the ice chest = placeholder character (simple SVG, distinct
-  silhouette; Wes per the asset brief).
+- No bystander. Callie is alone with Tay for the whole act. The ice chest stays as a prop —
+  it is Callie's own cooler and the Act 1 "cooler" lead — and the ice misconception is
+  presented unattributed ("what everyone knows") so the learner overrules their own instinct
+  rather than a stranger's.
 - Colorblind-safe: gum check pairs color with capillary-refill TIME everywhere.
 - Follows Act 1 conventions (`data-editor-id` on everything, `isEditModeActive()` guards,
   beat-based render, Edit Mode compatible) via the `new-act-screen` skill.

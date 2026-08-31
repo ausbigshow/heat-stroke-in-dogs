@@ -281,7 +281,7 @@
 }
 
 /* ==========================================================
-   SCENE LAYER — Tay down, Callie crouched, Wes at the cooler
+   SCENE LAYER — Tay down, Callie crouched, the cooler at the edge of frame
    ========================================================== */
 
 .act2-scene-layer {
@@ -346,34 +346,29 @@
   min-width: 120px;
 }
 
-.act2-callie-svg,
-.act2-wes-svg {
+.act2-callie-svg {
   width: 100%;
   height: auto;
   display: block;
   filter: drop-shadow(0 12px 20px rgba(24, 20, 18, 0.32));
 }
 
-.act2-wes-group {
+/* The cooler sits in frame the whole time as set dressing, then comes forward on the one
+   step where reaching for it is the wrong answer. It is never interactive — the temptation
+   is carried by the option text; this only makes sure the object is on screen when it counts. */
+.act2-cooler-group {
   position: absolute;
-  right: 5%;
-  bottom: 8%;
-  width: 11%;
-  min-width: 96px;
-  opacity: 0.82;
+  right: 6%;
+  bottom: 9%;
+  width: 13%;
+  min-width: 110px;
+  opacity: 0.7;
   transition: opacity var(--transition-smooth, 0.35s ease), transform var(--transition-smooth, 0.35s ease);
 }
 
-.act2-wes-group.is-speaking {
+.act2-cooler-group.is-tempting {
   opacity: 1;
-  transform: translateY(-4px) scale(1.04);
-}
-
-.act2-cooler-prop {
-  position: absolute;
-  right: -70%;
-  bottom: 0;
-  width: 90%;
+  transform: translateY(-4px) scale(1.06);
 }
 
 .act2-cooler-svg {
@@ -1395,8 +1390,10 @@
   color: var(--palette-teal);
 }
 
-/* Wes: confident, generous, wrong. Styled as an interruption, never as an obstacle. */
-.act2-wes-line {
+/* The received wisdom the learner probably arrived with, stated plainly and left unattributed.
+   Nobody in the scene is saying it, so nobody in the scene has to be humiliated for it being
+   wrong. Styled as a quiet aside, deliberately NOT as dialogue — no speaker, no quote marks. */
+.act2-belief-line {
   background: color-mix(in srgb, var(--palette-sage) 12%, var(--palette-warm-white));
   border-left: 5px solid var(--palette-sage);
   border-radius: var(--radius-sm);
@@ -1408,13 +1405,7 @@
   margin-bottom: 0.9rem;
 }
 
-.act2-wes-line.is-pivot {
-  border-left-color: var(--color-heat);
-  font-style: normal;
-  margin: 0.8rem 0 0;
-}
-
-.act2-wes-who {
+.act2-belief-who {
   display: block;
   font-family: var(--font-family-display);
   font-size: 0.68rem;
@@ -1825,6 +1816,7 @@
 
   .act2-viewport-card,
   .act2-scene-img,
+  .act2-cooler-group,
   .act2-heat-wash,
   .act2-towel-fill,
   .act2-decision-option,
@@ -1843,6 +1835,11 @@
   .act2-toggle:focus-visible,
   .act2-hud-btn:hover:not(:disabled),
   .act2-hud-btn:focus-visible:not(:disabled) {
+    transform: none;
+  }
+
+  /* The cooler still comes forward, by opacity alone. */
+  .act2-cooler-group.is-tempting {
     transform: none;
   }
 }
