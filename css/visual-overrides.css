@@ -1,1 +1,42 @@
-/* Visual Edit Mode Overrides - Last updated: 2026-08-31T02:55:56.398Z */
+/* Visual Edit Mode Overrides - Last updated: 2026-08-31T03:43:21.736Z */
+
+
+[data-editor-id="act1-mission-card"] {
+  position: relative !important;
+  left:  !important;
+  top:  !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+[data-editor-id="act1-asset-bowl"] {
+  position: relative !important;
+  left:  !important;
+  top:  !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+[data-editor-id="act1-lead-tay-speech"] {
+  position: relative !important;
+  left: 36% !important;
+  top: 20% !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+[data-editor-id="act1-truth-stamp"] {
+  position: relative !important;
+  left:  !important;
+  top:  !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+[data-editor-id="act1-viewport-card"] {
+  position: relative !important;
+  left:  !important;
+  top:  !important;
+  right: auto !important;
+  bottom: auto !important;
+}

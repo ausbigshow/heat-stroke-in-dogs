@@ -41,14 +41,22 @@ export class Act1Screen {
       { type: 'mission_card' }
     ];
 
-    // Leads Data with Dialogue Lines & Decay Alternates
+    // Leads Data with Dialogue Lines & Decay Alternates.
+    //
+    // NAMING: Act 1 is inside Tay's head, so every learner-facing label uses HER name for
+    // the object ("The Vault", not "The Cooler"). Per the Craft user-flow doc, Beat 1G is
+    // where "the four hotspot icons redraw with their real labels" — the Case File table is
+    // the reveal, so the real names must not leak before it. `realName` is used there only.
+    //
+    // TRUTH STAMPS: the `stamp`/`stamps` fields are retained as authored veterinary source
+    // content (they feed the Case File copy and Act 2), but are no longer rendered inline
+    // during Act 1 — see renderLeadActive().
     this.leadsData = {
       cooler: {
         id: 'cooler',
-        name: 'The Cooler',
         tayName: 'The Vault',
+        realName: 'The Cooler',
         icon: '🥪',
-        class: 'hotspot-cooler',
         clockAdvance: 18,
         lines: [
           "The vault. I know the vault.",
@@ -57,21 +65,22 @@ export class Act1Screen {
           "I'll just wait right here."
         ],
         fourthSlotLine: "Vault. Waiting. Good plan.",
+        // Beat plays as one exchange: Tay's riff, Callie's line over the top, Tay's reply.
+        callieLine: "You're not gonna get in there, baby.",
+        tayFollowUp: "I might.",
+        exitLine: "…Okay. The vault wins. For now.",
         stamp: {
           tag: 'Risk Factor: Conductive & Direct Radiant Heat',
           temp: '99°F Direct Sun',
           text: "She has been pressed against it for eleven minutes. Full sun, no shade within six feet. The cooler is cold. The spot she picked is not.",
           lesson: "Dogs choose food over comfort, every single time."
-        },
-        callieLine: "You're not gonna get in there, baby.",
-        tayFollowUp: "I might."
+        }
       },
       dock: {
         id: 'dock',
-        name: 'The Dock',
         tayName: 'High Ground',
+        realName: 'The Dock',
         icon: '☀️',
-        class: 'hotspot-dock',
         clockAdvance: 15,
         lines: [
           "High ground. Good for seeing.",
@@ -80,6 +89,9 @@ export class Act1Screen {
           "I should patrol it. For clues."
         ],
         fourthSlotLine: "Hot dog. Somewhere. Probably.",
+        // She abandons the dock because the SCENT is old — never because it's hot.
+        // Tay never clocks the heat; that's the whole engine of the act.
+        exitLine: "Old clues. No hot dog now. Moving on.",
         stamps: [
           {
             tag: 'Risk Factor: Ground Surface Radiation',
@@ -97,18 +109,18 @@ export class Act1Screen {
       },
       bowl: {
         id: 'bowl',
-        name: 'Her Water Bowl',
         tayName: 'The Water One',
+        realName: 'Her Water Bowl',
         icon: '🥣',
-        class: 'hotspot-bowl',
         clockAdvance: 20,
         lines: [
           "My bowl! …It's the water one.",
           "No meat in there. Never is.",
           "I checked yesterday. Same result.",
-          "Maybe later. Not a priority."
+          "Water is not a lead. Filed under boring."
         ],
         fourthSlotLine: "Water. Later. Not now.",
+        exitLine: "Maybe later. Not a priority.",
         stamp: {
           tag: 'Risk Factor: Dehydration & Heat Stagnation',
           temp: 'Warm Water Since Noon',
@@ -118,19 +130,19 @@ export class Act1Screen {
       },
       lake: {
         id: 'lake',
-        name: 'The Lake',
         tayName: 'The Biggest Bowl',
+        realName: 'The Lake',
         icon: '🌊',
-        class: 'hotspot-lake',
         clockAdvance: 15,
         lines: [
           "That's the biggest bowl ever.",
           "Still water, though. No meat.",
           "Nothing in there wants me.",
-          "Hard pass."
+          "Enormous. Useless. Hard pass."
         ],
         fourthSlotLine: "Just water. Pass.",
-        // The lake has NO truth stamp per the Craft script!
+        exitLine: "Biggest bowl. Zero snacks. Next.",
+        // The lake is the one lead the screen never corrects — no stamp, by design.
         revisitGags: [
           "Still water. Confirmed again.",
           "Nope. Checked it twice.",
@@ -256,7 +268,13 @@ export class Act1Screen {
       saturationDrop = Math.max(saturationDrop, 40);
     }
 
-    return { driftOpacity, saturationDrop };
+    // The canopy's cast shadow tracks the sun: it starts west of the poles at 1:30 PM and
+    // slides east/short as the afternoon runs on, so by the Shade Drift beat it has crept
+    // off the spot Tay picked. Percentages are of the canopy's own box.
+    const shadeShiftX = -14 + t * 46;
+    const shadeScaleY = 1 - t * 0.34;
+
+    return { driftOpacity, saturationDrop, shadeShiftX, shadeScaleY };
   }
 
   render() {
@@ -266,7 +284,9 @@ export class Act1Screen {
     const leadsCount = this.visitedLeads.size;
     const allLeadsVisited = leadsCount === 4;
     const isPovRaised = this.currentBeat === 'pov_rise';
-    const { driftOpacity, saturationDrop } = this.getEscalation();
+    const { driftOpacity, saturationDrop, shadeShiftX, shadeScaleY } = this.getEscalation();
+    // Beats 1D/1E push in on the canopy so the nap and the shade drift read at close range.
+    const isCanopyFocus = this.currentBeat === 'nap' || this.currentBeat === 'drift';
 
     this.container.innerHTML = `
       <div class="act1-container" data-editor-id="act1-screen-container">
@@ -274,9 +294,9 @@ export class Act1Screen {
         <!-- Main 16:9 Viewport Stage -->
         <div
           id="act1-card"
-          class="act1-viewport-card ${isPovRaised ? 'pov-raised' : 'low-cam'}"
+          class="act1-viewport-card ${isPovRaised ? 'pov-raised' : 'low-cam'} ${isCanopyFocus ? 'canopy-focus' : ''}"
           data-editor-id="act1-viewport-card"
-          style="--act1-drift-opacity: ${driftOpacity}; --act1-saturation-drop: ${saturationDrop}%;"
+          style="--act1-drift-opacity: ${driftOpacity}; --act1-saturation-drop: ${saturationDrop}%; --act1-shade-shift: ${shadeShiftX}%; --act1-shade-scale-y: ${shadeScaleY};"
         >
           <!-- Background Scene Illustration -->
           <img
@@ -369,23 +389,77 @@ export class Act1Screen {
   // A single interactive lead object: no separate floating pin/badge — the drawn
   // object itself glows to invite the click, and shows a checkmark once visited.
   // Hover/focus reveals a small name tooltip anchored to the object.
-  renderInteractable(leadId, label, icon, artHtml) {
+  renderInteractable(leadId, artHtml) {
+    const lead = this.leadsData[leadId];
     const visited = this.visitedLeads.has(leadId);
     return `
       <button
         class="act1-interactable interactable-${leadId} ${visited ? 'visited' : ''}"
         data-lead="${leadId}"
         data-editor-id="act1-asset-${leadId}"
-        aria-label="Investigate ${label}"
+        aria-label="Investigate ${lead.tayName}"
       >
         <span class="interactable-art">${artHtml}</span>
-        <span class="interactable-tooltip">${icon} ${label}</span>
+        <span class="interactable-tooltip">${lead.icon} ${lead.tayName}</span>
         ${visited ? '<span class="interactable-check">✓</span>' : ''}
       </button>
     `;
   }
 
+  // Tay, drawn to the character model sheet (coat #34383B, white blaze/chest, ear pink
+  // #DC7F77, pads #43484B). Rigged as named groups so beats can animate her independently:
+  // `tay-rig-chest` breathes, `tay-rig-ear` twitches, `tay-rig-head` settles for the nap.
+  renderTayLyingDown() {
+    return `
+      <svg class="tay-lying-svg" viewBox="0 0 260 150" data-editor-id="act1-asset-tay">
+        <ellipse cx="130" cy="136" rx="96" ry="12" fill="rgba(30, 41, 30, 0.32)" />
+
+        <!-- Hind leg (far) -->
+        <path d="M196,116 C210,112 222,116 224,124 C226,132 214,134 200,132 Z" fill="#2C3033" />
+
+        <!-- Tail -->
+        <path d="M212,104 C226,98 236,102 234,112 C232,118 224,116 218,110 Z" fill="#2C3033" />
+
+        <!-- Body, lying flat -->
+        <g class="tay-rig-chest">
+          <path d="M64,120 C60,92 84,74 122,74 C166,74 202,88 210,110 C214,122 206,132 190,133 L84,133 C70,133 65,128 64,120 Z" fill="#34383B" />
+          <!-- White chest/belly blaze -->
+          <path d="M92,133 C86,120 92,106 106,102 C118,99 128,106 130,118 C131,127 126,133 118,133 Z" fill="#FFFFFF" />
+        </g>
+
+        <!-- Front paws stretched forward -->
+        <path d="M64,124 C50,122 36,126 34,132 C33,137 40,139 52,138 L78,136 Z" fill="#34383B" />
+        <path d="M60,136 C50,136 42,137 38,138 C44,140 54,140 62,139 Z" fill="#43484B" />
+
+        <g class="tay-rig-head">
+          <!-- Head resting on the paws -->
+          <path d="M40,110 C34,96 44,82 62,80 C82,78 96,88 97,104 C98,118 86,128 68,128 C52,128 44,122 40,110 Z" fill="#34383B" />
+
+          <!-- Ears -->
+          <g class="tay-rig-ear">
+            <path d="M60,82 C56,66 62,54 70,54 C78,54 82,66 79,82 Z" fill="#34383B" />
+            <path d="M64,79 C61,68 65,60 70,60 C75,60 77,68 75,79 Z" fill="#DC7F77" />
+          </g>
+          <path d="M86,84 C86,70 92,60 99,62 C105,64 105,76 99,88 Z" fill="#2C3033" />
+
+          <!-- Muzzle & white blaze -->
+          <path d="M40,112 C34,104 36,94 44,90 C54,85 66,90 68,100 C70,112 60,120 50,119 C45,118 42,116 40,112 Z" fill="#FFFFFF" />
+          <ellipse cx="41" cy="103" rx="7" ry="5.5" fill="#1A1D1F" />
+          <!-- Closed, sleepy eye -->
+          <path d="M62,97 C66,94 72,94 76,97" stroke="#1A1D1F" stroke-width="2.6" fill="none" stroke-linecap="round" />
+          <!-- Mouth, slightly open panting -->
+          <path d="M45,113 C50,117 57,117 61,114" stroke="#1A1D1F" stroke-width="2" fill="none" stroke-linecap="round" />
+          <path class="tay-rig-tongue" d="M50,116 C54,116 57,118 56,122 C55,125 50,125 49,121 Z" fill="#DC7F77" />
+        </g>
+      </svg>
+    `;
+  }
+
   renderSceneLayer() {
+    // The canopy becomes the "take a break" trigger once every lead has been worked.
+    const canopyArmed = this.currentBeat === 'hub' && this.visitedLeads.size === 4;
+    const isNapping = this.currentBeat === 'nap' || this.currentBeat === 'drift';
+
     return `
       <!-- Redrawn Scene Layer on Lake-Blank.jpg from Tay's Low First-Person Dog Eyeline -->
       <div class="act1-scene-layer" data-editor-id="act1-scene-layer">
@@ -393,22 +467,40 @@ export class Act1Screen {
         <!-- Persistent shade-drift wash: opacity driven by --act1-drift-opacity (see getEscalation()) -->
         <div class="shade-drift-overlay" data-editor-id="act1-shade-drift-overlay"></div>
 
-        <!-- Pop-Up Shade Canopy (scenery only — not a lead) -->
-        <svg class="lake-scene-canopy" viewBox="0 0 350 260" data-editor-id="act1-asset-canopy">
-          <polygon points="10,240 330,240 345,190 25,190" fill="rgba(36, 52, 36, 0.38)" />
-          <rect x="35" y="60" width="8" height="145" fill="#5E3D2A" rx="2" />
-          <rect x="305" y="60" width="8" height="145" fill="#5E3D2A" rx="2" />
-          <rect x="15" y="70" width="10" height="165" fill="#784E34" rx="2" />
-          <rect x="325" y="70" width="10" height="165" fill="#784E34" rx="2" />
-          <polygon points="170,5 5,75 170,75" fill="#E2D4C3" />
-          <polygon points="170,5 170,75 335,75" fill="#CFC2AC" />
-          <polygon points="170,5 150,75 190,75" fill="#DDD0BC" />
-          <polygon points="5,75 335,75 335,90 5,90" fill="#C8BAA4" />
-          <polygon points="5,90 335,90 330,95 10,95" fill="#B3A58F" />
-        </svg>
+        <!-- Pop-Up Shade Canopy. Scenery until all four leads are worked, then it becomes
+             the break trigger. Its cast shadow is a separate element so it can slide as the
+             sun moves (--act1-shade-shift), independently of the canopy structure. -->
+        <div
+          class="lake-scene-canopy ${canopyArmed ? 'canopy-armed' : ''}"
+          data-editor-id="act1-asset-canopy"
+          ${canopyArmed ? 'role="button" tabindex="0" aria-label="Rest in the shade"' : ''}
+        >
+          <svg class="canopy-shade-svg" viewBox="0 0 350 260" aria-hidden="true">
+            <polygon points="10,240 330,240 345,190 25,190" fill="rgba(36, 52, 36, 0.38)" />
+          </svg>
+          <svg class="canopy-frame-svg" viewBox="0 0 350 260" aria-hidden="true">
+            <rect x="35" y="60" width="8" height="145" fill="#5E3D2A" rx="2" />
+            <rect x="305" y="60" width="8" height="145" fill="#5E3D2A" rx="2" />
+            <rect x="15" y="70" width="10" height="165" fill="#784E34" rx="2" />
+            <rect x="325" y="70" width="10" height="165" fill="#784E34" rx="2" />
+            <polygon points="170,5 5,75 170,75" fill="#E2D4C3" />
+            <polygon points="170,5 170,75 335,75" fill="#CFC2AC" />
+            <polygon points="170,5 150,75 190,75" fill="#DDD0BC" />
+            <polygon points="5,75 335,75 335,90 5,90" fill="#C8BAA4" />
+            <polygon points="5,90 335,90 330,95 10,95" fill="#B3A58F" />
+          </svg>
+          ${canopyArmed ? '<span class="canopy-tooltip">😴 Rest in the shade</span>' : ''}
+        </div>
 
-        <!-- 1. The Cooler ("The Vault") -->
-        ${this.renderInteractable('cooler', 'The Cooler', '🥪', `
+        <!-- Tay, asleep under the canopy (Beats 1D/1E) -->
+        ${isNapping ? `
+          <div class="lake-scene-tay ${this.currentBeat === 'drift' ? 'tay-drifting' : ''}" data-editor-id="act1-tay-sleeping">
+            ${this.renderTayLyingDown()}
+          </div>
+        ` : ''}
+
+        <!-- 1. The Cooler ("The Vault") — out in open sun, off the tree roots -->
+        ${this.renderInteractable('cooler', `
           <svg viewBox="0 0 130 90">
             <ellipse cx="65" cy="80" rx="55" ry="9" fill="rgba(36, 52, 36, 0.45)" />
             <rect x="15" y="24" width="100" height="50" rx="8" fill="#0284C7" />
@@ -424,40 +516,65 @@ export class Act1Screen {
           </svg>
         `)}
 
-        <!-- 2. The Wooden Dock ("High Ground") -->
-        ${this.renderInteractable('dock', 'The Dock', '☀️', `
-          <svg viewBox="0 0 180 110">
-            <rect x="30" y="38" width="12" height="55" rx="3" fill="#452a1d" />
-            <rect x="85" y="44" width="12" height="52" rx="3" fill="#452a1d" />
-            <rect x="140" y="48" width="12" height="48" rx="3" fill="#452a1d" />
-            <ellipse cx="36" cy="93" rx="16" ry="4.5" fill="rgba(36, 73, 82, 0.45)" />
-            <ellipse cx="91" cy="96" rx="16" ry="4.5" fill="rgba(36, 73, 82, 0.45)" />
-            <ellipse cx="146" cy="96" rx="16" ry="4.5" fill="rgba(36, 73, 82, 0.45)" />
-            <polygon points="10,40 170,45 165,56 5,51" fill="#5E3D2A" />
-            <polygon points="12,38 30,39 26,50 8,49" fill="#B45309" />
-            <polygon points="33,39 51,40 47,51 29,50" fill="#D97706" />
-            <polygon points="54,40 72,41 68,52 50,51" fill="#B45309" />
-            <polygon points="75,41 93,42 89,53 71,52" fill="#D97706" />
-            <polygon points="96,42 114,43 110,54 92,53" fill="#B45309" />
-            <polygon points="117,43 135,44 131,55 113,54" fill="#D97706" />
-            <polygon points="138,44 156,45 152,56 134,55" fill="#B45309" />
+        <!-- 2. The Wooden Dock ("High Ground") — drawn in receding perspective so it runs
+             out from the beach into the water; the near (short) end meets the shoreline
+             square-on, and the whole asset is rotated to the shore normal in CSS. -->
+        ${this.renderInteractable('dock', `
+          <svg viewBox="0 0 200 150">
+            <!-- Pilings, far pair first -->
+            <rect x="80" y="44" width="7" height="30" rx="2" fill="#452A1D" />
+            <rect x="114" y="44" width="7" height="30" rx="2" fill="#452A1D" />
+            <ellipse cx="83" cy="74" rx="9" ry="3" fill="rgba(24, 62, 74, 0.5)" />
+            <ellipse cx="118" cy="74" rx="9" ry="3" fill="rgba(24, 62, 74, 0.5)" />
+            <rect x="52" y="96" width="9" height="42" rx="2" fill="#3A2317" />
+            <rect x="140" y="96" width="9" height="42" rx="2" fill="#3A2317" />
+
+            <!-- Deck: wide near end, narrow far end -->
+            <polygon points="78,40 122,40 160,140 40,140" fill="#5E3D2A" />
+            <!-- Cross planks, alternating, converging with perspective -->
+            <polygon points="79,44 121,44 123,58 77,58" fill="#D97706" />
+            <polygon points="77,60 123,60 126,76 74,76" fill="#B45309" />
+            <polygon points="74,78 126,78 130,95 70,95" fill="#D97706" />
+            <polygon points="70,97 130,97 134,115 66,115" fill="#B45309" />
+            <polygon points="66,117 134,117 139,136 61,136" fill="#D97706" />
+            <!-- Side rails -->
+            <polygon points="78,40 82,40 44,140 38,140" fill="#4A2E1E" />
+            <polygon points="118,40 122,40 162,140 156,140" fill="#4A2E1E" />
           </svg>
         `)}
 
-        <!-- 3. Her Water Bowl ("The Water One") -->
-        ${this.renderInteractable('bowl', 'Water Bowl', '🥣', `
+        <!-- 3. Her Water Bowl ("The Water One") — larger, and well down from full:
+             it has been evaporating in the sun since noon. -->
+        ${this.renderInteractable('bowl', `
           <svg viewBox="0 0 80 60">
-            <ellipse cx="40" cy="46" rx="34" ry="12" fill="rgba(36, 52, 36, 0.45)" />
-            <path d="M12,24 L20,44 C22,48 58,48 60,44 L68,24 Z" fill="#94A3B8" />
-            <ellipse cx="40" cy="24" rx="28" ry="11" fill="#CBD5E1" />
-            <ellipse cx="40" cy="25" rx="24" ry="9" fill="#64748B" />
-            <ellipse cx="40" cy="27" rx="20" ry="7" fill="#38BDF8" />
-            <ellipse cx="48" cy="26" rx="8" ry="2.5" fill="rgba(255, 255, 255, 0.85)" />
+            <ellipse cx="40" cy="48" rx="35" ry="11" fill="rgba(36, 52, 36, 0.45)" />
+            <path d="M12,22 L20,46 C22,50 58,50 60,46 L68,22 Z" fill="#94A3B8" />
+            <ellipse cx="40" cy="22" rx="28" ry="11" fill="#CBD5E1" />
+            <!-- Dry inner wall above the waterline -->
+            <ellipse cx="40" cy="23" rx="24" ry="9.5" fill="#64748B" />
+            <path d="M18,26 C20,36 24,40 40,40 C56,40 60,36 62,26 C58,32 52,35 40,35 C28,35 22,32 18,26 Z" fill="#556173" />
+            <!-- Low, warm waterline sitting well below the rim -->
+            <ellipse cx="40" cy="37" rx="15" ry="4.6" fill="#38BDF8" opacity="0.85" />
+            <ellipse cx="45" cy="36.2" rx="5" ry="1.5" fill="rgba(255, 255, 255, 0.7)" />
           </svg>
         `)}
 
-        <!-- 4. The Lake ("The Biggest Bowl") — open water is already painted in the background plate -->
-        ${this.renderInteractable('lake', 'The Lake', '🌊', '')}
+        <!-- 4. The Lake ("The Biggest Bowl") — open water is already painted in the
+             background plate, so the affordance is a set of shore-parallel wavefronts. -->
+        ${this.renderInteractable('lake', `
+          <svg class="lake-ripple-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <defs>
+              <!-- Wavefront traced from the actual sand/water boundary of Lake-Blank.jpg,
+                   so the ripples run parallel to the shore instead of radiating. -->
+              <path id="act1-shore-wave" d="M-8,99 C18,97 38,91 60,85 S86,80 108,77" />
+            </defs>
+            <g fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1.6" stroke-linecap="round">
+              <use href="#act1-shore-wave" class="lake-wave lake-wave-1" />
+              <use href="#act1-shore-wave" class="lake-wave lake-wave-2" />
+              <use href="#act1-shore-wave" class="lake-wave lake-wave-3" />
+            </g>
+          </svg>
+        `)}
 
       </div>
     `;
@@ -503,11 +620,11 @@ export class Act1Screen {
           <div class="mission-card-body">
             <p style="margin-bottom: 0.5rem;">Look, kibble is fine at home when there are zero other options. But we are at the lake! There are sandwiches, grilled meats, and dropped snacks out here somewhere.</p>
             <p>I've sniffed out <strong>four promising leads</strong> in the immediate area. Time to work the case and track down the food!</p>
+            <!-- Tay's names only. The real labels are the Case File's reveal (Beat 1G). -->
             <div class="mission-leads-grid">
-              <div class="mission-lead-item"><span>🥪</span> <span>The Cooler ("The Vault")</span></div>
-              <div class="mission-lead-item"><span>☀️</span> <span>The Dock ("High Ground")</span></div>
-              <div class="mission-lead-item"><span>🥣</span> <span>Water Bowl ("The Water One")</span></div>
-              <div class="mission-lead-item"><span>🌊</span> <span>The Lake ("The Biggest Bowl")</span></div>
+              ${Object.values(this.leadsData).map(l => `
+                <div class="mission-lead-item"><span>${l.icon}</span> <span>${l.tayName}</span></div>
+              `).join('')}
             </div>
           </div>
           <div class="mission-card-footer">
@@ -676,63 +793,41 @@ export class Act1Screen {
     const isLake = this.activeLeadId === 'lake';
     const visitCount = this.leadVisitCounts[this.activeLeadId] || 1;
 
-    // Determine current line from narration decay
+    // Narration decay (Craft rule): at lead slot N, play the first (5 − N) lines.
+    // The 4th lead investigated drops to its single short, muddled alternate.
     const leadSlotIndex = this.leadVisitOrder.indexOf(this.activeLeadId);
     const slotN = leadSlotIndex >= 0 ? leadSlotIndex + 1 : (this.visitedLeads.size || 1);
-    
-    let leadLines = [];
-    if (slotN >= 4) {
-      leadLines = [lead.fourthSlotLine];
+    const isFourthSlot = slotN >= 4;
+
+    // The whole exchange plays on ONE screen — Tay's riff, Callie over the top, Tay's
+    // reply, then the line where she gives up on the lead. No per-visit line stepping.
+    let tayLines = [];
+    let showCallie = false;
+    let showExit = false;
+
+    if (isLake && visitCount > 1) {
+      // Lake revisits are gag-only: no decay, no exit line, one throwaway line.
+      const gagIndex = Math.min(visitCount - 2, lead.revisitGags.length - 1);
+      tayLines = [lead.revisitGags[gagIndex]];
+    } else if (isFourthSlot) {
+      tayLines = [lead.fourthSlotLine];
+      showCallie = !!lead.callieLine;
     } else {
-      const linesCount = Math.max(1, 5 - slotN);
-      leadLines = lead.lines.slice(0, linesCount);
+      tayLines = lead.lines.slice(0, Math.max(1, 5 - slotN));
+      showCallie = !!lead.callieLine;
+      showExit = !!lead.exitLine;
     }
 
-    let currentDialogueLine = '';
-    let isTaySpeaking = true;
-    let isCallieSpeaking = false;
-    let isTruthStampShowing = false;
-    let activeStamp = null;
-
-    if (isLake) {
-      if (visitCount === 1) {
-        currentDialogueLine = leadLines[0];
-      } else {
-        const gagIndex = Math.min(visitCount - 2, lead.revisitGags.length - 1);
-        currentDialogueLine = lead.revisitGags[gagIndex];
-      }
-    } else {
-      if (slotN >= 4) {
-        currentDialogueLine = lead.fourthSlotLine;
-        isTruthStampShowing = true;
-        activeStamp = lead.stamp || (lead.stamps ? lead.stamps[0] : null);
-        if (lead.callieLine) isCallieSpeaking = true;
-      } else {
-        const lineIdx = Math.min(visitCount - 1, leadLines.length - 1);
-        currentDialogueLine = leadLines[lineIdx];
-
-        // On the final dialogue line of this lead (or subsequent visits), show Callie line and Truth Stamp
-        if (visitCount >= leadLines.length) {
-          if (lead.callieLine) isCallieSpeaking = true;
-          isTruthStampShowing = true;
-          if (lead.stamps) {
-            const stampIdx = Math.min(visitCount - leadLines.length, lead.stamps.length - 1);
-            activeStamp = lead.stamps[stampIdx];
-          } else if (lead.stamp) {
-            activeStamp = lead.stamp;
-          }
-        }
-      }
-    }
+    const onomatopoeia = isLake && visitCount > 1 ? 'Splash!' : 'Snort!';
 
     return `
       <div class="act1-pov-viewport-modal" data-editor-id="act1-pov-viewport-modal">
         <div class="pov-viewport-card" data-editor-id="act1-pov-card">
-          
+
           <!-- Top Header with Location Tag & Return Button -->
           <div class="pov-viewport-header">
             <div class="pov-tag-badge">
-              <span>📍 TAY'S POV: ${lead.name.toUpperCase()} (${lead.tayName.toUpperCase()})</span>
+              <span>📍 TAY'S POV: ${lead.tayName.toUpperCase()}</span>
             </div>
             <button id="pov-btn-close" class="pov-close-btn" data-editor-id="act1-pov-close" title="Return to Lake Hub">
               ✕ Lake Hub
@@ -742,40 +837,42 @@ export class Act1Screen {
           <!-- Close-Up Vector Scene from Tay's POV -->
           ${this.renderPovScene(this.activeLeadId)}
 
-          <!-- Dialogue & Overlays Layer inside Viewport -->
+          <!-- Dialogue Layer: the full exchange, all at once -->
           <div class="pov-overlay-speech">
-            ${isTaySpeaking ? `
-              <div 
-                class="speech-bubble tay-bubble" 
-                style="top: 20%; left: 36%; max-width: min(350px, 32vw);" 
-                data-editor-id="act1-lead-tay-speech"
-              >
-                <div class="speech-bubble-speaker">
-                  <span>🐶</span>
-                  <span>Tay</span>
-                </div>
-                <p class="speech-bubble-text">
-                  <span class="tay-onomatopoeia">${isLake && visitCount > 1 ? 'Splash!' : 'Snort!'}</span>
-                  <span class="tay-sub-dialogue">("${currentDialogueLine}"${isCallieSpeaking && lead.tayFollowUp ? ` … "${lead.tayFollowUp}"` : ''})</span>
-                </p>
+            <div
+              class="speech-bubble tay-bubble pov-dialogue-bubble"
+              data-editor-id="act1-lead-tay-speech"
+            >
+              <div class="speech-bubble-speaker">
+                <span>🐶</span>
+                <span>Tay</span>
               </div>
-            ` : ''}
+              <p class="speech-bubble-text">
+                <span class="tay-onomatopoeia">${onomatopoeia}</span>
+              </p>
+              <div class="pov-dialogue-run">
+                ${tayLines.map(line => `
+                  <span class="tay-sub-dialogue pov-dialogue-line">"${line}"</span>
+                `).join('')}
+              </div>
+            </div>
 
-            ${isCallieSpeaking ? `
-              <div class="callie-offscreen-banner" style="top: 3.8rem; right: 1.5rem;" data-editor-id="act1-lead-callie-banner">
-                <div class="callie-offscreen-label">👩 Callie</div>
+            ${showCallie ? `
+              <div class="callie-offscreen-banner pov-callie-banner" data-editor-id="act1-lead-callie-banner">
+                <div class="callie-offscreen-label">👩 Callie <span class="callie-offscreen-hint">(offscreen)</span></div>
                 <div>"${lead.callieLine}"</div>
+                ${lead.tayFollowUp ? `
+                  <div class="pov-tay-retort">
+                    <span class="pov-tay-retort-label">🐶 Tay</span>
+                    <span class="tay-sub-dialogue">"${lead.tayFollowUp}"</span>
+                  </div>
+                ` : ''}
               </div>
             ` : ''}
 
-            ${isTruthStampShowing && activeStamp ? `
-              <div class="act1-truth-stamp-overlay" style="bottom: 4.6rem;" data-editor-id="act1-truth-stamp">
-                <div class="stamp-header">
-                  <span class="stamp-tag">📋 ${activeStamp.tag}</span>
-                  <span class="stamp-temp-badge">${activeStamp.temp}</span>
-                </div>
-                <div class="stamp-body-text">${activeStamp.text}</div>
-                <div class="stamp-lesson-badge">${activeStamp.lesson}</div>
+            ${showExit ? `
+              <div class="pov-exit-line" data-editor-id="act1-lead-exit-line">
+                <span class="tay-sub-dialogue">"${lead.exitLine}"</span>
               </div>
             ` : ''}
           </div>
@@ -986,18 +1083,17 @@ export class Act1Screen {
 
       case 'hub':
         const allVisited = this.visitedLeads.size === 4;
+        // Once every lead is worked, the canopy itself becomes the break trigger — so this
+        // shows a prompt pointing at it rather than a second button that does the same job.
         return allVisited ? `
-          <button 
-            id="act1-btn-start-nap" 
-            class="act1-hud-btn btn-action-primary pulse-btn" 
-            data-editor-id="act1-btn-start-nap"
-          >
-            🐾 Time for a Break ➔
-          </button>
+          <div class="act1-hud-pill canopy-prompt-pill" data-editor-id="act1-canopy-prompt">
+            <span>😴</span>
+            <span>All four leads worked — click the canopy to rest</span>
+          </div>
         ` : `
-          <button 
-            id="act1-btn-check-gate" 
-            class="act1-hud-btn" 
+          <button
+            id="act1-btn-check-gate"
+            class="act1-hud-btn"
             data-editor-id="act1-btn-check-gate"
           >
             Check Finished ▶
@@ -1154,6 +1250,24 @@ export class Act1Screen {
       });
     });
 
+    // 4b. The canopy is the break trigger once all four leads are worked
+    const canopyEl = this.container.querySelector('.lake-scene-canopy.canopy-armed');
+    if (canopyEl) {
+      const triggerBreak = (e) => {
+        e.stopPropagation();
+        if (this.isEditModeActive() || this.currentBeat !== 'hub') return;
+        if (this.visitedLeads.size < 4) return;
+        this.startNap();
+      };
+      canopyEl.addEventListener('click', triggerBreak);
+      canopyEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          triggerBreak(e);
+        }
+      });
+    }
+
     // 5. POV Viewport Close / Done Investigating Button
     const povCloseBtn = this.container.querySelector('#pov-btn-close');
     if (povCloseBtn) {
@@ -1182,32 +1296,19 @@ export class Act1Screen {
       });
     }
 
-    // 6. Gate Check
+    // 6. Gate Check — only rendered while leads remain, so it always shows the gate beat.
+    //    (Starting the nap is the canopy's job now; see 4b.)
     const checkGateBtn = this.container.querySelector('#act1-btn-check-gate');
     if (checkGateBtn) {
       checkGateBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (this.isEditModeActive()) return;
-        if (this.visitedLeads.size < 4) {
-          this.currentBeat = 'gate';
-          this.render();
-        } else {
-          this.startNap();
-        }
+        this.currentBeat = 'gate';
+        this.render();
       });
     }
 
-    // 7. Start Nap
-    const startNapBtn = this.container.querySelector('#act1-btn-start-nap');
-    if (startNapBtn) {
-      startNapBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        this.startNap();
-      });
-    }
-
-    // 8. Start Shade Drift
+    // 7. Start Shade Drift
     const startDriftBtn = this.container.querySelector('#act1-btn-start-drift');
     if (startDriftBtn) {
       startDriftBtn.addEventListener('click', (e) => {
