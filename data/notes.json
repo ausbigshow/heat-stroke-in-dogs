@@ -33,7 +33,7 @@
     "width": 260,
     "height": 160,
     "color": "yellow",
-    "status": "open",
+    "status": "implemented",
     "text": "make bigger and more obviously interactive. also, there's no truth stamp here.",
     "targetElementId": "act1-asset-lake",
     "createdAt": "2026-08-31T04:24:44.500Z"

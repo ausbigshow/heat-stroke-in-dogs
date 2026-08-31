@@ -133,7 +133,12 @@ export class Act1Screen {
         ],
         fourthSlotLine: "Just water. Pass.",
         exitLine: "Biggest bowl. Zero snacks. Next.",
-        // The lake is the one lead the screen never corrects — no stamp, by design.
+        // The Craft script originally left the lake uncorrected ("the silence is the
+        // point"), but it now carries a stamp like the other three, by author's call.
+        stamp: {
+          metric: '72°F water',
+          line: "The one thing here that could have cooled her down. She looked straight at it and walked away."
+        },
         revisitGags: [
           "Still water. Confirmed again.",
           "Nope. Checked it twice.",
@@ -874,9 +879,10 @@ export class Act1Screen {
     if (!step) return '';
 
     const isLastStep = stepIdx === steps.length - 1;
-    // The lake is the one lead the screen never corrects — its silence is the point.
-    // The stamp lands with the final beat, once she has had her say.
-    const stamp = (!isLake && isLastStep) ? lead.stamp : null;
+    // The stamp lands with the final beat, once she has had her say. Lake revisits are
+    // gag-only, so they don't re-run the correction.
+    const isLakeRevisit = isLake && (this.leadVisitCounts[this.activeLeadId] || 1) > 1;
+    const stamp = (isLastStep && !isLakeRevisit) ? lead.stamp : null;
 
     return `
       <div class="act1-pov-viewport-modal" data-editor-id="act1-pov-viewport-modal">
