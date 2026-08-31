@@ -4,13 +4,14 @@
  */
 
 export class EditorToolbar {
-  constructor(editorState, selectionManager, historyManager, saveManager, versionManager, notesManager) {
+  constructor(editorState, selectionManager, historyManager, saveManager, versionManager, notesManager, sectionManager) {
     this.state = editorState;
     this.selection = selectionManager;
     this.history = historyManager;
     this.saveManager = saveManager;
     this.versionManager = versionManager;
     this.notesManager = notesManager;
+    this.sectionManager = sectionManager;
 
     this.toolbar = null;
     this.initToolbar();
@@ -30,6 +31,23 @@ export class EditorToolbar {
             <span>🐾 Heatstroke Module</span>
             <span class="edit-mode-badge">Edit Mode</span>
           </div>
+
+          <!-- Section Jumper Navigation -->
+          <div class="edit-section-nav-group">
+            <span class="edit-nav-label" title="Current Section">📍</span>
+            <select id="edit-section-select" class="edit-section-select" title="Jump to section (or press J)">
+              <option value="opening">🏠 Title Screen</option>
+              <option value="act0">📋 Act 0: Normal Day</option>
+              <option value="act1">🐾 Act 1: The Lake Trip</option>
+              <option value="act2">🚨 Act 2: Emergency Response</option>
+            </select>
+            <button id="btn-jump-section" class="edit-tool-btn edit-btn-nav-modal" title="Jump to Specific Section or Beat (J / Ctrl+J)">
+              <span>📑 Menu</span>
+            </button>
+          </div>
+
+          <div class="edit-toolbar-separator"></div>
+
           <!-- Tools -->
           <button class="edit-tool-btn active" data-tool="select_move" title="Select and Move Elements (V)">
             <span>👆 Move</span>
@@ -188,6 +206,29 @@ export class EditorToolbar {
       this.updateDeleteBtn();
     });
 
+    // Section selector dropdown
+    const sectionSelect = this.toolbar.querySelector('#edit-section-select');
+    if (sectionSelect && this.sectionManager) {
+      sectionSelect.addEventListener('change', (e) => {
+        this.sectionManager.jumpTo(e.target.value);
+      });
+    }
+
+    // Section jump menu modal button
+    const jumpSectionBtn = this.toolbar.querySelector('#btn-jump-section');
+    if (jumpSectionBtn && this.sectionManager) {
+      jumpSectionBtn.addEventListener('click', () => {
+        this.sectionManager.showJumpModal();
+      });
+    }
+
+    // Synchronize section select when screen changes
+    this.state.on('screen_changed', (screenKey) => {
+      if (sectionSelect) {
+        sectionSelect.value = screenKey;
+      }
+    });
+
     // Bring forward
     this.toolbar.querySelector('#btn-bring-forward').addEventListener('click', () => {
       if (this.state.selectedElement) {
@@ -304,7 +345,7 @@ export class EditorToolbar {
         return;
       }
 
-      // 6. Tool Shortcuts: V (Move), R (Resize), B (Buttons), C (Containers), T (Text), N (Note)
+      // 6. Tool Shortcuts: V (Move), R (Resize), B (Buttons), C (Containers), T (Text), N (Note), J (Jump Section)
       if (!e.ctrlKey && !e.metaKey && !e.altKey) {
         const key = e.key.toLowerCase();
         if (key === 'v') {
@@ -333,6 +374,12 @@ export class EditorToolbar {
             this.notesManager.createNote();
           }
           return;
+        } else if (key === 'j') {
+          e.preventDefault();
+          if (this.sectionManager) {
+            this.sectionManager.showJumpModal();
+          }
+          return;
         } else if (key === 'l' && this.state.selectedElement) {
           e.preventDefault();
           this.state.toggleLock(this.state.selectedElement);
@@ -340,7 +387,16 @@ export class EditorToolbar {
         }
       }
 
-      // 7. Lock / Unlock: Ctrl/Cmd + L
+      // 7. Jump Section Modal: Ctrl/Cmd + J
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'j' || e.key === 'J')) {
+        e.preventDefault();
+        if (this.sectionManager) {
+          this.sectionManager.showJumpModal();
+        }
+        return;
+      }
+
+      // 8. Lock / Unlock: Ctrl/Cmd + L
       if ((e.ctrlKey || e.metaKey) && (e.key === 'l' || e.key === 'L')) {
         e.preventDefault();
         if (this.state.selectedElement) {
@@ -349,7 +405,7 @@ export class EditorToolbar {
         return;
       }
 
-      // 8. Bring Layer Forward: Ctrl/Cmd + ]
+      // 9. Bring Layer Forward: Ctrl/Cmd + ]
       if ((e.ctrlKey || e.metaKey) && e.key === ']') {
         e.preventDefault();
         if (this.state.selectedElement) {
@@ -358,7 +414,7 @@ export class EditorToolbar {
         return;
       }
 
-      // 9. Send Layer Backward: Ctrl/Cmd + [
+      // 10. Send Layer Backward: Ctrl/Cmd + [
       if ((e.ctrlKey || e.metaKey) && e.key === '[') {
         e.preventDefault();
         if (this.state.selectedElement) {
@@ -367,7 +423,7 @@ export class EditorToolbar {
         return;
       }
 
-      // 10. Reset Element: Alt + R
+      // 11. Reset Element: Alt + R
       if (e.altKey && (e.key === 'r' || e.key === 'R')) {
         e.preventDefault();
         if (this.state.selectedElement) {
@@ -376,17 +432,21 @@ export class EditorToolbar {
         return;
       }
 
-      // 11. Version Snapshots Modal: Ctrl/Cmd + Shift + V
+      // 12. Version Snapshots Modal: Ctrl/Cmd + Shift + V
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'v' || e.key === 'V')) {
         e.preventDefault();
         this.versionManager.showVersionModal();
         return;
       }
 
-      // 12. Escape: Deselect element, cancel note linking, or close modal
+      // 13. Escape: Deselect element, cancel note linking, or close modal
       if (e.key === 'Escape') {
         if (this.notesManager && this.notesManager.activeLinkingNoteId) {
           this.notesManager.cancelLinkingMode();
+          return;
+        }
+        if (this.sectionManager && this.sectionManager.modal) {
+          this.sectionManager.closeModal();
           return;
         }
         const modal = document.querySelector('.edit-modal-backdrop');

@@ -12,6 +12,7 @@ import { HistoryManager } from './history-manager.js';
 import { SaveManager } from './save-manager.js';
 import { VersionManager } from './version-manager.js';
 import { NotesManager } from './notes-manager.js';
+import { SectionManager } from './section-manager.js';
 import { EditorToolbar } from './editor-toolbar.js';
 
 export function initEditMode() {
@@ -24,7 +25,8 @@ export function initEditMode() {
   const save = new SaveManager(state, selection);
   const version = new VersionManager(state, save);
   const notes = new NotesManager(state, save);
-  const toolbar = new EditorToolbar(state, selection, history, save, version, notes);
+  const section = new SectionManager(state);
+  const toolbar = new EditorToolbar(state, selection, history, save, version, notes, section);
 
   const editorInstance = {
     state,
@@ -36,6 +38,7 @@ export function initEditMode() {
     save,
     version,
     notes,
+    section,
     toolbar,
     toggle: () => state.toggleActive()
   };

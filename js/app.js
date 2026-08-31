@@ -5,6 +5,7 @@
 
 import { OpeningScreen } from './opening-screen.js';
 import { Act0Screen } from './act0-screen.js';
+import { Act1Screen } from './act1-screen.js';
 import { initEditMode } from './editor/index.js';
 
 class CourseApp {
@@ -27,8 +28,8 @@ class CourseApp {
     console.log('✅ Course Ready.');
   }
 
-  navigateTo(screenKey) {
-    console.log(`🎬 Navigating to scene: ${screenKey}`);
+  navigateTo(screenKey, options = {}) {
+    console.log(`🎬 Navigating to scene: ${screenKey}`, options);
     const prevScreenKey = this.currentScreen;
     if (this.screens[prevScreenKey]?.unmount) {
       this.screens[prevScreenKey].unmount();
@@ -38,10 +39,28 @@ class CourseApp {
     const stage = document.getElementById('stage');
     if (!stage) return;
 
-    if (screenKey === 'act0') {
+    if (screenKey === 'act1') {
+      stage.innerHTML = `<section id="screen-act1" aria-label="Act 1 Scene"></section>`;
+      this.screens.act1 = new Act1Screen(this);
+      if (options.beat) {
+        this.screens.act1.currentBeat = options.beat;
+      }
+      if (options.stepIndex !== undefined) {
+        this.screens.act1.stepIndex = options.stepIndex;
+      }
+      if (options.activeLeadId) {
+        this.screens.act1.activeLeadId = options.activeLeadId;
+      }
+      this.screens.act1.mount();
+    } else if (screenKey === 'act0') {
       stage.innerHTML = `<section id="screen-act0" aria-label="Act 0 Introduction Scene"></section>`;
       this.screens.act0 = new Act0Screen(this);
+      if (options.stepIndex !== undefined) {
+        this.screens.act0.currentStepIndex = options.stepIndex;
+      }
       this.screens.act0.mount();
+    } else if (screenKey === 'act2') {
+      this.renderAct2Placeholder();
     } else if (screenKey === 'opening') {
       this.renderOpeningScreen();
       this.screens.opening = new OpeningScreen(this);
@@ -108,6 +127,39 @@ class CourseApp {
         </div>
       </section>
     `;
+  }
+
+  renderAct2Placeholder() {
+    const stage = document.getElementById('stage');
+    if (!stage) return;
+
+    stage.innerHTML = `
+      <section id="screen-act2-placeholder" class="act1-container" aria-label="Act 2 Preview">
+        <div class="act2-placeholder-modal" data-editor-id="act2-placeholder-modal">
+          <div style="font-size: 3rem; margin-bottom: 0.5rem;">🚨</div>
+          <h2 class="act2-placeholder-title">Act 2: Callie's Response</h2>
+          <p class="act2-placeholder-text">
+            <strong>Recognition, Triage & Active Lake Cooling</strong><br>
+            Act 1 is complete! Tay has refused the chicken scrap, the alarm has sounded, and the perspective has shifted to Callie's standing eyeline. Act 2 will guide emergency cooling and clinic transport.
+          </p>
+          <div style="display: flex; gap: 0.75rem; justify-content: center;">
+            <button id="btn-replay-act1" class="act1-hud-btn btn-action-primary" style="font-size: 0.9rem;">
+              ⏮ Replay Act 1
+            </button>
+            <button id="btn-return-title" class="act1-hud-btn" style="font-size: 0.9rem;">
+              🏠 Return to Title
+            </button>
+          </div>
+        </div>
+      </section>
+    `;
+
+    document.getElementById('btn-replay-act1')?.addEventListener('click', () => {
+      this.navigateTo('act1');
+    });
+    document.getElementById('btn-return-title')?.addEventListener('click', () => {
+      this.navigateTo('opening');
+    });
   }
 }
 

@@ -338,6 +338,7 @@ Edit Mode must support conventional keyboard shortcuts for all major editing, na
     • Edit Containers Tool: C
     • Edit Text Tool: T
     • Add Sticky Note / Comment: N
+    • Jump Section / Beat Modal: J or Ctrl/Cmd + J
     • Lock / Unlock Selected Element: L or Ctrl/Cmd + L
     • Bring Layer Forward: Ctrl/Cmd + ]
     • Send Layer Backward: Ctrl/Cmd + [
@@ -361,6 +362,7 @@ Prefer something conceptually like:
     saveManager
     versionManager
     notesManager
+    sectionManager
     editorToolbar
 
 rather than scattering editing logic throughout the lesson code.
@@ -372,13 +374,37 @@ Event Bus & State Synchronization Rules:
 - Managers that emit or listen to events must maintain unified event signatures, or provide defensive delegation methods (`on` and `emit`), preventing broken method calls or unhandled TypeErrors.
 - Event binding in `EditorToolbar` and all managers must be resilient: an isolated error in one listener must never interrupt or disable subsequent toolbar click bindings, modal triggers, or global keyboard shortcuts.
 
-20. IMPORTANT DEVELOPMENT RULE
+20. SECTION JUMPING & BEAT NAVIGATION IN EDIT MODE
+Edit Mode must provide rapid, non-linear navigation allowing authors to jump between course sections, screens, and granular dialogue beats without manually playing through prior lesson sequences:
+
+Capabilities & Controls:
+1. **Toolbar Section Select Dropdown**:
+   - A dedicated `<select>` dropdown in the Edit Mode toolbar displaying the current active section (e.g., `🏠 Title Screen`, `📋 Act 0: Normal Day`, `🐾 Act 1: The Lake Trip`, `🚨 Act 2: Emergency Response`).
+   - Selecting any option immediately jumps the course stage to that section while preserving Edit Mode active state.
+   - Automatically synchronizes with the `screen_changed` event when natural in-lesson navigation occurs.
+
+2. **Detailed Section & Beat Jumper Modal (J / Ctrl+J)**:
+   - A modal dialog offering comprehensive, categorized access to all major sections and granular sub-beats/dialogue steps.
+   - Includes quick-filtering search input to instantly filter sections, beats, and risk factors by keyword.
+   - Provides direct one-click navigation to:
+     - **Title Screen**: Course opening card and title.
+     - **Act 0**: Intro step ("Hey. I'm Callie"), French Bulldog profile, 100°F weather alert & porch, and suburban drive.
+     - **Act 1**: Cold open monologue, mission briefing card, Lake Shore Hub (4 Leads Hotspot map), individual close-up POV viewports (Cooler, Dock, Water Bowl, Lake), The Gate, The Nap, Shade Drift time-lapse, Refused Scrap alarm, Case File summary card, and POV Rise.
+     - **Act 2**: Emergency Response triage preview modal.
+
+3. **Dirty State Protection**:
+   - If unsaved visual changes exist in the current section when attempting to jump, warn the author and offer the choice to proceed or cancel.
+
+4. **Selection & Overlay Cleanup**:
+   - Jumping sections automatically deselects active elements, closes the jumper modal, and scoped sticky notes update automatically to the newly active section.
+
+21. IMPORTANT DEVELOPMENT RULE
 From this point forward, whenever you modify this project:
 Do not remove or rewrite the Edit Mode system unless I explicitly request it.
 New screens and major visual elements should be made compatible with Edit Mode whenever practical.
 The editor should become a persistent development tool for this training project.
 
-21. BEFORE MAKING CHANGES
+22. BEFORE MAKING CHANGES
 First inspect the current project and determine:
 
     how the HTML is structured
@@ -392,7 +418,7 @@ First inspect the current project and determine:
 Then implement Edit Mode around the existing architecture.
 Do not rebuild the training merely to make the editor easier to implement.
 
-22. TEST AFTER IMPLEMENTATION
+23. TEST AFTER IMPLEMENTATION
 After implementing this, test this exact workflow:
 
     Load the training normally.

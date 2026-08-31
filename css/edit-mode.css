@@ -856,3 +856,188 @@ body.edit-mode-active .edit-mode-fab {
   display: none;
 }
 
+/* ==========================================================
+   SECTION JUMPER NAVIGATION STYLES
+   ========================================================== */
+
+.edit-section-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 3px 6px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  margin-right: 0.4rem;
+}
+
+.edit-nav-label {
+  font-size: 13px;
+  cursor: default;
+}
+
+.edit-section-select {
+  background: #0F172A;
+  color: #F8FAFC;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.edit-section-select:hover,
+.edit-section-select:focus {
+  border-color: #3B82F6;
+  background: #1E293B;
+}
+
+.edit-btn-nav-modal {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #1E293B;
+  border-color: #475569;
+}
+
+.edit-btn-nav-modal:hover {
+  background: #2563EB;
+  border-color: #3B82F6;
+  color: #FFFFFF;
+}
+
+/* Section Jumper Modal Window */
+.edit-modal-jumper {
+  max-width: 820px;
+  width: 92%;
+  max-height: 86vh;
+}
+
+.jumper-search-box {
+  margin-bottom: 1rem;
+}
+
+.jumper-search-box input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.jumper-sections-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-height: 58vh;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.jumper-sections-container::-webkit-scrollbar {
+  width: 6px;
+}
+.jumper-sections-container::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 4px;
+}
+.jumper-sections-container::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+.jumper-section-card {
+  background: #1E293B;
+  border: 1.5px solid #334155;
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.jumper-section-card:hover {
+  border-color: #3B82F6;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.jumper-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.jumper-section-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.jumper-section-badge {
+  background: #2563EB;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+.jumper-section-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #F8FAFC;
+}
+
+.btn-jump-main {
+  font-size: 11px;
+  font-weight: 700;
+  background: #2563EB;
+  border-color: #3B82F6;
+  color: #FFFFFF;
+  padding: 4px 10px;
+}
+
+.btn-jump-main:hover {
+  background: #1D4ED8;
+}
+
+.jumper-section-desc {
+  margin: 0 0 0.65rem 0;
+  font-size: 12px;
+  color: #94A3B8;
+  line-height: 1.4;
+}
+
+.jumper-beats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 0.45rem;
+}
+
+.jumper-beat-btn {
+  background: #0F172A;
+  border: 1px solid #334155;
+  color: #E2E8F0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+}
+
+.jumper-beat-btn:hover {
+  background: #2563EB;
+  border-color: #3B82F6;
+  color: #FFFFFF;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+}
+

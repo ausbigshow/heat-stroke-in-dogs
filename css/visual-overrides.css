@@ -1,8 +1,9 @@
-/* Visual Edit Mode Overrides - Last updated: 2026-08-30T01:02:14.025Z */
+/* Visual Edit Mode Overrides - Last updated: 2026-08-30T02:05:01.148Z */
 
 
-[data-editor-id="act0-bubble-step13"] {
-  top: 24% !important;
-  left: 48% !important;
-  max-width: min(300px, 23vw) !important;
+[data-editor-id="act1-mission-card"] {
+  left: 667px !important;
+  top: 141px !important;
+  right: auto !important;
+  bottom: auto !important;
 }
