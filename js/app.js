@@ -64,6 +64,11 @@ class CourseApp {
     } else if (screenKey === 'act2') {
       stage.innerHTML = `<section id="screen-act2" aria-label="Act 2 Emergency Response Scene"></section>`;
       this.screens.act2 = new Act2Screen(this);
+      // Restore a playthrough handed back from Act 3, so stepping back and forward does not
+      // rebuild this screen from defaults. Options applied after, so they win.
+      if (options.handoff) {
+        this.screens.act2.applyHandoff(options.handoff);
+      }
       if (options.beat) {
         this.screens.act2.currentBeat = options.beat;
       }

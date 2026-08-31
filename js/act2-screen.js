@@ -351,6 +351,55 @@ export class Act2Screen {
     return document.body.classList.contains('edit-mode-active');
   }
 
+  /**
+   * The playthrough, in the shape applyHandoff() accepts.
+   *
+   * Act 3's whole claim is that every number Dr. Reyes says lands on a decision the learner
+   * already made, so this state has to survive leaving the screen. It travels forward on the
+   * Act 3 button and back again on Act 3's "◀ Act 2" — without the return trip, stepping back
+   * and forward rebuilt this screen from defaults and silently downgraded the learner's
+   * playthrough to "we were never told".
+   */
+  getHandoff() {
+    return {
+      decisionChoice: this.decisionChoice,
+      checkReportOrder: [...this.checkReportOrder],
+      hintsDropped: this.hintsDropped,
+      hintsCashedOut: this.hintsCashedOut,
+      rewetCount: this.rewetCount,
+      coolingWrongCount: this.coolingWrongCount,
+      severity: this.severity,
+      clockMinutes: this.clockMinutes,
+      elapsedSeconds: this.elapsedSeconds,
+      clockVisible: this.clockVisible,
+      acOn: this.acOn,
+      windowsOpen: this.windowsOpen
+    };
+  }
+
+  /** Restore a playthrough produced by getHandoff(). Partial payloads are fine. */
+  applyHandoff(handoff = {}) {
+    if (handoff.decisionChoice === 'act_now' || handoff.decisionChoice === 'wait') {
+      this.decisionChoice = handoff.decisionChoice;
+    }
+    if (Array.isArray(handoff.checkReportOrder)) {
+      this.checkReportOrder = [...handoff.checkReportOrder];
+      this.checksDone = new Set(this.checkReportOrder);
+    }
+    if (Number.isFinite(handoff.hintsDropped)) this.hintsDropped = handoff.hintsDropped;
+    if (Number.isFinite(handoff.rewetCount)) this.rewetCount = handoff.rewetCount;
+    if (Number.isFinite(handoff.coolingWrongCount)) this.coolingWrongCount = handoff.coolingWrongCount;
+    if (Number.isFinite(handoff.severity)) this.severity = handoff.severity;
+    if (Number.isFinite(handoff.clockMinutes)) this.clockMinutes = handoff.clockMinutes;
+    if (Number.isFinite(handoff.elapsedSeconds)) this.elapsedSeconds = handoff.elapsedSeconds;
+    if (typeof handoff.hintsCashedOut === 'boolean') this.hintsCashedOut = handoff.hintsCashedOut;
+    if (typeof handoff.acOn === 'boolean') this.acOn = handoff.acOn;
+    if (typeof handoff.windowsOpen === 'boolean') this.windowsOpen = handoff.windowsOpen;
+    // The emergency clock is running by the time any of this is restorable, so restart it
+    // rather than leaving a visible timer frozen.
+    if (handoff.clockVisible) this.startElapsedClock();
+  }
+
   prefersReducedMotion() {
     return typeof window.matchMedia === 'function'
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1779,15 +1828,7 @@ export class Act2Screen {
     // Act 3's central claim is that every number lands on a decision the learner already
     // made, so the playthrough travels with them. Without this the survival payoff has to
     // fall back to its neutral variant. See Act3Screen.applyHandoff().
-    on('#act2-btn-act3', () => this.app?.navigateTo('act3', {
-      handoff: {
-        decisionChoice: this.decisionChoice,
-        checkReportOrder: [...this.checkReportOrder],
-        hintsDropped: this.hintsDropped,
-        rewetCount: this.rewetCount,
-        coolingWrongCount: this.coolingWrongCount
-      }
-    }));
+    on('#act2-btn-act3', () => this.app?.navigateTo('act3', { handoff: this.getHandoff() }));
   }
 
   // =======================================================================

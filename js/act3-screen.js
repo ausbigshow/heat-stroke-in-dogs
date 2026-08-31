@@ -70,6 +70,8 @@ export class Act3Screen {
     this.hintsDropped = 4;        // carried from Act 1's HUD
     this.rewetCount = 0;          // Act 2's towel micro-sim
     this.coolingWrongCount = 0;
+    // The raw payload Act 2 sent, carried unmodified so it can be handed straight back.
+    this.handoff = {};
 
     // ---- Beat 3C: the report card ---------------------------------------
     this.reportStep = 0;
@@ -422,6 +424,9 @@ export class Act3Screen {
    * fine — the survival payoff falls back to its neutral variant rather than guessing.
    */
   applyHandoff(handoff = {}) {
+    // Kept verbatim as well as unpacked, so anything Act 2 tracks that this screen does not
+    // read still survives the round trip back to it (see getHandoff()).
+    this.handoff = { ...handoff };
     if (handoff.decisionChoice === 'act_now' || handoff.decisionChoice === 'wait') {
       this.decisionChoice = handoff.decisionChoice;
     }
@@ -571,7 +576,8 @@ export class Act3Screen {
     renderPreservingFocus(
       this.container,
       () => this.renderNow(),
-      ['#act3-btn-next-step', '#act3-btn-report-next', '#act3-btn-beat-advance', '#act3-btn-skip-wait']
+      ['#act3-btn-next-step', '#act3-btn-report-next', '#act3-btn-report-done',
+       '#act3-btn-beat-advance', '#act3-btn-skip-wait']
     );
     const dialog = this.container?.querySelector('[role="dialog"]');
     if (dialog) containFocusIn(dialog);
@@ -1069,10 +1075,17 @@ export class Act3Screen {
               ${this.renderReportDialogue(step)}
             </div>
             <div class="act3-report-nav">
-              <div class="act3-beat-dots" aria-hidden="true">
-                ${this.reportSteps.map((_, i) => `
-                  <span class="act3-beat-dot ${i === this.reportStep ? 'current' : ''} ${i < this.reportStep ? 'seen' : ''}"></span>
-                `).join('')}
+              <div class="act3-report-nav-left">
+                ${this.reportStep > 0 ? `
+                  <button id="act3-btn-report-prev" class="act3-hud-btn act3-btn-quiet"
+                          data-editor-id="act3-btn-report-prev"
+                          aria-label="Go back one step in the case file">◀ Back</button>
+                ` : ''}
+                <div class="act3-beat-dots" aria-hidden="true">
+                  ${this.reportSteps.map((_, i) => `
+                    <span class="act3-beat-dot ${i === this.reportStep ? 'current' : ''} ${i < this.reportStep ? 'seen' : ''}"></span>
+                  `).join('')}
+                </div>
               </div>
               ${this.reportStep < this.reportSteps.length - 1 ? `
                 <button id="act3-btn-report-next" class="act3-hud-btn btn-action-primary"
@@ -1219,9 +1232,6 @@ export class Act3Screen {
     if (this.stepIndex === 0) {
       const chosen = this.preventionChosen.size;
       const total = this.preventionOptions.length;
-      const active = this.activePrevention
-        ? this.preventionOptions.find(o => o.id === this.activePrevention)
-        : null;
 
       return `
         <div class="act3-prevention-card" data-editor-id="act3-prevention-card" role="group"
@@ -1237,11 +1247,12 @@ export class Act3Screen {
             ${this.preventionOptions.map(opt => {
               const isChosen = this.preventionChosen.has(opt.id);
               return `
-                <li>
+                <li class="act3-prevention-item ${isChosen ? 'is-chosen' : ''}">
                   <button class="act3-prevention-option ${isChosen ? 'is-chosen' : ''}"
                           data-prevention="${opt.id}"
                           data-editor-id="act3-prevention-${opt.id}"
-                          aria-pressed="${isChosen}">
+                          aria-pressed="${isChosen}"
+                          aria-describedby="${isChosen ? `act3-prevention-reply-${opt.id}` : ''}">
                     <span class="act3-prevention-icon" aria-hidden="true">${opt.icon}</span>
                     <span class="act3-prevention-label">${opt.label}</span>
                     <!-- Chosen is a glyph and a word, never the green alone (§7.3). -->
@@ -1249,17 +1260,22 @@ export class Act3Screen {
                       ${isChosen ? '<span aria-hidden="true">✓</span> Chosen' : 'Choose'}
                     </span>
                   </button>
+
+                  <!-- Reyes's answer stays attached to the choice that earned it. Showing only
+                       the most recent one meant a learner who picked all four could read one,
+                       and had to remember the other three. -->
+                  ${isChosen ? `
+                    <div class="act3-prevention-reply" id="act3-prevention-reply-${opt.id}"
+                         data-editor-id="act3-prevention-reply-${opt.id}"
+                         ${this.activePrevention === opt.id ? 'role="status"' : ''}>
+                      <span class="act3-report-who">Dr. Reyes</span>
+                      <p class="act3-report-text">“${opt.reply}”</p>
+                    </div>
+                  ` : ''}
                 </li>
               `;
             }).join('')}
           </ul>
-
-          ${active ? `
-            <div class="act3-prevention-reply" data-editor-id="act3-prevention-reply" role="status">
-              <span class="act3-report-who">Dr. Reyes</span>
-              <p class="act3-report-text">“${active.reply}”</p>
-            </div>
-          ` : ''}
         </div>
       `;
     }
@@ -1375,7 +1391,7 @@ export class Act3Screen {
         <div class="act3-end-actions">
           <button id="act3-btn-replay-act3" class="act3-hud-btn btn-action-primary"
                   data-editor-id="act3-btn-replay-act3">⏮ Replay Act 3</button>
-          <button id="act3-btn-replay-act1" class="act3-hud-btn" data-editor-id="act3-btn-replay-act1">🐾 Back to the lake</button>
+          <button id="act3-btn-replay-act1" class="act3-hud-btn" data-editor-id="act3-btn-replay-act1">🐾 Replay Act 1</button>
           <button id="act3-btn-end-title" class="act3-hud-btn" data-editor-id="act3-btn-end-title">🏠 Title</button>
         </div>
       </div>
@@ -1395,15 +1411,22 @@ export class Act3Screen {
                 aria-label="Skip the wait and go straight to the verdict">Skip the wait ▶</button>
       `;
     }
+    const back = this.canStepBack() ? `
+      <button id="act3-btn-prev-step" class="act3-hud-btn act3-btn-quiet"
+              data-editor-id="act3-btn-prev-step"
+              aria-label="Go back one step">◀ Back</button>
+    ` : '';
+
     if (this.currentBeat === 'nextTime' && this.stepIndex === 0 && this.preventionChosen.size === 0) {
       return `
+        ${back}
         <div class="act3-hud-pill act3-nudge-pill" data-editor-id="act3-nudge-pill">
           <span aria-hidden="true">👆</span>
           <span>Pick the ones you'd actually do</span>
         </div>
       `;
     }
-    return '';
+    return back;
   }
 
   renderBottomRightControls() {
@@ -1493,10 +1516,14 @@ export class Act3Screen {
       });
     };
 
-    on('#act3-btn-back-act2', () => this.app?.navigateTo('act2', { beat: 'transport' }));
+    on('#act3-btn-back-act2', () => this.app?.navigateTo('act2', {
+      beat: 'transport',
+      handoff: this.getHandoff()
+    }));
     on('#act3-btn-title', () => this.app?.navigateTo('opening'));
 
     on('#act3-btn-next-step', () => this.nextSubStep());
+    on('#act3-btn-prev-step', () => this.prevSubStep());
     on('#act3-btn-beat-advance', () => this.nextBeat());
 
     // --- Beat 3A ---
@@ -1505,6 +1532,7 @@ export class Act3Screen {
 
     // --- Beat 3C ---
     on('#act3-btn-report-next', () => this.nextReportStep());
+    on('#act3-btn-report-prev', () => this.prevSubStep());
     on('#act3-btn-report-done', () => this.nextBeat());
 
     // --- Beat 3E ---
@@ -1522,9 +1550,14 @@ export class Act3Screen {
     on('#act3-btn-end-title', () => this.app?.navigateTo('opening'));
   }
 
-  /** The playthrough state, in the shape applyHandoff() accepts. Used by Replay Act 3. */
+  /**
+   * The playthrough state, in the shape applyHandoff() accepts. Used by Replay Act 3 and by
+   * the "◀ Act 2" button — Act 2 rebuilds itself from defaults otherwise, which silently
+   * throws away the decision this whole act is a verdict on.
+   */
   getHandoff() {
     return {
+      ...this.handoff,
       decisionChoice: this.decisionChoice,
       checkReportOrder: [...this.checkReportOrder],
       hintsDropped: this.hintsDropped,
@@ -1614,13 +1647,61 @@ export class Act3Screen {
     }
   }
 
+  /**
+   * Step back within the current beat. Advancing past a line the learner was still reading is
+   * the single most common thing to want undone in a dialogue screen, and Acts 1 and 2 both
+   * bind ArrowLeft for it — Act 3 did not, which made the same key mean three things across
+   * the module.
+   *
+   * Beat boundaries are not crossed. Going back into a finished beat would mean rewinding the
+   * clock, the recovery ramp and Tay's status; the HUD's "◀ Act 2" is the honest way out of
+   * an act you want to leave.
+   */
+  prevSubStep() {
+    if (this.currentBeat === 'report') {
+      if (this.reportStep === 0) return false;
+      this.reportStep--;
+    } else {
+      if (this.stepIndex === 0 || !this.stepsForBeat()) return false;
+      this.stepIndex--;
+    }
+    this.clockMinutes = Math.max(242, this.clockMinutes - 1);
+    this.render();
+    return true;
+  }
+
+  /** Back is only offered where there is something to go back to — never a dead control. */
+  canStepBack() {
+    if (this.currentBeat === 'report') return this.reportStep > 0;
+    if (this.currentBeat === 'end') return false;
+    return this.stepIndex > 0 && !!this.stepsForBeat();
+  }
+
   // =======================================================================
-  // KEYBOARD — matches Act 1 and Act 2: ArrowRight / Space advance.
+  // KEYBOARD — matches Act 1 and Act 2: ArrowRight / Space advance,
+  // ArrowLeft steps back, Escape closes an open dialog.
   // =======================================================================
 
   handleKeyDown(e) {
     if (this.isEditModeActive()) return;
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+    // Escape closes the case file, per docs/design-language.md §7.4. It closes it FORWARD —
+    // the file is a beat the story passes through, not an optional overlay, and dropping the
+    // learner back into an empty lobby would be a dead end rather than an exit.
+    if (e.key === 'Escape') {
+      if (this.currentBeat === 'report') {
+        e.preventDefault();
+        this.nextBeat();
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      this.prevSubStep();
+      return;
+    }
 
     const isAdvance = e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Space' || e.key === 'Spacebar';
     if (!isAdvance) return;
