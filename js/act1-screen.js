@@ -1568,7 +1568,15 @@ export class Act1Screen {
     if (this.isEditModeActive()) return;
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
-    if (e.key === 'ArrowRight' || e.key === 'Space') {
+    // The spacebar reports e.key === ' ', not 'Space' — the old check never matched, so
+    // the Space shortcut was dead. Space only advances when focus is NOT on a control,
+    // otherwise it would hijack the spacebar from a focused button (where the browser
+    // already uses it to activate).
+    const onControl = typeof e.target?.closest === 'function' &&
+      e.target.closest('button, a, [role="button"], input, textarea, select, [contenteditable]');
+    const isAdvanceKey = e.key === 'ArrowRight' || (e.key === ' ' && !onControl);
+
+    if (isAdvanceKey) {
       if (this.currentBeat === 'cold_open' || this.currentBeat === 'nap' || this.currentBeat === 'alarm') {
         e.preventDefault();
         this.nextSubStep();

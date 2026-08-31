@@ -190,7 +190,7 @@ export class Act0Screen {
         data-editor-id="act0-bubble-${step.id}"
       >
         <div class="speech-bubble-speaker">
-          <span>${isTay ? '🐶' : '👩'}</span>
+          <span aria-hidden="true">${isTay ? '🐶' : '👩'}</span>
           <span>${step.name}</span>
         </div>
         ${bubbleContent}
@@ -211,8 +211,15 @@ export class Act0Screen {
             data-editor-id="act0-home-img"
           />
 
-          <!-- Single Overlaid Speech Bubble Layer -->
-          <div class="act0-speech-layer" data-editor-id="act0-speech-layer">
+          <!-- Single Overlaid Speech Bubble Layer. The bubble swaps in place on every
+               step, so it must announce itself to screen readers — without aria-live a
+               non-sighted learner hears nothing at all when the line changes. -->
+          <div
+            class="act0-speech-layer"
+            data-editor-id="act0-speech-layer"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             ${singleBubbleHtml}
           </div>
 
@@ -225,21 +232,28 @@ export class Act0Screen {
                 ${isFirstStep ? 'disabled' : ''}
                 data-editor-id="act0-btn-prev"
                 title="Previous Line (ArrowLeft)"
+                aria-label="Previous line"
               >
-                ◀ Back
+                <span aria-hidden="true">◀</span> Back
               </button>
               <button
                 id="act0-btn-title"
                 class="act0-hud-btn"
                 data-editor-id="act0-btn-title"
                 title="Return to Title Screen"
+                aria-label="Return to title screen"
               >
-                🏠 Title
+                <span aria-hidden="true">🏠</span> Title
               </button>
               ${audioManager.muteButtonHtml('act0-btn-mute', 'act0-hud-btn')}
             </div>
 
-            <div class="act0-progress-badge" data-editor-id="act0-progress">
+            <div
+              class="act0-progress-badge"
+              data-editor-id="act0-progress"
+              role="status"
+              aria-label="Step ${this.currentStepIndex + 1} of ${totalSteps}"
+            >
               ${this.currentStepIndex + 1} / ${totalSteps}
             </div>
 
@@ -250,8 +264,9 @@ export class Act0Screen {
                   class="act0-hud-btn" 
                   data-editor-id="act0-btn-next"
                   title="Next Line (Space / ArrowRight / Click Image)"
+                  aria-label="Next line"
                 >
-                  Next ▶
+                  Next <span aria-hidden="true">▶</span>
                 </button>
               ` : `
                 <button 
@@ -259,8 +274,9 @@ export class Act0Screen {
                   class="act0-hud-btn btn-start" 
                   data-editor-id="act0-btn-start-act1"
                   title="Begin Act 1: The Lake Trip"
+                  aria-label="Begin Act 1: The Lake Trip"
                 >
-                  🐾 Begin Act 1 ➔
+                  <span aria-hidden="true">🐾</span> Begin Act 1 <span aria-hidden="true">➔</span>
                 </button>
               `}
             </div>
@@ -365,7 +381,15 @@ export class Act0Screen {
     if (this.isEditModeActive()) return;
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
-    if (e.key === 'ArrowRight' || e.key === 'Space') {
+    // The spacebar reports e.key === ' ', not 'Space' — the old check never matched, so
+    // the Space shortcut the tooltips advertise was dead. Space is only treated as
+    // "advance" when focus is NOT on a control, otherwise it would hijack the spacebar
+    // from a focused button (where the browser already uses it to activate).
+    const onControl = typeof e.target?.closest === 'function' &&
+      e.target.closest('button, a, [role="button"], input, textarea, select, [contenteditable]');
+    const isAdvanceKey = e.key === 'ArrowRight' || (e.key === ' ' && !onControl);
+
+    if (isAdvanceKey) {
       if (this.currentStepIndex < this.steps.length - 1) {
         e.preventDefault();
         this.nextStep();
