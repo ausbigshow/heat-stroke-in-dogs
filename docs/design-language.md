@@ -175,6 +175,25 @@ version:
 - **Forbidden as a ground for body-size text:** `--color-heat-bright` (`#EA580C`),
   `--color-info-mid` (`#0284C7`), `#10B981`. All three fail AA against white.
 
+### 2.5 Grandfathered literals (the complete list)
+
+Tokenisation is complete except for the values below. They are the *only* colour literals left in
+`opening-screen.css`, `act0-screen.css` and `act1-screen.css`, they are all deliberate, and they
+are all frozen. **Do not copy them into new work, and do not "clean them up"** — several are
+load-bearing for contrast (Appendix A composites against them).
+
+| Literal | Where | Why it stays |
+|---|---|---|
+| `#FFF9F5`, `#FFFDFB` | Opening / Act 0 / Act 1 stage gradient first stop | Near-white gradient origins, one step off `--palette-peach-light`. Tokenising three one-use gradient stops buys nothing. `main.css`'s `#app` does the same. |
+| `#1E293B` | `.act1-viewport-card` background | The card ground *behind* the scene image; only ever visible for one frame while the image decodes. |
+| `#FFEDD5` | `.clock-pill` text | Warm off-white chosen against `--surface-clock`; 9.99:1. |
+| `#FB923C` | `.leads-pill` border | Non-text hairline tuned to the pill's own brown ground. |
+| `#F1F5F9` | `.truth-stamp-line` text | One step darker than `--text-on-dark`; 16.45:1. |
+| `rgba(255,255,255,0.05 … 0.3)` | Hairlines and inner rules throughout Act 1 | Hand-tuned alphas on a photographic backdrop. The four `--hairline-*` tokens (`0.08 / 0.15 / 0.25 / 0.6`) are the rule for **new** work; these eight existing alphas are optical adjustments, same reasoning as the grandfathered spacing in §4.1. |
+| `rgba(185,28,28,0.95)` | `.hints-dropped-pill` ground | `--color-danger` at 95%. CSS cannot apply alpha to a hex token without `color-mix()`; composited it is `#BD2727` at 6.04:1. |
+
+Everything else — every colour in every one of the three files — comes from `css/main.css`.
+
 ---
 
 ## 3. Typography
@@ -330,11 +349,15 @@ Persistent, read-only status. Never clickable.
 
 ```
 ground   --surface-hud + backdrop-filter: blur(10px)
-border   1.5px solid --hairline-light
+border   1.5px solid --hairline-light   /* see note */
 text     --text-inverse, display family, 0.88rem/700
 metrics  height 38px, padding 0 1rem, --radius-pill, gap 0.45rem
 shadow   --elev-3
 ```
+
+> **Note.** `--hairline-light` is the rule for new work. The existing `.act1-hud-pill` still
+> carries a hand-tuned `rgba(255,255,255,0.22)` rather than the token's `0.25` — see §2.5.
+> Reconcile it only alongside a deliberate visual pass; do not copy the literal.
 
 Variants swap ground + border only: `.clock-pill` (`--surface-clock` / `--color-amber-tint` /
 `#FFEDD5` text), `.leads-pill` (`rgba(124,45,18,0.9)` / `#FB923C`), `.leads-pill.all-done` and
@@ -368,6 +391,11 @@ hover    ground --color-heat-hover, border-color #FFFFFF
 attention .pulse-btn adds `pulseStartBtn 1.8s infinite`
 ```
 
+> **`pulseStartBtn` lives in `css/act0-screen.css`,** but Act 1 uses it too. `@keyframes` are
+> document-scoped and every stylesheet is loaded unconditionally in `index.html`, so this works —
+> but it is a real cross-file dependency. Reuse the name rather than redefining it; if you ever
+> make stylesheet loading conditional, this breaks silently (the button simply stops pulsing).
+
 ### 6.3 Speech bubble — `.speech-bubble`
 
 Shared across Act 0 and Act 1. Absolutely positioned inside a `pointer-events: none` speech layer;
@@ -391,9 +419,21 @@ then `.speech-bubble-text`.
 
 **The stem.** Two stacked CSS triangles — a `::before` in the border colour at `bottom:-22px`, and
 a `::after` inset 2px in the fill colour at `bottom:-18px`, giving a seamless bordered tail.
-Callie's points down-right (`right: 28px/30px`); Tay's points down-left (`left: 24px/26px`).
-Horizontal position is overridable via `--stem-left` / `--stem-right` so Edit Mode can move a
-bubble and keep the tail on the speaker.
+Callie's points down-right, Tay's down-left. Horizontal position is overridable via
+`--stem-left` / `--stem-right` so Edit Mode can move a bubble and keep the tail on the speaker:
+
+```css
+.speech-bubble.callie-bubble::before { right: var(--stem-right, 28px); }
+.speech-bubble.callie-bubble::after  { right: calc(var(--stem-right, 28px) + 2px); }
+.speech-bubble.tay-bubble::before    { left:  var(--stem-left, 24px); }
+.speech-bubble.tay-bubble::after     { left:  calc(var(--stem-left, 24px) + 2px); }
+```
+
+The fallbacks *are* the defaults, so a bubble with no override renders exactly as before. The
+`+ 2px` inset on the `::after` is what keeps the border seamless — preserve it if you retune.
+Edit Mode's stem handle writes `--stem-right` for `.callie-bubble` and `--stem-left` for every
+other bubble (`js/editor/selection-manager.js`); a new bubble variant that hardcodes `left`/`right`
+will silently swallow the author's saved stem position.
 
 **Tay onomatopoeia format** — Tay does not talk. Her subtitles are a sound then a thought:
 
@@ -459,7 +499,8 @@ entrance povStampIn 0.4s --ease-out-expo 0.35s both   /* preserves translateX(-5
 
 Two children: `.truth-stamp-metric` — a hard number in an `--color-amber-deep` chip with
 `--color-amber-pale` text and an `--color-amber-tint-2` hairline, `white-space: nowrap`, never
-wrapping — and `.truth-stamp-line`, body family, `--text-on-dark`-ish, one sentence.
+wrapping — and `.truth-stamp-line`, body family, one sentence, in `#F1F5F9` (a grandfathered
+literal one step darker than `--text-on-dark`; §2.5 — new work uses the token).
 
 **Rule:** the metric is a *measurement* (`131°F`, `2.5 sec`), not a label. If you cannot put a
 number in the chip, you do not have a truth stamp; you have a caption. On narrow viewports it
@@ -550,13 +591,27 @@ or `--radius-md`, `--elev-4`. Used when a voice arrives from outside the frame.
 
 ### 7.2 Focus
 
-Every interactive element has a visible `:focus-visible` ring. Two rings, by ground:
+Every interactive element has a visible `:focus-visible` ring. Two rings, by ground, and both
+are tokenised — **use the tokens, not the literals**:
+
+| Token | Value |
+|---|---|
+| `--focus-ring-width` | `3px` |
+| `--focus-ring-offset` | `3px` |
+| `--focus-ring-on-light` | `var(--palette-teal-dark)` (`#244952`) |
+| `--focus-ring-on-dark` | `var(--color-amber-tint)` (`#FDBA74`) |
 
 ```css
 /* On light surfaces */
-:focus-visible { outline: 3px solid var(--palette-teal-dark); outline-offset: 3px; }
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-on-light);
+  outline-offset: var(--focus-ring-offset);
+}
 /* On dark surfaces / over the scene */
-:focus-visible { outline: 3px solid var(--color-amber-tint); outline-offset: 3px; }
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-on-dark);
+  outline-offset: var(--focus-ring-offset);
+}
 ```
 
 Rules: never `outline: none` without an equally visible replacement; the ring must not be clipped
@@ -704,6 +759,7 @@ stated worst-case backdrop. Sizes are px at a 16px root; "large" = ≥24px, or �
 | A0 `.tay-bubble` text | `#7C2D12` | `#FFF8F3` | large | 3.0 | 8.91 |
 | **A0 `.tay-bubble` speaker** | `#C2410C` | `#FFF8F3` | normal | 4.5 | **4.93** |
 | A0 `.tay-onomatopoeia` | `#C2410C` | `#FFF8F3` | large | 3.0 | 4.93 |
+| A0 `.tay-bubble` border vs fill | `#C2410C` | `#FFF8F3` | non-text | 3.0 | 4.93 |
 | A0 `.act0-hud-btn` | `#FFFFFF` | `#474240` | normal | 4.5 | 9.86 |
 | **A0 `.btn-start`** | `#FFFFFF` | `#C2410C` | normal | 4.5 | **5.18** |
 | A0 `.btn-start:hover` | `#FFFFFF` | `#9A3412` | normal | 4.5 | 7.31 |

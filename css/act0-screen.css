@@ -107,12 +107,16 @@
   color: var(--palette-teal-dark);
 }
 
-/* Callie Seamless Angled Stem: Outer border + Inner mask */
+/* Callie Seamless Angled Stem: Outer border + Inner mask.
+   Horizontal position reads --stem-right so Edit Mode's stem handle (and any
+   saved value in visual-overrides.css) actually moves the tail. The fallbacks
+   are the previous hardcoded values, so the default rendering is unchanged.
+   The ::after is inset 2px from the ::before to keep the border seamless. */
 .speech-bubble.callie-bubble::before {
   content: '';
   position: absolute;
   bottom: -22px;
-  right: 28px;
+  right: var(--stem-right, 28px);
   width: 0;
   height: 0;
   border-left: 18px solid transparent;
@@ -125,7 +129,7 @@
   content: '';
   position: absolute;
   bottom: -18px;
-  right: 30px;
+  right: calc(var(--stem-right, 28px) + 2px);
   width: 0;
   height: 0;
   border-left: 15px solid transparent;
@@ -165,12 +169,14 @@
   display: inline;
 }
 
-/* Tay Seamless Angled Stem: Outer border + Inner mask */
+/* Tay Seamless Angled Stem: Outer border + Inner mask.
+   Mirrors Callie's stem but reads --stem-left (Edit Mode writes --stem-left for
+   every non-Callie bubble). Fallbacks preserve the previous rendering exactly. */
 .speech-bubble.tay-bubble::before {
   content: '';
   position: absolute;
   bottom: -22px;
-  left: 24px;
+  left: var(--stem-left, 24px);
   width: 0;
   height: 0;
   border-left: 6px solid transparent;
@@ -183,7 +189,7 @@
   content: '';
   position: absolute;
   bottom: -18px;
-  left: 26px;
+  left: calc(var(--stem-left, 24px) + 2px);
   width: 0;
   height: 0;
   border-left: 5px solid transparent;
