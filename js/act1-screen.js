@@ -331,6 +331,7 @@ export class Act1Screen {
                 class="act1-hud-btn" 
                 data-editor-id="act1-btn-back-act0"
                 title="Return to Act 0"
+                aria-label="Return to Act 0"
               >
                 ◀ Act 0
               </button>
@@ -339,6 +340,7 @@ export class Act1Screen {
                 class="act1-hud-btn" 
                 data-editor-id="act1-btn-title"
                 title="Return to Title"
+                aria-label="Return to the title screen"
               >
                 🏠 Title
               </button>
@@ -346,15 +348,17 @@ export class Act1Screen {
 
             <div class="act1-hud-group">
               <!-- Clock HUD -->
-              <div class="act1-hud-pill clock-pill" data-editor-id="act1-hud-clock" title="Lake Time">
-                <span>🕒</span>
+              <div class="act1-hud-pill clock-pill" data-editor-id="act1-hud-clock" title="Lake Time"
+                   role="status" aria-live="polite" aria-label="Lake time ${timeStr}">
+                <span aria-hidden="true">🕒</span>
                 <span id="act1-clock-text">${timeStr}</span>
               </div>
 
               <!-- Leads Counter or Relabeled Hints Dropped (Beat 1H) -->
               ${isPovRaised ? `
-                <div class="act1-hud-pill hints-dropped-pill" data-editor-id="act1-hud-hints">
-                  <span>⚠️</span>
+                <div class="act1-hud-pill hints-dropped-pill" data-editor-id="act1-hud-hints"
+                     role="status" aria-live="polite">
+                  <span aria-hidden="true">⚠️</span>
                   <span>HINTS DROPPED: 4</span>
                 </div>
               ` : `
@@ -432,11 +436,12 @@ export class Act1Screen {
         class="act1-interactable interactable-${leadId} ${visited ? 'visited' : ''}"
         data-lead="${leadId}"
         data-editor-id="act1-asset-${leadId}"
-        aria-label="Investigate ${lead.tayName}"
+        aria-label="Investigate ${lead.tayName}${visited ? ' (already investigated)' : ''}"
+        aria-pressed="${visited}"
       >
         <span class="interactable-art">${artHtml}</span>
-        <span class="interactable-tooltip">${lead.icon} ${lead.tayName}</span>
-        ${visited ? '<span class="interactable-check">✓</span>' : ''}
+        <span class="interactable-tooltip" aria-hidden="true">${lead.icon} ${lead.tayName}</span>
+        ${visited ? '<span class="interactable-check" aria-hidden="true">✓</span>' : ''}
       </button>
     `;
   }
@@ -651,24 +656,25 @@ export class Act1Screen {
 
     if (step.type === 'mission_card') {
       return `
-        <div class="act1-mission-card" data-editor-id="act1-mission-card">
+        <div class="act1-mission-card" data-editor-id="act1-mission-card"
+             role="dialog" aria-modal="true" aria-labelledby="act1-mission-card-title">
           <div class="mission-card-header">
             <span class="mission-card-badge">🐾 Tay's Detective Mission</span>
             <span style="font-size: 0.85rem; color: #94A3B8; font-weight: 700;">Lake Shore Hub</span>
           </div>
-          <h2 class="mission-card-title">Mission: Find Real Food (No Kibble)</h2>
+          <h2 class="mission-card-title" id="act1-mission-card-title">Mission: Find Real Food (No Kibble)</h2>
           <div class="mission-card-body">
             <p style="margin-bottom: 0.5rem;">Look, kibble is fine at home when there are zero other options. But we are at the lake! There are sandwiches, grilled meats, and dropped snacks out here somewhere.</p>
             <p>I've sniffed out <strong>four promising leads</strong> in the immediate area. Time to work the case and track down the food!</p>
             <!-- Tay's names only. The real labels are the Case File's reveal (Beat 1G). -->
             <div class="mission-leads-grid">
               ${Object.values(this.leadsData).map(l => `
-                <div class="mission-lead-item"><span>${l.icon}</span> <span>${l.tayName}</span></div>
+                <div class="mission-lead-item"><span aria-hidden="true">${l.icon}</span> <span>${l.tayName}</span></div>
               `).join('')}
             </div>
           </div>
           <div class="mission-card-footer">
-            <button id="act1-btn-start-hub-modal" class="act1-hud-btn btn-action-primary pulse-btn" data-editor-id="act1-btn-start-hub-modal">
+            <button id="act1-btn-start-hub-modal" class="act1-hud-btn btn-action-primary pulse-btn" data-editor-id="act1-btn-start-hub-modal" aria-label="Start the investigation">
               Start Investigation ➔
             </button>
           </div>
@@ -885,15 +891,16 @@ export class Act1Screen {
     const stamp = (isLastStep && !isLakeRevisit) ? lead.stamp : null;
 
     return `
-      <div class="act1-pov-viewport-modal" data-editor-id="act1-pov-viewport-modal">
+      <div class="act1-pov-viewport-modal" data-editor-id="act1-pov-viewport-modal"
+           role="dialog" aria-modal="true" aria-label="Tay's point of view: ${lead.tayName}">
         <div class="pov-viewport-card" data-editor-id="act1-pov-card">
 
           <!-- Top Header with Location Tag & Return Button -->
           <div class="pov-viewport-header">
             <div class="pov-tag-badge">
-              <span>📍 TAY'S POV: ${lead.tayName.toUpperCase()}</span>
+              <span><span aria-hidden="true">📍</span> TAY'S POV: ${lead.tayName.toUpperCase()}</span>
             </div>
-            <button id="pov-btn-close" class="pov-close-btn" data-editor-id="act1-pov-close" title="Return to Lake Hub">
+            <button id="pov-btn-close" class="pov-close-btn" data-editor-id="act1-pov-close" title="Return to Lake Hub" aria-label="Close this close-up and return to the lake hub">
               ✕ Lake Hub
             </button>
           </div>
@@ -948,11 +955,11 @@ export class Act1Screen {
               `).join('')}
             </div>
             ${isLastStep ? `
-              <button id="act1-btn-finish-lead" class="act1-hud-btn btn-action-primary pulse-btn" data-editor-id="act1-btn-finish-lead">
+              <button id="act1-btn-finish-lead" class="act1-hud-btn btn-action-primary pulse-btn" data-editor-id="act1-btn-finish-lead" aria-label="Done investigating this lead">
                 Done Investigating ➔
               </button>
             ` : `
-              <button id="act1-btn-pov-next" class="act1-hud-btn btn-action-primary" data-editor-id="act1-btn-pov-next">
+              <button id="act1-btn-pov-next" class="act1-hud-btn btn-action-primary" data-editor-id="act1-btn-pov-next" aria-label="Next">
                 Next ▶
               </button>
             `}
@@ -1031,11 +1038,12 @@ export class Act1Screen {
 
   renderCaseFile() {
     return `
-      <div class="case-file-card" data-editor-id="act1-case-file-card">
+      <div class="case-file-card" data-editor-id="act1-case-file-card"
+           role="dialog" aria-modal="true" aria-labelledby="act1-case-file-title">
         <div class="case-file-header">
           <div class="case-file-title-group">
             <span class="case-file-badge">Act 1 Case File</span>
-            <h2 class="case-file-title">The Four Leads vs. Heat Stroke Reality</h2>
+            <h2 class="case-file-title" id="act1-case-file-title">The Four Leads vs. Heat Stroke Reality</h2>
           </div>
           <div class="stamp-temp-badge" style="background: #0284C7; border-color: #38BDF8;">3:05 PM</div>
         </div>
@@ -1071,7 +1079,7 @@ export class Act1Screen {
           <button 
             id="act1-btn-proceed-pov" 
             class="act1-hud-btn btn-action-primary pulse-btn" 
-            data-editor-id="act1-btn-proceed-pov"
+            data-editor-id="act1-btn-proceed-pov" aria-label="See what Callie sees"
           >
             See What Callie Sees ➔
           </button>
@@ -1106,6 +1114,7 @@ export class Act1Screen {
           class="act1-hud-btn" 
           data-editor-id="act1-btn-recap-coldopen"
           title="Review Cold Open"
+          aria-label="Replay the intro"
         >
           ⏮ Replay Intro
         </button>
@@ -1119,6 +1128,7 @@ export class Act1Screen {
           class="act1-hud-btn" 
           data-editor-id="act1-btn-return-hub"
           title="Return to Lake Hub"
+          aria-label="Back to the lake hub"
         >
           ◀ Back to Hub
         </button>
@@ -1141,7 +1151,7 @@ export class Act1Screen {
           <button
             id="act1-btn-start-hub"
             class="act1-hud-btn btn-action-primary pulse-btn"
-            data-editor-id="act1-btn-start-hub"
+            data-editor-id="act1-btn-start-hub" aria-label="Start the investigation"
           >
             Start Investigation ➔
           </button>
@@ -1149,7 +1159,7 @@ export class Act1Screen {
           <button 
             id="act1-btn-next-step" 
             class="act1-hud-btn" 
-            data-editor-id="act1-btn-next-step"
+            data-editor-id="act1-btn-next-step" aria-label="Next"
           >
             Next ▶
           </button>
@@ -1160,15 +1170,16 @@ export class Act1Screen {
         // Once every lead is worked, the canopy itself becomes the break trigger — so this
         // shows a prompt pointing at it rather than a second button that does the same job.
         return allVisited ? `
-          <div class="act1-hud-pill canopy-prompt-pill" data-editor-id="act1-canopy-prompt">
-            <span>😴</span>
+          <div class="act1-hud-pill canopy-prompt-pill" data-editor-id="act1-canopy-prompt"
+               role="status" aria-live="polite">
+            <span aria-hidden="true">😴</span>
             <span>All four leads worked — click the canopy to rest</span>
           </div>
         ` : `
           <button
             id="act1-btn-check-gate"
             class="act1-hud-btn"
-            data-editor-id="act1-btn-check-gate"
+            data-editor-id="act1-btn-check-gate" aria-label="Check whether all leads are finished"
           >
             Check Finished ▶
           </button>
@@ -1183,6 +1194,7 @@ export class Act1Screen {
             id="act1-btn-return-hub" 
             class="act1-hud-btn btn-action-primary" 
             data-editor-id="act1-btn-return-hub"
+            aria-label="Keep searching for leads"
           >
             Keep Searching ➔
           </button>
@@ -1194,7 +1206,7 @@ export class Act1Screen {
           <button 
             id="act1-btn-start-drift" 
             class="act1-hud-btn btn-action-primary" 
-            data-editor-id="act1-btn-start-drift"
+            data-editor-id="act1-btn-start-drift" aria-label="Rest in the shade"
           >
             Rest in Shade ➔
           </button>
@@ -1202,7 +1214,7 @@ export class Act1Screen {
           <button 
             id="act1-btn-next-step" 
             class="act1-hud-btn" 
-            data-editor-id="act1-btn-next-step"
+            data-editor-id="act1-btn-next-step" aria-label="Next"
           >
             Next ▶
           </button>
@@ -1213,7 +1225,7 @@ export class Act1Screen {
           <button 
             id="act1-btn-start-alarm" 
             class="act1-hud-btn btn-action-primary pulse-btn" 
-            data-editor-id="act1-btn-start-alarm"
+            data-editor-id="act1-btn-start-alarm" aria-label="Continue: later that afternoon"
           >
             Later That Afternoon ➔
           </button>
@@ -1225,7 +1237,7 @@ export class Act1Screen {
           <button 
             id="act1-btn-start-case-file" 
             class="act1-hud-btn btn-action-primary pulse-btn" 
-            data-editor-id="act1-btn-start-case-file"
+            data-editor-id="act1-btn-start-case-file" aria-label="Review the case file"
           >
             Review Case File ➔
           </button>
@@ -1233,7 +1245,7 @@ export class Act1Screen {
           <button 
             id="act1-btn-next-step" 
             class="act1-hud-btn" 
-            data-editor-id="act1-btn-next-step"
+            data-editor-id="act1-btn-next-step" aria-label="Next"
           >
             Next ▶
           </button>
@@ -1247,7 +1259,7 @@ export class Act1Screen {
           <button 
             id="act1-btn-start-act2" 
             class="act1-hud-btn btn-action-primary pulse-btn" 
-            data-editor-id="act1-btn-start-act2"
+            data-editor-id="act1-btn-start-act2" aria-label="Continue to Act 2: Emergency Response"
           >
             🚨 Act 2: Emergency Response ➔
           </button>

@@ -29,15 +29,13 @@
   width: min(94vw, 1300px);
   aspect-ratio: 16 / 9;
   max-height: 84vh;
-  border-radius: 24px;
+  border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow:
-    0 24px 60px -12px rgba(56, 36, 24, 0.3),
-    0 4px 18px rgba(56, 36, 24, 0.12);
-  border: 4px solid #FFFFFF;
-  background: #1e293b;
+  box-shadow: var(--elev-card);
+  border: 4px solid var(--palette-warm-white);
+  background: var(--surface-card-dark);
   user-select: none;
-  transition: filter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: filter 0.8s var(--ease-out-expo);
 }
 
 .act2-scene-img,
@@ -95,36 +93,36 @@
 }
 
 .act2-hud-pill {
-  background: rgba(39, 33, 30, 0.88);
+  background: var(--surface-hud);
   backdrop-filter: blur(10px);
-  color: #FFFFFF;
-  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  color: var(--text-inverse);
+  border: 1.5px solid var(--hairline-light);
   font-family: var(--font-family-display);
   font-size: 0.88rem;
   font-weight: 700;
   height: 38px;
   padding: 0 1rem;
-  border-radius: 100px;
+  border-radius: var(--radius-pill);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--elev-3);
   box-sizing: border-box;
 }
 
 .act2-hud-pill.clock-pill {
-  background: rgba(30, 41, 59, 0.92);
-  border-color: #FDBA74;
-  color: #FFEDD5;
+  background: var(--surface-clock);
+  border-color: var(--color-amber-tint);
+  color: var(--text-inverse);
   letter-spacing: 0.02em;
 }
 
 /* The emergency clock. Appears at the decision and never leaves. */
 .act2-hud-pill.elapsed-pill {
-  background: rgba(127, 29, 29, 0.95);
-  border-color: #FCA5A5;
-  color: #FFF1F2;
+  background: var(--color-danger);
+  border-color: var(--color-danger-pale);
+  color: var(--text-inverse);
   letter-spacing: 0.05em;
   font-size: 0.78rem;
 }
@@ -134,42 +132,42 @@
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
-  color: #FFFFFF;
+  color: var(--text-inverse);
 }
 
 .act2-hud-pill.hints-pill {
-  background: rgba(185, 28, 28, 0.95);
-  border-color: #FCA5A5;
-  color: #FFFFFF;
+  background: var(--color-danger);
+  border-color: var(--color-danger-pale);
+  color: var(--text-inverse);
   font-weight: 800;
   letter-spacing: 0.04em;
   animation: act2PulsePill 2s infinite;
 }
 
 .act2-hud-pill.hints-cashed-pill {
-  background: rgba(21, 128, 61, 0.94);
-  border-color: #86EFAC;
-  color: #FFFFFF;
+  background: var(--color-success);
+  border-color: var(--color-success-pale);
+  color: var(--text-inverse);
   font-weight: 800;
   letter-spacing: 0.03em;
 }
 
 .act2-hud-pill.checks-pill {
-  background: rgba(30, 64, 84, 0.92);
-  border-color: #7DD3FC;
-  color: #E0F2FE;
+  background: var(--palette-teal-dark);
+  border-color: var(--color-info);
+  color: var(--text-inverse);
   transition: all 0.3s ease;
 }
 
 .act2-hud-pill.checks-pill.all-done {
-  background: rgba(21, 128, 61, 0.92);
-  border-color: #86EFAC;
-  color: #FFFFFF;
+  background: var(--color-success);
+  border-color: var(--color-success-pale);
+  color: var(--text-inverse);
 }
 
 .act2-hud-pill.act2-nudge-pill {
-  background: rgba(39, 33, 30, 0.8);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: var(--surface-hud);
+  border-color: var(--hairline-light);
   font-weight: 600;
   font-size: 0.82rem;
 }
@@ -184,31 +182,32 @@
    ========================================================== */
 
 .act2-hud-btn {
-  background: rgba(39, 33, 30, 0.85);
+  background: var(--surface-hud-btn);
   backdrop-filter: blur(8px);
-  color: #FFFFFF;
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  color: var(--text-inverse);
+  border: 1.5px solid var(--hairline-light);
   font-family: var(--font-family-display);
   font-size: 0.92rem;
   font-weight: 700;
   height: 40px;
   padding: 0 1.2rem;
-  border-radius: 100px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
   box-sizing: border-box;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s var(--ease-out-expo);
+  box-shadow: var(--elev-2);
   pointer-events: auto;
 }
 
-.act2-hud-btn:hover:not(:disabled) {
-  background: rgba(39, 33, 30, 1);
+.act2-hud-btn:hover:not(:disabled),
+.act2-hud-btn:focus-visible:not(:disabled) {
+  background: var(--surface-hud-btn-hover);
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.6);
+  border-color: var(--hairline-light-strong);
 }
 
 .act2-hud-btn:disabled {
@@ -217,16 +216,17 @@
 }
 
 .act2-hud-btn.btn-action-primary {
-  background: #C2410C;
-  color: #FFFFFF;
-  border: 2px solid #FDBA74;
+  background: var(--color-heat);
+  color: var(--text-inverse);
+  border: 2px solid var(--color-amber-tint);
   font-weight: 800;
   box-shadow: 0 6px 20px rgba(194, 65, 12, 0.4);
 }
 
-.act2-hud-btn.btn-action-primary:hover:not(:disabled) {
-  background: #9A3412;
-  border-color: #FFFFFF;
+.act2-hud-btn.btn-action-primary:hover:not(:disabled),
+.act2-hud-btn.btn-action-primary:focus-visible:not(:disabled) {
+  background: var(--color-heat-hover);
+  border-color: var(--palette-warm-white);
   transform: translateY(-2px);
 }
 
@@ -239,13 +239,29 @@
   50% { box-shadow: 0 6px 28px rgba(194, 65, 12, 0.75); }
 }
 
-/* Visible focus for every interactive element in the act (WCAG 2.1 AA, 2.4.7). */
+/* Visible focus for every interactive element (WCAG 2.1 AA 2.4.7; design-language.md §7.2).
+   Two rings by ground: amber over the scene / HUD chrome, teal on the light modal cards.
+   Offset is kept at 3px so the ring is never clipped by the viewport card's overflow. */
 #screen-act2 button:focus-visible,
 #screen-act2 [role="button"]:focus-visible,
 #screen-act2 [role="switch"]:focus-visible {
-  outline: 3px solid #FDE68A;
-  outline-offset: 3px;
-  border-radius: 12px;
+  outline: var(--focus-ring-width) solid var(--focus-ring-on-dark);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-sm);
+}
+
+#screen-act2 .act2-check-card button:focus-visible,
+#screen-act2 .act2-payoff-card button:focus-visible,
+#screen-act2 .act2-decision-card button:focus-visible,
+#screen-act2 .act2-waiting-card button:focus-visible,
+#screen-act2 .act2-cool-card button:focus-visible,
+#screen-act2 .act2-cool-feedback button:focus-visible,
+#screen-act2 .act2-transport-panel button:focus-visible,
+#screen-act2 .act2-transport-panel [role="switch"]:focus-visible,
+#screen-act2 .act2-handoff-card button:focus-visible,
+#screen-act3-placeholder button:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-on-light);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .act2-nav-bar {
@@ -377,37 +393,37 @@
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  border: 3px solid #FDE68A;
-  background: rgba(39, 33, 30, 0.86);
-  color: #FFFFFF;
+  border: 3px solid var(--focus-ring-on-dark);
+  background: var(--surface-hud);
+  color: var(--text-inverse);
   font-size: 1.15rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   pointer-events: auto;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, border-color 0.2s ease;
+  box-shadow: var(--elev-4);
+  transition: transform 0.2s var(--ease-out-expo), background 0.2s ease, border-color 0.2s ease;
   animation: act2HotspotInvite 2.2s ease-in-out infinite;
 }
 
 .act2-hotspot:hover,
 .act2-hotspot:focus-visible {
   transform: scale(1.14);
-  background: #C2410C;
-  border-color: #FFFFFF;
+  background: var(--color-heat);
+  border-color: var(--palette-warm-white);
 }
 
 .act2-hotspot.reported {
-  background: rgba(21, 128, 61, 0.94);
-  border-color: #86EFAC;
+  background: var(--color-success);
+  border-color: var(--color-success-pale);
   animation: none;
   cursor: default;
 }
 
 @keyframes act2HotspotInvite {
-  0%, 100% { box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(253, 230, 138, 0.6); }
-  50% { box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 12px rgba(253, 230, 138, 0); }
+  0%, 100% { box-shadow: var(--elev-4), 0 0 0 0 var(--color-food-glow); }
+  50% { box-shadow: var(--elev-4), 0 0 0 12px transparent; }
 }
 
 .act2-hotspot-tooltip {
@@ -416,14 +432,14 @@
   left: 50%;
   transform: translateX(-50%) translateY(4px);
   white-space: nowrap;
-  background: rgba(39, 33, 30, 0.96);
-  color: #FFFFFF;
+  background: var(--surface-tooltip);
+  color: var(--text-inverse);
   font-family: var(--font-family-display);
   font-size: 0.76rem;
   font-weight: 700;
   padding: 0.3rem 0.65rem;
-  border-radius: 100px;
-  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--hairline-light);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.18s ease, transform 0.18s ease;
@@ -458,7 +474,7 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #9A3412;
+  color: var(--color-heat-hover);
 }
 
 .act2-silence-card {
@@ -468,12 +484,12 @@
   transform: translate(-50%, -50%);
   width: min(560px, 68%);
   background: rgba(24, 20, 18, 0.94);
-  border: 2px solid rgba(255, 255, 255, 0.18);
-  border-radius: 20px;
+  border: 2px solid var(--hairline-light-soft);
+  border-radius: var(--radius-lg);
   padding: 2rem 2.25rem;
   text-align: center;
-  color: #F3EDE4;
-  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
+  color: var(--text-on-dark);
+  box-shadow: var(--elev-modal);
   pointer-events: auto;
   animation: act2FadeIn 0.6s ease forwards;
 }
@@ -482,7 +498,7 @@
   display: block;
   font-size: 2.4rem;
   line-height: 1;
-  color: #6E635C;
+  color: var(--palette-text-muted);
   margin-bottom: 0.6rem;
 }
 
@@ -496,7 +512,7 @@
 .act2-silence-sub {
   font-size: 0.98rem;
   line-height: 1.6;
-  color: #C7BDB5;
+  color: var(--text-on-dark-muted);
 }
 
 @keyframes act2FadeIn {
@@ -515,7 +531,7 @@
   width: min(400px, 34%);
   pointer-events: auto;
   z-index: 34;
-  animation: act2SlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: act2SlideIn 0.35s var(--ease-out-expo) forwards;
 }
 
 .act2-call-panel.is-docked {
@@ -528,11 +544,11 @@
 }
 
 .act2-phone-bezel {
-  background: #17130F;
-  border: 3px solid #3A302B;
-  border-radius: 26px;
+  background: var(--surface-card-dark);
+  border: 3px solid var(--surface-chip-dark);
+  border-radius: var(--radius-2xl);
   padding: 0.85rem;
-  box-shadow: 0 22px 46px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--elev-modal);
 }
 
 .act2-phone-header {
@@ -540,14 +556,14 @@
   align-items: center;
   gap: 0.7rem;
   padding: 0.55rem 0.7rem 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid var(--hairline-light-faint);
 }
 
 .act2-phone-avatar {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: #2E5866;
+  background: var(--palette-teal-dark);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -566,7 +582,7 @@
   font-family: var(--font-family-display);
   font-size: 0.92rem;
   font-weight: 800;
-  color: #F3EDE4;
+  color: var(--text-on-dark);
 }
 
 .act2-phone-status {
@@ -575,14 +591,14 @@
   gap: 0.35rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #86EFAC;
+  color: var(--color-success-pale);
 }
 
 .act2-phone-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #4ADE80;
+  background: var(--color-success-pale);
   animation: act2PulseDot 1.6s ease-in-out infinite;
 }
 
@@ -599,20 +615,20 @@
   font-family: var(--font-family-display);
   font-size: 1rem;
   font-weight: 700;
-  color: #C7BDB5;
+  color: var(--text-on-dark-muted);
   text-align: center;
   padding: 1.2rem 0;
   letter-spacing: 0.03em;
 }
 
 .act2-phone-line {
-  border-left: 4px solid #5E9BB0;
+  border-left: 4px solid var(--color-info);
   padding-left: 0.8rem;
   margin-bottom: 0.4rem;
 }
 
 .act2-phone-line.line-callie {
-  border-left-color: #C2410C;
+  border-left-color: var(--color-heat);
 }
 
 .act2-phone-line-who {
@@ -622,7 +638,7 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #8FB6C4;
+  color: var(--color-info-pale);
   margin-bottom: 0.25rem;
 }
 
@@ -630,7 +646,7 @@
   font-size: 1.02rem;
   line-height: 1.55;
   font-weight: 500;
-  color: #F3EDE4;
+  color: var(--text-on-dark);
 }
 
 .act2-phone-hint {
@@ -638,7 +654,7 @@
   font-family: var(--font-family-display);
   font-size: 0.8rem;
   font-weight: 700;
-  color: #FDBA74;
+  color: var(--color-amber-tint);
   text-align: center;
 }
 
@@ -656,20 +672,20 @@
   align-items: center;
   gap: 0.55rem;
   padding: 0.4rem 0.6rem;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+  background: var(--hairline-light-faint);
   font-size: 0.86rem;
-  color: #E4DCD4;
+  color: var(--text-on-dark-muted);
 }
 
 .act2-triage-item.is-done {
-  background: rgba(21, 128, 61, 0.28);
-  color: #DCFCE7;
+  background: color-mix(in srgb, var(--color-success) 32%, transparent);
+  color: var(--text-inverse);
 }
 
 .act2-triage-item.is-missing {
-  background: rgba(185, 28, 28, 0.28);
-  color: #FEE2E2;
+  background: color-mix(in srgb, var(--color-danger) 32%, transparent);
+  color: var(--text-inverse);
 }
 
 .act2-triage-mark {
@@ -714,10 +730,10 @@
   width: min(860px, 100%);
   max-height: 100%;
   overflow-y: auto;
-  background: #FAF6F0;
-  border: 3px solid #FFFFFF;
-  border-radius: 22px;
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+  background: var(--palette-cream);
+  border: 3px solid var(--palette-warm-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-modal);
   padding: 1.2rem 1.4rem 1.1rem;
   display: flex;
   flex-direction: column;
@@ -735,30 +751,31 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  background: var(--palette-teal-dark, #244952);
-  color: #E0F2FE;
+  background: var(--palette-teal-dark);
+  color: var(--text-inverse);
   font-family: var(--font-family-display);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.07em;
   padding: 0.35rem 0.8rem;
-  border-radius: 100px;
+  border-radius: var(--radius-pill);
 }
 
 .act2-check-close {
   background: transparent;
   border: 2px solid rgba(56, 36, 24, 0.25);
-  color: var(--palette-brown-med, #5E3D2A);
+  color: var(--palette-brown-med);
   font-family: var(--font-family-display);
   font-size: 0.82rem;
   font-weight: 700;
   padding: 0.35rem 0.85rem;
-  border-radius: 100px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.act2-check-close:hover {
+.act2-check-close:hover,
+.act2-check-close:focus-visible {
   background: rgba(56, 36, 24, 0.08);
   border-color: rgba(56, 36, 24, 0.5);
 }
@@ -768,17 +785,17 @@
 }
 
 .act2-check-tech-line {
-  border-left: 4px solid var(--palette-teal, #366B77);
+  border-left: 4px solid var(--palette-teal);
   padding-left: 0.9rem;
   margin-bottom: 1rem;
 }
 
 .act2-check-tech-line .act2-phone-line-who {
-  color: var(--palette-teal, #366B77);
+  color: var(--palette-teal);
 }
 
 .act2-check-tech-line .act2-phone-line-text {
-  color: var(--palette-text-dark, #27211E);
+  color: var(--palette-text-dark);
   font-size: 1.08rem;
 }
 
@@ -792,7 +809,7 @@
 .act2-check-svg {
   width: 100%;
   height: auto;
-  border-radius: 14px;
+  border-radius: var(--radius-sm);
   display: block;
   grid-row: span 2;
 }
@@ -805,9 +822,9 @@
 }
 
 .act2-check-readout > div {
-  background: #FFFFFF;
+  background: var(--palette-warm-white);
   border: 1.5px solid rgba(56, 36, 24, 0.14);
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   padding: 0.55rem 0.75rem;
 }
 
@@ -817,7 +834,7 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--palette-text-muted, #6E635C);
+  color: var(--palette-text-muted);
   margin-bottom: 0.15rem;
 }
 
@@ -826,7 +843,7 @@
   font-size: 0.94rem;
   font-weight: 600;
   line-height: 1.45;
-  color: var(--palette-text-dark, #27211E);
+  color: var(--palette-text-dark);
 }
 
 /* ---- The capillary-refill counter ----
@@ -835,9 +852,9 @@
    and the severity word all say the same thing without any hue at all. */
 
 .act2-refill-counter {
-  background: #FFFFFF;
-  border: 2px solid #C2410C;
-  border-radius: 14px;
+  background: var(--palette-warm-white);
+  border: 2px solid var(--color-heat);
+  border-radius: var(--radius-sm);
   padding: 0.7rem 0.85rem;
 }
 
@@ -855,20 +872,20 @@
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--palette-brown-dark, #382418);
+  color: var(--palette-brown-dark);
 }
 
 .act2-refill-normal {
   font-size: 0.74rem;
   font-weight: 700;
-  color: var(--palette-sage, #6B8E6D);
+  color: var(--palette-text-muted); /* sage fails AA on light — §2.4 approved muted instead */
 }
 
 .act2-refill-track {
   position: relative;
   height: 12px;
-  border-radius: 100px;
-  background: #EDE3DA;
+  border-radius: var(--radius-pill);
+  background: var(--palette-peach);
   overflow: hidden;
 }
 
@@ -876,11 +893,11 @@
   position: absolute;
   inset: 0 auto 0 0;
   width: var(--refill-pct, 50%);
-  border-radius: 100px;
+  border-radius: var(--radius-pill);
   background: repeating-linear-gradient(
     135deg,
-    #C2410C 0 8px,
-    #9A3412 8px 16px
+    var(--color-heat) 0 8px,
+    var(--color-heat-hover) 8px 16px
   );
 }
 
@@ -891,7 +908,7 @@
   top: -2px;
   bottom: -2px;
   width: 3px;
-  background: #27211E;
+  background: var(--palette-text-dark);
   z-index: 2;
 }
 
@@ -907,7 +924,7 @@
   font-size: 1.5rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: #9A3412;
+  color: var(--color-heat-hover);
 }
 
 .act2-refill-flag {
@@ -916,10 +933,10 @@
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  background: #9A3412;
-  color: #FFF7ED;
+  background: var(--color-heat-hover);
+  color: var(--text-inverse);
   padding: 0.2rem 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
 }
 
 .act2-gum-press {
@@ -967,29 +984,29 @@
   font-size: 0.8rem;
   font-weight: 800;
   padding: 0.3rem 0;
-  border-radius: 8px;
-  background: #EDE3DA;
-  color: #9C918A;
+  border-radius: var(--radius-xs);
+  background: var(--palette-peach);
+  color: var(--palette-text-muted);
   border: 2px solid transparent;
 }
 
 .act2-count-tick.counted {
-  background: #FBE3D4;
-  color: #7C2D12;
+  background: color-mix(in srgb, var(--color-heat) 18%, var(--palette-warm-white));
+  color: var(--color-heat-deep);
 }
 
 .act2-count-tick.is-final {
-  background: #9A3412;
-  color: #FFF7ED;
-  border-color: #27211E;
+  background: var(--color-heat-hover);
+  color: var(--text-inverse);
+  border-color: var(--palette-text-dark);
 }
 
 /* ---- Flashback to the matching Act 1 lead ---- */
 
 .act2-flashback {
-  background: #FFFFFF;
+  background: var(--palette-warm-white);
   border: 2px dashed rgba(56, 36, 24, 0.28);
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   padding: 0.9rem 1rem;
 }
 
@@ -1007,17 +1024,17 @@
   font-weight: 800;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  background: var(--palette-brown-dark, #382418);
-  color: #F6D6C4;
+  background: var(--palette-brown-dark);
+  color: var(--palette-peach);
   padding: 0.22rem 0.55rem;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
 }
 
 .act2-flashback-name {
   font-family: var(--font-family-display);
   font-size: 1.1rem;
   font-weight: 800;
-  color: var(--palette-brown-dark, #382418);
+  color: var(--palette-brown-dark);
 }
 
 .act2-flashback-body {
@@ -1030,7 +1047,7 @@
 .act2-flashback-art {
   width: 100%;
   height: auto;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   filter: saturate(45%);
   display: block;
 }
@@ -1039,14 +1056,14 @@
   font-family: var(--font-family-display);
   font-size: 0.95rem;
   font-weight: 800;
-  color: var(--palette-teal-dark, #244952);
+  color: var(--palette-teal-dark);
   margin-bottom: 0.35rem;
 }
 
 .act2-flashback-recall {
   font-size: 0.94rem;
   line-height: 1.5;
-  color: var(--palette-text-dark, #27211E);
+  color: var(--palette-text-dark);
   margin-bottom: 0.45rem;
 }
 
@@ -1054,8 +1071,8 @@
   font-size: 0.92rem;
   line-height: 1.5;
   font-weight: 700;
-  color: #9A3412;
-  border-left: 3px solid #C2410C;
+  color: var(--color-heat-hover);
+  border-left: 3px solid var(--color-heat);
   padding-left: 0.6rem;
 }
 
@@ -1083,7 +1100,7 @@
 .act2-beat-dot.seen { background: rgba(194, 65, 12, 0.45); }
 
 .act2-beat-dot.current {
-  background: #C2410C;
+  background: var(--color-heat);
   transform: scale(1.25);
 }
 
@@ -1105,14 +1122,14 @@
   width: min(880px, 88%);
   max-height: 78%;
   overflow-y: auto;
-  background: #FAF6F0;
-  border: 3px solid #FFFFFF;
-  border-radius: 22px;
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.42);
+  background: var(--palette-cream);
+  border: 3px solid var(--palette-warm-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-modal);
   padding: 1.4rem 1.6rem;
   pointer-events: auto;
   z-index: 45;
-  animation: act2CardIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: act2CardIn 0.35s var(--ease-out-expo) forwards;
 }
 
 @keyframes act2CardIn {
@@ -1124,15 +1141,15 @@
 
 .act2-payoff-badge {
   display: inline-block;
-  background: #B91C1C;
-  color: #FFF1F2;
+  background: var(--color-danger);
+  color: var(--text-inverse);
   font-family: var(--font-family-display);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   padding: 0.28rem 0.7rem;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   margin-bottom: 0.55rem;
 }
 
@@ -1145,7 +1162,7 @@
   font-size: 1.5rem;
   font-weight: 800;
   line-height: 1.25;
-  color: var(--palette-brown-dark, #382418);
+  color: var(--palette-brown-dark);
 }
 
 .act2-payoff-timeline {
@@ -1162,10 +1179,10 @@
   grid-template-columns: 84px 32px 1fr;
   gap: 0.7rem;
   align-items: center;
-  background: #FFFFFF;
+  background: var(--palette-warm-white);
   border: 1.5px solid rgba(56, 36, 24, 0.14);
-  border-left: 5px solid #C2410C;
-  border-radius: 12px;
+  border-left: 5px solid var(--color-heat);
+  border-radius: var(--radius-sm);
   padding: 0.6rem 0.8rem;
 }
 
@@ -1173,7 +1190,7 @@
   font-family: var(--font-family-display);
   font-size: 0.86rem;
   font-weight: 800;
-  color: #9A3412;
+  color: var(--color-heat-hover);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1185,7 +1202,7 @@
   gap: 0.1rem;
   font-size: 0.92rem;
   line-height: 1.45;
-  color: var(--palette-text-dark, #27211E);
+  color: var(--palette-text-dark);
 }
 
 .act2-payoff-copy strong {
@@ -1194,13 +1211,13 @@
 }
 
 .act2-payoff-tech {
-  background: #EAF1F3;
-  border-left: 5px solid var(--palette-teal, #366B77);
-  border-radius: 12px;
+  background: color-mix(in srgb, var(--palette-teal) 10%, var(--palette-warm-white));
+  border-left: 5px solid var(--palette-teal);
+  border-radius: var(--radius-sm);
   padding: 0.8rem 1rem;
   font-size: 1rem;
   line-height: 1.55;
-  color: var(--palette-text-dark, #27211E);
+  color: var(--palette-text-dark);
 }
 
 .act2-payoff-footer,
@@ -1219,22 +1236,22 @@
 .act2-cool-badge,
 .act2-transport-badge {
   display: inline-block;
-  background: var(--palette-brown-dark, #382418);
-  color: #F6D6C4;
+  background: var(--palette-brown-dark);
+  color: var(--palette-peach);
   font-family: var(--font-family-display);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   padding: 0.26rem 0.7rem;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   margin-bottom: 0.6rem;
 }
 
 .act2-decision-sub {
   font-size: 1rem;
   line-height: 1.55;
-  color: var(--palette-text-muted, #6E635C);
+  color: var(--palette-text-muted);
   margin: 0.5rem 0 1.1rem;
 }
 
@@ -1247,21 +1264,23 @@
 .act2-decision-option,
 .act2-cool-option {
   text-align: left;
-  background: #FFFFFF;
+  background: var(--palette-warm-white);
   border: 2.5px solid rgba(56, 36, 24, 0.16);
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   padding: 1rem 1.1rem;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
   font-family: var(--font-family-body);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s var(--ease-out-expo);
 }
 
 .act2-decision-option:hover,
-.act2-cool-option:hover {
-  border-color: #C2410C;
+.act2-decision-option:focus-visible,
+.act2-cool-option:hover,
+.act2-cool-option:focus-visible {
+  border-color: var(--color-heat);
   transform: translateY(-3px);
   box-shadow: 0 12px 26px rgba(56, 36, 24, 0.18);
 }
@@ -1271,27 +1290,27 @@
   font-family: var(--font-family-display);
   font-size: 1.05rem;
   font-weight: 800;
-  color: var(--palette-brown-dark, #382418);
+  color: var(--palette-brown-dark);
 }
 
 .act2-decision-option-sub {
   font-size: 0.9rem;
   line-height: 1.45;
-  color: var(--palette-text-muted, #6E635C);
+  color: var(--palette-text-muted);
 }
 
 .act2-waiting-line,
 .act2-waiting-note {
   font-size: 1rem;
   line-height: 1.6;
-  color: var(--palette-text-dark, #27211E);
+  color: var(--palette-text-dark);
   margin-top: 0.7rem;
 }
 
 .act2-waiting-note {
-  background: #EAF1F3;
-  border-left: 5px solid var(--palette-teal, #366B77);
-  border-radius: 12px;
+  background: color-mix(in srgb, var(--palette-teal) 10%, var(--palette-warm-white));
+  border-left: 5px solid var(--palette-teal);
+  border-radius: var(--radius-sm);
   padding: 0.75rem 0.95rem;
   font-weight: 600;
 }
@@ -1308,9 +1327,9 @@
   grid-template-columns: minmax(140px, 1fr) auto 28px auto;
   gap: 0.6rem;
   align-items: center;
-  background: #FFFFFF;
+  background: var(--palette-warm-white);
   border: 1.5px solid rgba(56, 36, 24, 0.14);
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   padding: 0.55rem 0.8rem;
 }
 
@@ -1318,22 +1337,22 @@
   font-family: var(--font-family-display);
   font-size: 0.86rem;
   font-weight: 800;
-  color: var(--palette-brown-dark, #382418);
+  color: var(--palette-brown-dark);
 }
 
 .act2-delta-before {
   font-size: 0.9rem;
-  color: var(--palette-text-muted, #6E635C);
+  color: var(--palette-text-muted);
   text-decoration: line-through;
 }
 
-.act2-delta-arrow { color: #C2410C; font-weight: 800; text-align: center; }
+.act2-delta-arrow { color: var(--color-heat); font-weight: 800; text-align: center; }
 
 .act2-delta-after {
   font-family: var(--font-family-display);
   font-size: 0.98rem;
   font-weight: 800;
-  color: #9A3412;
+  color: var(--color-heat-hover);
 }
 
 /* ==========================================================
@@ -1353,40 +1372,40 @@
   font-family: var(--font-family-display);
   font-size: 1.05rem;
   font-weight: 800;
-  color: var(--palette-brown-dark, #382418);
+  color: var(--palette-brown-dark);
 }
 
 .act2-cool-prompt {
-  background: #EAF1F3;
-  border-left: 5px solid var(--palette-teal, #366B77);
-  border-radius: 12px;
+  background: color-mix(in srgb, var(--palette-teal) 10%, var(--palette-warm-white));
+  border-left: 5px solid var(--palette-teal);
+  border-radius: var(--radius-sm);
   padding: 0.75rem 0.95rem;
   font-size: 1.02rem;
   line-height: 1.55;
-  color: var(--palette-text-dark, #27211E);
+  color: var(--palette-text-dark);
   margin-bottom: 0.7rem;
 }
 
 .act2-cool-prompt .act2-phone-line-who,
 .act2-payoff-tech .act2-phone-line-who {
-  color: var(--palette-teal, #366B77);
+  color: var(--palette-teal);
 }
 
 /* Wes: confident, generous, wrong. Styled as an interruption, never as an obstacle. */
 .act2-wes-line {
-  background: #F4EFE1;
-  border-left: 5px solid #6B8E6D;
-  border-radius: 12px;
+  background: color-mix(in srgb, var(--palette-sage) 12%, var(--palette-warm-white));
+  border-left: 5px solid var(--palette-sage);
+  border-radius: var(--radius-sm);
   padding: 0.7rem 0.95rem;
   font-size: 1rem;
   line-height: 1.5;
   font-style: italic;
-  color: var(--palette-brown-med, #5E3D2A);
+  color: var(--palette-brown-med);
   margin-bottom: 0.9rem;
 }
 
 .act2-wes-line.is-pivot {
-  border-left-color: #C2410C;
+  border-left-color: var(--color-heat);
   font-style: normal;
   margin: 0.8rem 0 0;
 }
@@ -1398,7 +1417,7 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #4F6B50;
+  color: var(--palette-teal-dark);
   font-style: normal;
   margin-bottom: 0.2rem;
 }
@@ -1411,8 +1430,8 @@
 
 /* ---- Consequence + correction. Never a game over. ---- */
 
-.act2-cool-feedback.is-right { border-color: #86EFAC; }
-.act2-cool-feedback.is-wrong { border-color: #FCA5A5; }
+.act2-cool-feedback.is-right { border-color: var(--color-success-pale); }
+.act2-cool-feedback.is-wrong { border-color: var(--color-danger-pale); }
 
 .act2-cool-feedback-head {
   display: flex;
@@ -1429,30 +1448,30 @@
   letter-spacing: 0.07em;
   text-transform: uppercase;
   padding: 0.28rem 0.7rem;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
 }
 
 .act2-cool-feedback.is-right .act2-cool-feedback-tag {
-  background: #15803D;
-  color: #DCFCE7;
+  background: var(--color-success);
+  color: var(--text-inverse);
 }
 
 .act2-cool-feedback.is-wrong .act2-cool-feedback-tag {
-  background: #B91C1C;
-  color: #FEE2E2;
+  background: var(--color-danger);
+  color: var(--text-inverse);
 }
 
 .act2-cool-feedback-body {
   font-size: 1.02rem;
   line-height: 1.6;
-  color: var(--palette-text-dark, #27211E);
+  color: var(--palette-text-dark);
   margin-bottom: 0.9rem;
 }
 
 .act2-cool-correction {
-  background: #FFF7ED;
-  border: 2px solid #FDBA74;
-  border-radius: 14px;
+  background: color-mix(in srgb, var(--color-amber) 10%, var(--palette-warm-white));
+  border: 2px solid var(--color-amber-tint);
+  border-radius: var(--radius-sm);
   padding: 0.85rem 1rem;
 }
 
@@ -1463,14 +1482,14 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #9A3412;
+  color: var(--color-heat-hover);
   margin-bottom: 0.35rem;
 }
 
 .act2-cool-correction p {
   font-size: 0.98rem;
   line-height: 1.55;
-  color: var(--palette-text-dark, #27211E);
+  color: var(--palette-text-dark);
 }
 
 .act2-cool-nofail {
@@ -1478,7 +1497,7 @@
   font-family: var(--font-family-display);
   font-size: 0.92rem;
   font-weight: 700;
-  color: var(--palette-sage, #6B8E6D);
+  color: var(--palette-teal-dark); /* sage fails AA on light — §2.4 approved teal-dark instead */
 }
 
 /* The flat, factual third voice — same component as Act 1's truth stamp. */
@@ -1486,10 +1505,10 @@
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  background: #27211E;
-  border-radius: 14px;
+  background: var(--palette-text-dark);
+  border-radius: var(--radius-sm);
   padding: 0.85rem 1rem;
-  color: #F3EDE4;
+  color: var(--text-on-dark);
 }
 
 .act2-truth-stamp-metric {
@@ -1498,7 +1517,7 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #FDBA74;
+  color: var(--color-amber-tint);
 }
 
 .act2-truth-stamp-line {
@@ -1526,9 +1545,9 @@
 }
 
 .act2-towel-sim {
-  background: #FFFFFF;
+  background: var(--palette-warm-white);
   border: 2.5px solid rgba(56, 36, 24, 0.16);
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -1536,8 +1555,8 @@
   transition: border-color 0.4s ease, background 0.4s ease;
 }
 
-.act2-towel-sim.state-warming { border-color: #FDBA74; background: #FFFBF5; }
-.act2-towel-sim.state-critical { border-color: #DC2626; background: #FEF2F2; }
+.act2-towel-sim.state-warming { border-color: var(--color-amber-tint); background: color-mix(in srgb, var(--color-amber) 8%, var(--palette-warm-white)); }
+.act2-towel-sim.state-critical { border-color: var(--color-danger); background: color-mix(in srgb, var(--color-danger) 7%, var(--palette-warm-white)); }
 
 .act2-towel-art-wrap { width: 100%; }
 
@@ -1552,26 +1571,26 @@
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--palette-brown-dark, #382418);
+  color: var(--palette-brown-dark);
   margin-bottom: 0.4rem;
 }
 
-.act2-towel-word { color: #9A3412; }
-.act2-towel-sim.state-cool .act2-towel-word { color: #2E6274; }
+.act2-towel-word { color: var(--color-heat-hover); }
+.act2-towel-sim.state-cool .act2-towel-word { color: var(--palette-teal-dark); }
 
 .act2-towel-track {
   position: relative;
   height: 14px;
-  border-radius: 100px;
-  background: #EDE3DA;
+  border-radius: var(--radius-pill);
+  background: var(--palette-peach);
   overflow: hidden;
 }
 
 .act2-towel-fill {
   position: absolute;
   inset: 0 auto 0 0;
-  border-radius: 100px;
-  background: repeating-linear-gradient(135deg, #C2410C 0 9px, #9A3412 9px 18px);
+  border-radius: var(--radius-pill);
+  background: repeating-linear-gradient(135deg, var(--color-heat) 0 9px, var(--color-heat-hover) 9px 18px);
   transition: width 0.85s linear;
 }
 
@@ -1582,14 +1601,14 @@
   top: -2px;
   bottom: -2px;
   width: 3px;
-  background: #27211E;
+  background: var(--palette-text-dark);
   z-index: 2;
 }
 
 .act2-towel-note {
   font-size: 0.88rem;
   line-height: 1.5;
-  color: var(--palette-text-muted, #6E635C);
+  color: var(--palette-text-muted);
   margin: 0.55rem 0 0.7rem;
 }
 
@@ -1606,25 +1625,26 @@
   align-items: center;
   gap: 0.75rem;
   text-align: left;
-  background: #FFFFFF;
+  background: var(--palette-warm-white);
   border: 2.5px solid rgba(56, 36, 24, 0.16);
-  border-radius: 14px;
+  border-radius: var(--radius-sm);
   padding: 0.75rem 0.9rem;
   cursor: pointer;
   font-family: var(--font-family-body);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s var(--ease-out-expo);
 }
 
-.act2-toggle:hover { border-color: #C2410C; transform: translateY(-2px); }
+.act2-toggle:hover,
+.act2-toggle:focus-visible { border-color: var(--color-heat); transform: translateY(-2px); }
 
 .act2-toggle.is-on {
-  border-color: #6B8E6D;
-  background: #F1F7F1;
+  border-color: var(--palette-sage);
+  background: color-mix(in srgb, var(--palette-sage) 12%, var(--palette-warm-white));
 }
 
 .act2-toggle.is-prepaid {
-  border-color: #6B8E6D;
-  background: #F1F7F1;
+  border-color: var(--palette-sage);
+  background: color-mix(in srgb, var(--palette-sage) 12%, var(--palette-warm-white));
   cursor: default;
 }
 
@@ -1642,13 +1662,13 @@
 .act2-toggle-copy strong {
   font-family: var(--font-family-display);
   font-size: 0.98rem;
-  color: var(--palette-brown-dark, #382418);
+  color: var(--palette-brown-dark);
 }
 
 .act2-toggle-copy span {
   font-size: 0.86rem;
   line-height: 1.4;
-  color: var(--palette-text-muted, #6E635C);
+  color: var(--palette-text-muted);
 }
 
 .act2-toggle-state {
@@ -1659,22 +1679,22 @@
   font-weight: 800;
   letter-spacing: 0.07em;
   padding: 0.25rem 0.55rem;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   background: rgba(56, 36, 24, 0.12);
-  color: var(--palette-text-muted, #6E635C);
+  color: var(--palette-text-muted);
 }
 
 .act2-toggle.is-on .act2-toggle-state,
 .act2-toggle-state.is-done {
-  background: #15803D;
-  color: #DCFCE7;
+  background: var(--color-success);
+  color: var(--text-inverse);
 }
 
 .act2-transport-hint {
   font-family: var(--font-family-display);
   font-size: 0.86rem;
   font-weight: 700;
-  color: var(--palette-brown-med, #5E3D2A);
+  color: var(--palette-brown-med);
   padding-top: 0.2rem;
 }
 
@@ -1683,7 +1703,7 @@
 .act2-handoff-line {
   font-size: 1.05rem;
   line-height: 1.6;
-  color: var(--palette-text-muted, #6E635C);
+  color: var(--palette-text-muted);
   margin: 0.7rem 0 1.2rem;
 }
 
@@ -1703,19 +1723,51 @@
     width: min(340px, 46%);
     right: 1rem;
   }
+}
+
+/* Per docs/design-language.md §9: at 768px the card flips to 4/3, the HUD shrinks to
+   40px/32px, and modals widen to 96%. */
+@media (max-width: 768px) {
+  .act2-viewport-card {
+    aspect-ratio: 4 / 3;
+    width: min(96vw, 900px);
+  }
 
   .act2-hud-bar,
   .act2-nav-bar {
     left: 0.9rem;
     right: 0.9rem;
+    min-height: 40px;
   }
 
-  .act2-hud-pill,
+  .act2-hud-pill {
+    font-size: 0.74rem;
+    height: 32px;
+    padding: 0 0.75rem;
+  }
+
   .act2-hud-btn {
     font-size: 0.78rem;
     height: 34px;
-    padding: 0 0.8rem;
+    padding: 0 0.85rem;
   }
+
+  .act2-call-panel {
+    width: min(320px, 54%);
+  }
+
+  .act2-payoff-card,
+  .act2-decision-card,
+  .act2-waiting-card,
+  .act2-cool-card,
+  .act2-cool-feedback,
+  .act2-transport-panel,
+  .act2-check-card,
+  .act2-handoff-card {
+    width: 96%;
+  }
+
+  .act2-check-modal { padding: 1rem; }
 }
 
 @media (max-height: 700px) {
@@ -1747,6 +1799,9 @@
     animation: none !important;
   }
 
+  /* Entrances are SHORTENED, never removed (design-language.md §5.3). act2CardIn ends on
+     translate(-50%, -50%); killing it outright would drop the centring and the card would
+     jump to the corner. Collapsing the duration keeps the final frame intact. */
   .act2-silence-card,
   .act2-call-panel,
   .act2-check-modal,
@@ -1757,18 +1812,8 @@
   .act2-cool-feedback,
   .act2-transport-panel,
   .act2-handoff-card {
-    animation: none !important;
-    opacity: 1;
-  }
-
-  .act2-payoff-card,
-  .act2-decision-card,
-  .act2-waiting-card,
-  .act2-cool-card,
-  .act2-cool-feedback,
-  .act2-transport-panel,
-  .act2-handoff-card {
-    transform: translate(-50%, -50%);
+    animation-duration: 0.01s !important;
+    animation-delay: 0s !important;
   }
 
   .act2-viewport-card,
@@ -1784,9 +1829,57 @@
   }
 
   .act2-decision-option:hover,
+  .act2-decision-option:focus-visible,
   .act2-cool-option:hover,
+  .act2-cool-option:focus-visible,
   .act2-toggle:hover,
-  .act2-hud-btn:hover:not(:disabled) {
+  .act2-toggle:focus-visible,
+  .act2-hud-btn:hover:not(:disabled),
+  .act2-hud-btn:focus-visible:not(:disabled) {
     transform: none;
   }
+}
+
+/* ==========================================================
+   ACT 3 PLACEHOLDER — where Act 2's transport sequence hands off.
+   Lives here (not act1-screen.css) so Act 2 owns everything it renders into.
+   ========================================================== */
+
+.act3-placeholder-modal {
+  position: relative;
+  width: min(560px, 88%);
+  background: var(--palette-cream);
+  border: 3px solid var(--palette-warm-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-modal);
+  padding: 2rem 2.2rem;
+  text-align: center;
+}
+
+.act3-placeholder-icon {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 0.6rem;
+}
+
+.act3-placeholder-title {
+  font-family: var(--font-family-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--palette-brown-dark);
+  margin-bottom: 0.7rem;
+}
+
+.act3-placeholder-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--palette-text-muted);
+  margin-bottom: 1.4rem;
+}
+
+.act3-placeholder-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
 }

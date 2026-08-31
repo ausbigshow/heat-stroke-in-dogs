@@ -63,6 +63,7 @@ export class Act2Screen {
     this.checkReportOrder = [];
     this.activeCheckId = null;
     this.checkStepIndex = 0;
+    this.returnFocusCheckId = null; // hotspot to restore focus to when the modal closes
 
     // Carried over from Act 1's HUD. Cashes out in the payoff beat.
     this.hintsDropped = 4;
@@ -1117,13 +1118,16 @@ export class Act2Screen {
       bodyHtml = this.renderFlashback(check.flashback);
     }
 
+    // Modal semantics per docs/design-language.md §7.4: role="dialog", aria-modal,
+    // aria-labelledby pointing at the title, Escape closes (see handleKeyDown), and focus
+    // is moved in on open / restored to the opening hotspot on close (see openCheck/closeCheck).
     return `
       <div class="act2-check-modal" data-editor-id="act2-check-modal" role="dialog"
-           aria-label="${check.label}">
+           aria-modal="true" aria-labelledby="act2-check-title">
         <div class="act2-check-card" data-editor-id="act2-check-card">
 
           <div class="act2-check-header">
-            <div class="act2-check-badge">
+            <div class="act2-check-badge" id="act2-check-title">
               <span aria-hidden="true">${check.icon}</span>
               <span>${check.label.toUpperCase()}</span>
             </div>
@@ -1781,17 +1785,35 @@ export class Act2Screen {
 
   openCheck(checkId) {
     if (!this.checksData[checkId]) return;
+    // Remember which hotspot opened the modal so focus can be returned to it on close
+    // (no keyboard trap — design-language.md §7.5).
+    this.returnFocusCheckId = checkId;
     this.activeCheckId = checkId;
     this.checkStepIndex = 0;
     this.currentBeat = 'check_active';
     this.render();
+    this.focusInModal();
   }
 
   closeCheck() {
+    const returnTo = this.returnFocusCheckId;
     this.currentBeat = 'checks';
     this.activeCheckId = null;
     this.checkStepIndex = 0;
     this.render();
+
+    // Restore focus to the hotspot that opened the modal.
+    const hotspot = this.container?.querySelector(`.act2-hotspot[data-check="${returnTo}"]`);
+    if (hotspot && !this.isEditModeActive()) hotspot.focus();
+    this.returnFocusCheckId = null;
+  }
+
+  // Move focus into the dialog on open and on every step advance, so a keyboard or
+  // screen-reader user lands on the control that moves the beat forward.
+  focusInModal() {
+    if (this.isEditModeActive()) return;
+    const target = this.container?.querySelector('#act2-btn-check-next, #act2-btn-report-check');
+    if (target) target.focus();
   }
 
   nextCheckStep() {
@@ -1799,6 +1821,7 @@ export class Act2Screen {
     if (this.checkStepIndex < steps.length - 1) {
       this.checkStepIndex++;
       this.render();
+      this.focusInModal();
     }
   }
 
