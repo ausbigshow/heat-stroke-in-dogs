@@ -240,7 +240,12 @@
   justify-content: center;
   gap: 0.4rem;
   box-sizing: border-box;
-  transition: all 0.2s var(--ease-out-expo);
+  transition: background-color var(--dur-fast) var(--ease-out-expo),
+              border-color var(--dur-fast) var(--ease-out-expo),
+              color var(--dur-fast) var(--ease-out-expo),
+              box-shadow var(--dur-fast) var(--ease-out-expo),
+              opacity var(--dur-fast) var(--ease-out-expo),
+              transform var(--dur-fast) var(--ease-out-expo);
   box-shadow: var(--elev-2);
 }
 

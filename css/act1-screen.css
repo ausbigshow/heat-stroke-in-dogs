@@ -125,7 +125,7 @@
   background: rgba(124, 45, 18, 0.9);
   border-color: #FB923C;
   color: var(--text-inverse);
-  transition: all 0.3s ease;
+  transition: background-color var(--dur-base) ease, border-color var(--dur-base) ease;
 }
 
 .act1-hud-pill.leads-pill.all-done {
@@ -843,7 +843,9 @@
   border-radius: var(--radius-pill);
   cursor: pointer;
   pointer-events: auto;
-  transition: all 0.2s ease;
+  transition: background-color var(--dur-fast) ease,
+              border-color var(--dur-fast) ease,
+              transform var(--dur-fast) ease;
 }
 
 .pov-close-btn:hover,
@@ -1166,7 +1168,10 @@
   justify-content: center;
   gap: 0.45rem;
   box-sizing: border-box;
-  transition: all 0.2s var(--ease-out-expo);
+  transition: background-color var(--dur-fast) var(--ease-out-expo),
+              border-color var(--dur-fast) var(--ease-out-expo),
+              opacity var(--dur-fast) var(--ease-out-expo),
+              transform var(--dur-fast) var(--ease-out-expo);
   box-shadow: var(--elev-2);
   pointer-events: auto;
 }

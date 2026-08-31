@@ -156,7 +156,7 @@
   background: var(--palette-teal-dark);
   border-color: var(--color-info);
   color: var(--text-inverse);
-  transition: all 0.3s ease;
+  transition: background-color var(--dur-base) ease, border-color var(--dur-base) ease;
 }
 
 .act2-hud-pill.checks-pill.all-done {
@@ -198,7 +198,10 @@
   justify-content: center;
   gap: 0.45rem;
   box-sizing: border-box;
-  transition: all 0.2s var(--ease-out-expo);
+  transition: background-color var(--dur-fast) var(--ease-out-expo),
+              border-color var(--dur-fast) var(--ease-out-expo),
+              opacity var(--dur-fast) var(--ease-out-expo),
+              transform var(--dur-fast) var(--ease-out-expo);
   box-shadow: var(--elev-2);
   pointer-events: auto;
 }
@@ -771,7 +774,7 @@
   padding: 0.35rem 0.85rem;
   border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease;
 }
 
 .act2-check-close:hover,
@@ -1273,7 +1276,9 @@
   flex-direction: column;
   gap: 0.35rem;
   font-family: var(--font-family-body);
-  transition: all 0.2s var(--ease-out-expo);
+  transition: border-color var(--dur-fast) var(--ease-out-expo),
+              box-shadow var(--dur-fast) var(--ease-out-expo),
+              transform var(--dur-fast) var(--ease-out-expo);
 }
 
 .act2-decision-option:hover,
@@ -1631,7 +1636,10 @@
   padding: 0.75rem 0.9rem;
   cursor: pointer;
   font-family: var(--font-family-body);
-  transition: all 0.2s var(--ease-out-expo);
+  transition: background-color var(--dur-fast) var(--ease-out-expo),
+              border-color var(--dur-fast) var(--ease-out-expo),
+              color var(--dur-fast) var(--ease-out-expo),
+              transform var(--dur-fast) var(--ease-out-expo);
 }
 
 .act2-toggle:hover,

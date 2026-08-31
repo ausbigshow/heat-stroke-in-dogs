@@ -9,6 +9,7 @@
  */
 
 import { audioManager } from './audio-manager.js';
+import { renderPreservingFocus } from './a11y-focus.js';
 
 export class Act0Screen {
   constructor(app) {
@@ -158,7 +159,21 @@ export class Act0Screen {
     });
   }
 
+  /**
+   * Re-render the step, keeping the keyboard learner on the control they were using.
+   * Advancing replaces the whole card, so without this every Enter on "Next" dropped
+   * focus to <body> and the learner had to tab back through the HUD — thirteen times.
+   */
   render() {
+    renderPreservingFocus(
+      this.container,
+      () => this.renderNow(),
+      // On the final step "Next" is replaced by "Begin Act 1"; land there instead of <body>.
+      ['#act0-btn-start-act1', '#act0-btn-next', '#act0-btn-prev']
+    );
+  }
+
+  renderNow() {
     if (!this.container) return;
 
     const step = this.steps[this.currentStepIndex];
@@ -248,13 +263,12 @@ export class Act0Screen {
               ${audioManager.muteButtonHtml('act0-btn-mute', 'act0-hud-btn')}
             </div>
 
-            <div
-              class="act0-progress-badge"
-              data-editor-id="act0-progress"
-              role="status"
-              aria-label="Step ${this.currentStepIndex + 1} of ${totalSteps}"
-            >
-              ${this.currentStepIndex + 1} / ${totalSteps}
+            <!-- The counter is readable on demand but NOT a live region: the speech layer
+                 above is already aria-live, and a second polite region made every advance
+                 announce the line and then "step 4 of 13" behind it. -->
+            <div class="act0-progress-badge" data-editor-id="act0-progress">
+              <span class="sr-only">Step ${this.currentStepIndex + 1} of ${totalSteps}</span>
+              <span aria-hidden="true">${this.currentStepIndex + 1} / ${totalSteps}</span>
             </div>
 
             <div class="act0-nav-group">

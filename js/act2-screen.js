@@ -34,6 +34,8 @@
  * Dr. Clark's confirmation can be applied as a targeted string swap. See getSmePendingCopy().
  */
 
+import { renderPreservingFocus, focusInto, containFocusIn, releaseFocusContainment } from './a11y-focus.js';
+
 export class Act2Screen {
   constructor(app) {
     this.app = app;
@@ -450,7 +452,24 @@ export class Act2Screen {
   // RENDER — SHELL
   // =======================================================================
 
+  /**
+   * Re-render the beat, keeping the keyboard learner on the control they were using
+   * (see js/a11y-focus.js). The check modal already moves focus in on open via
+   * focusInModal(); this covers every other beat advance, which previously dropped
+   * focus to <body>. Containment is applied after render, once the dialog exists.
+   */
   render() {
+    releaseFocusContainment(this.container || document);
+    renderPreservingFocus(
+      this.container,
+      () => this.renderNow(),
+      ['#act2-btn-check-next', '#act2-btn-report-check', '#act2-btn-next-step', '#act2-btn-report-all']
+    );
+    const dialog = this.container?.querySelector('[role="dialog"]');
+    if (dialog) containFocusIn(dialog);
+  }
+
+  renderNow() {
     if (!this.container) return;
 
     const { saturationDrop, heatOpacity, severity } = this.getEscalation();
@@ -1811,9 +1830,7 @@ export class Act2Screen {
   // Move focus into the dialog on open and on every step advance, so a keyboard or
   // screen-reader user lands on the control that moves the beat forward.
   focusInModal() {
-    if (this.isEditModeActive()) return;
-    const target = this.container?.querySelector('#act2-btn-check-next, #act2-btn-report-check');
-    if (target) target.focus();
+    focusInto(this.container, ['#act2-btn-check-next', '#act2-btn-report-check', '#act2-btn-check-close']);
   }
 
   nextCheckStep() {

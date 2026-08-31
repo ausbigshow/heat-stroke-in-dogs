@@ -14,6 +14,8 @@
  * - Beat 1H: POV Rise transition to Callie's eyeline & HINTS DROPPED HUD
  */
 
+import { renderPreservingFocus, focusInto, containFocusIn, releaseFocusContainment } from './a11y-focus.js';
+
 export class Act1Screen {
   constructor(app) {
     this.app = app;
@@ -33,6 +35,7 @@ export class Act1Screen {
     // Sub-step index for multi-step beats
     this.stepIndex = 0;
     this.activeLeadId = null;
+    this.returnFocusLeadId = null; // interactable to hand focus back to when the POV dialog closes
     this.povStepIndex = 0;        // position within the active lead's dialogue
     this.tayHasEnteredScene = false; // gates Tay's one-shot settle animation in the nap
 
@@ -294,7 +297,23 @@ export class Act1Screen {
     return { value: temp.toFixed(1), stage, label, fillPct: fillPct.toFixed(1) };
   }
 
+  /**
+   * Re-render the beat, keeping the keyboard learner on the control they were using
+   * (see js/a11y-focus.js). Dialog focus containment is applied afterwards, because the
+   * dialog element only exists once the new markup is in the DOM.
+   */
   render() {
+    releaseFocusContainment(this.container || document);
+    renderPreservingFocus(
+      this.container,
+      () => this.renderNow(),
+      ['#act1-btn-pov-next', '#act1-btn-finish-lead', '#act1-btn-next-step', '#act1-btn-check-gate']
+    );
+    const dialog = this.container?.querySelector('[role="dialog"]');
+    if (dialog) containFocusIn(dialog);
+  }
+
+  renderNow() {
     if (!this.container) return;
 
     const timeStr = this.getFormattedTime();
@@ -1492,15 +1511,34 @@ export class Act1Screen {
 
     this.leadVisitCounts[leadId] = (this.leadVisitCounts[leadId] || 0) + 1;
 
+    // Remember which interactable opened the POV dialog so focus can be handed back to it
+    // on close — design-language.md §7.5, and the pattern Act 2 already follows.
+    this.returnFocusLeadId = leadId;
+
     this.playBeep(440, 'sine', 0.1);
     this.render();
+    this.focusInPovDialog();
   }
 
   returnToHub() {
+    const returnTo = this.returnFocusLeadId;
     this.currentBeat = 'hub';
     this.activeLeadId = null;
     this.povStepIndex = 0;
     this.render();
+
+    // Restore focus to the interactable that opened the dialog.
+    const hotspot = this.container?.querySelector(`.act1-interactable[data-lead="${returnTo}"]`);
+    if (hotspot && !this.isEditModeActive()) hotspot.focus();
+    this.returnFocusLeadId = null;
+  }
+
+  /**
+   * Move focus into the POV dialog on open and on every step advance, so the control that
+   * moves the beat forward is where the keyboard lands. Required by design-language.md §7.4.
+   */
+  focusInPovDialog() {
+    focusInto(this.container, ['#act1-btn-pov-next', '#act1-btn-finish-lead', '#pov-btn-close']);
   }
 
   nextPovStep() {
@@ -1509,6 +1547,7 @@ export class Act1Screen {
       this.povStepIndex++;
       this.playBeep(500, 'sine', 0.08);
       this.render();
+      this.focusInPovDialog();
     }
   }
 
