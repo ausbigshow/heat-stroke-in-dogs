@@ -52,9 +52,11 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: 68% 55%;
   display: block;
   pointer-events: none;
-  transition: filter 1.2s ease, transform 1.2s ease;
+  filter: saturate(calc(100% - var(--act1-saturation-drop, 0%)));
+  transition: filter 1.8s ease, transform 1.2s ease;
 }
 
 /* POV Raised Zoom/Pan shift */
@@ -291,95 +293,64 @@
    HOTSPOT LOCATIONS ON LAKESIDE MAP
    ========================================================== */
 
-/* 1. The Cooler ("The Vault") */
+/* 1. The Cooler ("The Vault") — sits over the illustrated cooler in the scene photo */
 .hotspot-cooler {
-  top: 73%;
-  left: 82%;
+  top: 76%;
+  left: 84%;
 }
 
-/* 2. The Dock / Shore ("High Ground") */
+/* 2. The Dock / Shore ("High Ground") — along the sandy shoreline, lower-left */
 .hotspot-dock {
-  top: 61%;
-  left: 36%;
+  top: 56%;
+  left: 15%;
 }
 
-/* 3. Water Bowl ("The Water One") */
+/* 3. Water Bowl ("The Water One") — on the grass beside Tay */
 .hotspot-bowl {
-  top: 80%;
-  left: 65%;
+  top: 84%;
+  left: 50%;
 }
 
-/* 4. The Lake ("The Biggest Bowl") */
+/* 4. The Lake ("The Biggest Bowl") — open water, far shore */
 .hotspot-lake {
-  top: 55%;
-  left: 17%;
+  top: 48%;
+  left: 16%;
 }
 
 /* ==========================================================
    IN-SCENE REDRAWN VECTOR ASSETS (CANOPY, CALLIE, TAY, COOLER, DOCK, BOWL)
    ========================================================== */
 
-.lake-scene-canopy {
-  position: absolute;
-  top: 27%;
-  left: 60%;
-  width: 35%;
-  height: 52%;
-  pointer-events: none;
-  z-index: 11;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
-}
-
-.lake-scene-callie {
-  position: absolute;
-  top: 39%;
-  left: 62%;
-  width: 17%;
-  height: 49%;
-  pointer-events: none;
-  z-index: 13;
-  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.3));
-}
-
-.lake-scene-tay {
-  position: absolute;
-  top: 67%;
-  left: 49%;
-  width: 12%;
-  height: 20%;
-  pointer-events: none;
-  z-index: 14;
-  filter: drop-shadow(0 5px 12px rgba(0, 0, 0, 0.35));
-  transition: transform 0.3s ease;
-}
-
+/* The Cooler hotzone — the cooler itself is already drawn in the scene photo (under the
+   canopy, beside Callie), so this is an invisible hit target with a soft hover affordance
+   rather than a redrawn icon. */
 .lake-scene-cooler {
   position: absolute;
-  top: 69%;
-  left: 77%;
-  width: 11%;
-  height: 14%;
+  top: 70%;
+  left: 78%;
+  width: 15%;
+  height: 20%;
   pointer-events: auto;
   cursor: pointer;
   z-index: 14;
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+  border-radius: 18px;
+  transition: background 0.25s ease, box-shadow 0.25s ease;
 }
 
 .lake-scene-cooler:hover {
-  transform: scale(1.08) translateY(-2px);
-  filter: drop-shadow(0 8px 20px rgba(245, 158, 11, 0.6));
+  background: rgba(253, 224, 71, 0.14);
+  box-shadow: 0 0 22px rgba(245, 158, 11, 0.35), inset 0 0 0 2px rgba(245, 158, 11, 0.3);
 }
 
 .lake-scene-dock {
   position: absolute;
-  top: 55%;
-  left: 15%;
-  width: 22%;
-  height: 17%;
+  top: 51%;
+  left: 5%;
+  width: 21%;
+  height: 16%;
   pointer-events: auto;
   cursor: pointer;
-  z-index: 12;
+  z-index: 13;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
 }
@@ -391,10 +362,10 @@
 
 .lake-scene-bowl {
   position: absolute;
-  top: 77%;
-  left: 60%;
-  width: 7%;
-  height: 7.5%;
+  top: 80%;
+  left: 46%;
+  width: 6%;
+  height: 6.5%;
   pointer-events: auto;
   cursor: pointer;
   z-index: 14;
@@ -409,10 +380,10 @@
 
 .lake-scene-lake {
   position: absolute;
-  top: 48%;
-  left: 2%;
-  width: 28%;
-  height: 20%;
+  top: 37%;
+  left: 0%;
+  width: 39%;
+  height: 27%;
   pointer-events: auto;
   cursor: pointer;
   z-index: 12;
@@ -863,20 +834,18 @@
    TERMINAL BEATS OVERLAYS
    ========================================================== */
 
-/* Beat 1E: Silent Shade Drift Sun/Shadow Layer */
+/* Visual Escalation System — the sun creeps onto Tay's spot as the clock advances.
+   Opacity is driven continuously by --act1-drift-opacity (see getEscalation() in JS),
+   not just during the dedicated Shade Drift beat. */
 .shade-drift-overlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(circle at 85% 15%, rgba(255, 240, 190, 0.35) 0%, rgba(255, 210, 130, 0.15) 50%, transparent 80%);
+  background: radial-gradient(circle at 62% 68%, rgba(255, 240, 190, 0.4) 0%, rgba(255, 205, 120, 0.18) 45%, transparent 78%);
   mix-blend-mode: overlay;
-  opacity: 0;
+  opacity: var(--act1-drift-opacity, 0);
   transition: opacity 2.5s ease-in-out;
   z-index: 15;
-}
-
-.shade-drift-overlay.active {
-  opacity: 1;
 }
 
 .shade-drift-timelapse-banner {

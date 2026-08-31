@@ -69,9 +69,7 @@ class CourseApp {
 
     if (this.editor && this.editor.state) {
       this.editor.state.emit('screen_changed', screenKey);
-      if (this.editor.selection) {
-        this.editor.selection.setSelectedElement(null);
-      }
+      this.editor.state.setSelectedElement(null);
     }
   }
 

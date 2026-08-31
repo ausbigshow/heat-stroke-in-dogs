@@ -239,6 +239,26 @@ export class Act1Screen {
     return `${hour}:${paddedMin} PM`;
   }
 
+  // Visual Escalation System (per Craft doc "Visual Asset Brief"): time of day and
+  // learner clicking continuously drain the palette and drift the shade off Tay.
+  getEscalation() {
+    const t = Math.max(0, Math.min(1, (this.clockMinutes - 90) / (185 - 90)));
+    let driftOpacity = t;
+    let saturationDrop = Math.round(t * 28);
+
+    if (this.currentBeat === 'nap') {
+      driftOpacity = Math.max(driftOpacity, 0.55);
+    } else if (this.currentBeat === 'drift') {
+      driftOpacity = 1;
+      saturationDrop = Math.max(saturationDrop, 34);
+    } else if (this.currentBeat === 'alarm' || this.currentBeat === 'case_file' || this.currentBeat === 'pov_rise') {
+      driftOpacity = 1;
+      saturationDrop = Math.max(saturationDrop, 40);
+    }
+
+    return { driftOpacity, saturationDrop };
+  }
+
   render() {
     if (!this.container) return;
 
@@ -246,20 +266,22 @@ export class Act1Screen {
     const leadsCount = this.visitedLeads.size;
     const allLeadsVisited = leadsCount === 4;
     const isPovRaised = this.currentBeat === 'pov_rise';
+    const { driftOpacity, saturationDrop } = this.getEscalation();
 
     this.container.innerHTML = `
       <div class="act1-container" data-editor-id="act1-screen-container">
-        
+
         <!-- Main 16:9 Viewport Stage -->
-        <div 
-          id="act1-card" 
-          class="act1-viewport-card ${isPovRaised ? 'pov-raised' : 'low-cam'}" 
+        <div
+          id="act1-card"
+          class="act1-viewport-card ${isPovRaised ? 'pov-raised' : 'low-cam'}"
           data-editor-id="act1-viewport-card"
+          style="--act1-drift-opacity: ${driftOpacity}; --act1-saturation-drop: ${saturationDrop}%;"
         >
           <!-- Background Scene Illustration -->
-          <img 
-            src="Assets/Image/Lake-Blank.jpg" 
-            alt="Lakeside park landscape" 
+          <img
+            src="Assets/Image/CallieAndTay-Lakeside.jpg"
+            alt="Callie and Tay at the lake shore, under a pop-up shade canopy beside a cooler"
             class="act1-scene-img"
             data-editor-id="act1-lake-img"
           />
@@ -348,44 +370,16 @@ export class Act1Screen {
     const isHub = this.currentBeat === 'hub';
 
     return `
-      <!-- Redrawn Scene Layer on Lake-Blank.jpg from Tay's Low First-Person Dog Eyeline -->
+      <!-- Scene Layer over the illustrated lakeside plate (Callie, Tay & the cooler are baked into the art) -->
       <div class="act1-scene-layer" data-editor-id="act1-scene-layer">
-        
-        <!-- 1. Pop-Up Shade Canopy -->
-        <svg class="lake-scene-canopy" viewBox="0 0 350 260" data-editor-id="act1-asset-canopy">
-          <!-- Ground Shade -->
-          <polygon points="10,240 330,240 345,190 25,190" fill="rgba(36, 52, 36, 0.38)" />
-          <!-- Rear Poles -->
-          <rect x="35" y="60" width="8" height="145" fill="#5E3D2A" rx="2" />
-          <rect x="305" y="60" width="8" height="145" fill="#5E3D2A" rx="2" />
-          <!-- Front Poles -->
-          <rect x="15" y="70" width="10" height="165" fill="#784E34" rx="2" />
-          <rect x="325" y="70" width="10" height="165" fill="#784E34" rx="2" />
-          <!-- Canopy Roof -->
-          <polygon points="170,5 5,75 170,75" fill="#E2D4C3" />
-          <polygon points="170,5 170,75 335,75" fill="#CFC2AC" />
-          <polygon points="170,5 150,75 190,75" fill="#DDD0BC" />
-          <!-- Valance Trim -->
-          <polygon points="5,75 335,75 335,90 5,90" fill="#C8BAA4" />
-          <polygon points="5,90 335,90 330,95 10,95" fill="#B3A58F" />
-        </svg>
 
-        <!-- 2. The Cooler Asset ("The Vault") -->
-        <svg class="lake-scene-cooler" viewBox="0 0 130 90" data-lead="cooler" data-editor-id="act1-asset-cooler" title="Investigate The Cooler">
-          <ellipse cx="65" cy="80" rx="55" ry="9" fill="rgba(36, 52, 36, 0.45)" />
-          <rect x="15" y="24" width="100" height="50" rx="8" fill="#0284C7" />
-          <rect x="25" y="40" width="80" height="28" rx="4" fill="#0369A1" />
-          <circle cx="28" cy="74" r="10" fill="#1E293B" />
-          <circle cx="28" cy="74" r="4" fill="#64748B" />
-          <circle cx="102" cy="74" r="10" fill="#1E293B" />
-          <circle cx="102" cy="74" r="4" fill="#64748B" />
-          <rect x="10" y="12" width="110" height="16" rx="5" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5" />
-          <rect x="58" y="22" width="14" height="12" rx="2" fill="#DC2626" />
-          <rect x="6" y="32" width="8" height="14" rx="3" fill="#64748B" />
-          <rect x="116" y="32" width="8" height="14" rx="3" fill="#64748B" />
-        </svg>
+        <!-- Persistent shade-drift wash: opacity driven by --act1-drift-opacity (see getEscalation()) -->
+        <div class="shade-drift-overlay" data-editor-id="act1-shade-drift-overlay"></div>
 
-        <!-- 5. The Wooden Dock Asset ("High Ground") -->
+        <!-- 1. The Cooler Hotzone ("The Vault") — cooler itself is already drawn in the scene photo -->
+        <div class="lake-scene-cooler" data-lead="cooler" data-editor-id="act1-asset-cooler" title="Investigate The Cooler"></div>
+
+        <!-- 2. The Wooden Dock Asset ("High Ground") -->
         <svg class="lake-scene-dock" viewBox="0 0 180 110" data-lead="dock" data-editor-id="act1-asset-dock" title="Investigate The Dock">
           <rect x="30" y="38" width="12" height="55" rx="3" fill="#452a1d" />
           <rect x="85" y="44" width="12" height="52" rx="3" fill="#452a1d" />
@@ -403,7 +397,7 @@ export class Act1Screen {
           <polygon points="138,44 156,45 152,56 134,55" fill="#B45309" />
         </svg>
 
-        <!-- 6. The Water Bowl Asset ("The Water One") -->
+        <!-- 3. The Water Bowl Asset ("The Water One") -->
         <svg class="lake-scene-bowl" viewBox="0 0 80 60" data-lead="bowl" data-editor-id="act1-asset-bowl" title="Investigate Water Bowl">
           <ellipse cx="40" cy="46" rx="34" ry="12" fill="rgba(36, 52, 36, 0.45)" />
           <path d="M12,24 L20,44 C22,48 58,48 60,44 L68,24 Z" fill="#94A3B8" />
@@ -413,7 +407,7 @@ export class Act1Screen {
           <ellipse cx="48" cy="26" rx="8" ry="2.5" fill="rgba(255, 255, 255, 0.85)" />
         </svg>
 
-        <!-- 7. The Lake Interaction Zone ("The Biggest Bowl") -->
+        <!-- 4. The Lake Interaction Zone ("The Biggest Bowl") -->
         <div class="lake-scene-lake" data-lead="lake" data-editor-id="act1-asset-lake" title="Investigate The Lake"></div>
 
         <!-- Hotspot Pins Overlay (Active during Lake Hub) -->
@@ -851,9 +845,10 @@ export class Act1Screen {
   }
 
   renderShadeDrift() {
-    // Pure silence beat per Craft script: no dialogue, no subtitle, no stamp
+    // Pure silence beat per Craft script: no dialogue, no subtitle, no stamp.
+    // The shade wash itself lives in renderSceneLayer() so it can drift continuously
+    // through the whole act instead of snapping on only for this beat.
     return `
-      <div class="shade-drift-overlay active" data-editor-id="act1-shade-drift-overlay"></div>
       <div class="shade-drift-timelapse-banner" data-editor-id="act1-drift-timelapse">
         ☀️ 2:38 PM ➔ 3:05 PM
       </div>
@@ -1169,7 +1164,7 @@ export class Act1Screen {
     if (coolerAsset) {
       coolerAsset.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (this.isEditModeActive()) return;
+        if (this.isEditModeActive() || this.currentBeat !== 'hub') return;
         this.selectLead('cooler');
       });
     }
@@ -1178,7 +1173,7 @@ export class Act1Screen {
     if (dockAsset) {
       dockAsset.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (this.isEditModeActive()) return;
+        if (this.isEditModeActive() || this.currentBeat !== 'hub') return;
         this.selectLead('dock');
       });
     }
@@ -1187,7 +1182,7 @@ export class Act1Screen {
     if (bowlAsset) {
       bowlAsset.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (this.isEditModeActive()) return;
+        if (this.isEditModeActive() || this.currentBeat !== 'hub') return;
         this.selectLead('bowl');
       });
     }
@@ -1196,7 +1191,7 @@ export class Act1Screen {
     if (lakeAsset) {
       lakeAsset.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (this.isEditModeActive()) return;
+        if (this.isEditModeActive() || this.currentBeat !== 'hub') return;
         this.selectLead('lake');
       });
     }
