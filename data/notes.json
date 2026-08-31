@@ -24,5 +24,44 @@
     "text": "the text in \"begin act 1\" hover state is unreadable, please use high contrast colors between the background and text.",
     "targetElementId": "act0-btn-start-act1",
     "createdAt": "2026-08-30T00:58:43.910Z"
+  },
+  {
+    "id": "note_1788144018245",
+    "screenId": "act1",
+    "x": 120,
+    "y": 120,
+    "width": 260,
+    "height": 160,
+    "color": "yellow",
+    "status": "implemented",
+    "text": "multiple interactables overlapping, not easy to use. ",
+    "targetElementId": "act1-asset-dock",
+    "createdAt": "2026-08-31T02:40:18.245Z"
+  },
+  {
+    "id": "note_1788144050934",
+    "screenId": "act1",
+    "x": 74,
+    "y": 640,
+    "width": 260,
+    "height": 160,
+    "color": "green",
+    "status": "implemented",
+    "text": "what if we got rid of the pins and made the target objects more obviously interactive?",
+    "targetElementId": null,
+    "createdAt": "2026-08-31T02:40:50.934Z"
+  },
+  {
+    "id": "note_1788144125931",
+    "screenId": "act1",
+    "x": 635,
+    "y": 397,
+    "width": 260,
+    "height": 160,
+    "color": "pink",
+    "status": "implemented",
+    "text": "go back to the blank background so that the interactive elements aren't baked in and can't be animated.",
+    "targetElementId": null,
+    "createdAt": "2026-08-31T02:42:05.931Z"
   }
 ]

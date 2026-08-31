@@ -280,8 +280,8 @@ export class Act1Screen {
         >
           <!-- Background Scene Illustration -->
           <img
-            src="Assets/Image/CallieAndTay-Lakeside.jpg"
-            alt="Callie and Tay at the lake shore, under a pop-up shade canopy beside a cooler"
+            src="Assets/Image/Lake-Blank.jpg"
+            alt="Lakeside park landscape"
             class="act1-scene-img"
             data-editor-id="act1-lake-img"
           />
@@ -366,108 +366,98 @@ export class Act1Screen {
     this.bindEvents();
   }
 
-  renderSceneLayer() {
-    const isHub = this.currentBeat === 'hub';
-
+  // A single interactive lead object: no separate floating pin/badge — the drawn
+  // object itself glows to invite the click, and shows a checkmark once visited.
+  // Hover/focus reveals a small name tooltip anchored to the object.
+  renderInteractable(leadId, label, icon, artHtml) {
+    const visited = this.visitedLeads.has(leadId);
     return `
-      <!-- Scene Layer over the illustrated lakeside plate (Callie, Tay & the cooler are baked into the art) -->
+      <button
+        class="act1-interactable interactable-${leadId} ${visited ? 'visited' : ''}"
+        data-lead="${leadId}"
+        data-editor-id="act1-asset-${leadId}"
+        aria-label="Investigate ${label}"
+      >
+        <span class="interactable-art">${artHtml}</span>
+        <span class="interactable-tooltip">${icon} ${label}</span>
+        ${visited ? '<span class="interactable-check">✓</span>' : ''}
+      </button>
+    `;
+  }
+
+  renderSceneLayer() {
+    return `
+      <!-- Redrawn Scene Layer on Lake-Blank.jpg from Tay's Low First-Person Dog Eyeline -->
       <div class="act1-scene-layer" data-editor-id="act1-scene-layer">
 
         <!-- Persistent shade-drift wash: opacity driven by --act1-drift-opacity (see getEscalation()) -->
         <div class="shade-drift-overlay" data-editor-id="act1-shade-drift-overlay"></div>
 
-        <!-- 1. The Cooler Hotzone ("The Vault") — cooler itself is already drawn in the scene photo -->
-        <div class="lake-scene-cooler" data-lead="cooler" data-editor-id="act1-asset-cooler" title="Investigate The Cooler"></div>
-
-        <!-- 2. The Wooden Dock Asset ("High Ground") -->
-        <svg class="lake-scene-dock" viewBox="0 0 180 110" data-lead="dock" data-editor-id="act1-asset-dock" title="Investigate The Dock">
-          <rect x="30" y="38" width="12" height="55" rx="3" fill="#452a1d" />
-          <rect x="85" y="44" width="12" height="52" rx="3" fill="#452a1d" />
-          <rect x="140" y="48" width="12" height="48" rx="3" fill="#452a1d" />
-          <ellipse cx="36" cy="93" rx="16" ry="4.5" fill="rgba(36, 73, 82, 0.45)" />
-          <ellipse cx="91" cy="96" rx="16" ry="4.5" fill="rgba(36, 73, 82, 0.45)" />
-          <ellipse cx="146" cy="96" rx="16" ry="4.5" fill="rgba(36, 73, 82, 0.45)" />
-          <polygon points="10,40 170,45 165,56 5,51" fill="#5E3D2A" />
-          <polygon points="12,38 30,39 26,50 8,49" fill="#B45309" />
-          <polygon points="33,39 51,40 47,51 29,50" fill="#D97706" />
-          <polygon points="54,40 72,41 68,52 50,51" fill="#B45309" />
-          <polygon points="75,41 93,42 89,53 71,52" fill="#D97706" />
-          <polygon points="96,42 114,43 110,54 92,53" fill="#B45309" />
-          <polygon points="117,43 135,44 131,55 113,54" fill="#D97706" />
-          <polygon points="138,44 156,45 152,56 134,55" fill="#B45309" />
+        <!-- Pop-Up Shade Canopy (scenery only — not a lead) -->
+        <svg class="lake-scene-canopy" viewBox="0 0 350 260" data-editor-id="act1-asset-canopy">
+          <polygon points="10,240 330,240 345,190 25,190" fill="rgba(36, 52, 36, 0.38)" />
+          <rect x="35" y="60" width="8" height="145" fill="#5E3D2A" rx="2" />
+          <rect x="305" y="60" width="8" height="145" fill="#5E3D2A" rx="2" />
+          <rect x="15" y="70" width="10" height="165" fill="#784E34" rx="2" />
+          <rect x="325" y="70" width="10" height="165" fill="#784E34" rx="2" />
+          <polygon points="170,5 5,75 170,75" fill="#E2D4C3" />
+          <polygon points="170,5 170,75 335,75" fill="#CFC2AC" />
+          <polygon points="170,5 150,75 190,75" fill="#DDD0BC" />
+          <polygon points="5,75 335,75 335,90 5,90" fill="#C8BAA4" />
+          <polygon points="5,90 335,90 330,95 10,95" fill="#B3A58F" />
         </svg>
 
-        <!-- 3. The Water Bowl Asset ("The Water One") -->
-        <svg class="lake-scene-bowl" viewBox="0 0 80 60" data-lead="bowl" data-editor-id="act1-asset-bowl" title="Investigate Water Bowl">
-          <ellipse cx="40" cy="46" rx="34" ry="12" fill="rgba(36, 52, 36, 0.45)" />
-          <path d="M12,24 L20,44 C22,48 58,48 60,44 L68,24 Z" fill="#94A3B8" />
-          <ellipse cx="40" cy="24" rx="28" ry="11" fill="#CBD5E1" />
-          <ellipse cx="40" cy="25" rx="24" ry="9" fill="#64748B" />
-          <ellipse cx="40" cy="27" rx="20" ry="7" fill="#38BDF8" />
-          <ellipse cx="48" cy="26" rx="8" ry="2.5" fill="rgba(255, 255, 255, 0.85)" />
-        </svg>
+        <!-- 1. The Cooler ("The Vault") -->
+        ${this.renderInteractable('cooler', 'The Cooler', '🥪', `
+          <svg viewBox="0 0 130 90">
+            <ellipse cx="65" cy="80" rx="55" ry="9" fill="rgba(36, 52, 36, 0.45)" />
+            <rect x="15" y="24" width="100" height="50" rx="8" fill="#0284C7" />
+            <rect x="25" y="40" width="80" height="28" rx="4" fill="#0369A1" />
+            <circle cx="28" cy="74" r="10" fill="#1E293B" />
+            <circle cx="28" cy="74" r="4" fill="#64748B" />
+            <circle cx="102" cy="74" r="10" fill="#1E293B" />
+            <circle cx="102" cy="74" r="4" fill="#64748B" />
+            <rect x="10" y="12" width="110" height="16" rx="5" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5" />
+            <rect x="58" y="22" width="14" height="12" rx="2" fill="#DC2626" />
+            <rect x="6" y="32" width="8" height="14" rx="3" fill="#64748B" />
+            <rect x="116" y="32" width="8" height="14" rx="3" fill="#64748B" />
+          </svg>
+        `)}
 
-        <!-- 4. The Lake Interaction Zone ("The Biggest Bowl") -->
-        <div class="lake-scene-lake" data-lead="lake" data-editor-id="act1-asset-lake" title="Investigate The Lake"></div>
+        <!-- 2. The Wooden Dock ("High Ground") -->
+        ${this.renderInteractable('dock', 'The Dock', '☀️', `
+          <svg viewBox="0 0 180 110">
+            <rect x="30" y="38" width="12" height="55" rx="3" fill="#452a1d" />
+            <rect x="85" y="44" width="12" height="52" rx="3" fill="#452a1d" />
+            <rect x="140" y="48" width="12" height="48" rx="3" fill="#452a1d" />
+            <ellipse cx="36" cy="93" rx="16" ry="4.5" fill="rgba(36, 73, 82, 0.45)" />
+            <ellipse cx="91" cy="96" rx="16" ry="4.5" fill="rgba(36, 73, 82, 0.45)" />
+            <ellipse cx="146" cy="96" rx="16" ry="4.5" fill="rgba(36, 73, 82, 0.45)" />
+            <polygon points="10,40 170,45 165,56 5,51" fill="#5E3D2A" />
+            <polygon points="12,38 30,39 26,50 8,49" fill="#B45309" />
+            <polygon points="33,39 51,40 47,51 29,50" fill="#D97706" />
+            <polygon points="54,40 72,41 68,52 50,51" fill="#B45309" />
+            <polygon points="75,41 93,42 89,53 71,52" fill="#D97706" />
+            <polygon points="96,42 114,43 110,54 92,53" fill="#B45309" />
+            <polygon points="117,43 135,44 131,55 113,54" fill="#D97706" />
+            <polygon points="138,44 156,45 152,56 134,55" fill="#B45309" />
+          </svg>
+        `)}
 
-        <!-- Hotspot Pins Overlay (Active during Lake Hub) -->
-        ${isHub ? `
-          <!-- 1. The Cooler Pin -->
-          <button 
-            class="act1-hotspot-pin hotspot-cooler ${this.visitedLeads.has('cooler') ? 'visited' : ''}" 
-            data-lead="cooler"
-            data-editor-id="act1-pin-cooler"
-            aria-label="Investigate The Cooler"
-          >
-            <div class="hotspot-badge-circle">
-              <span>🥪</span>
-              ${this.visitedLeads.has('cooler') ? '<span class="hotspot-check-icon">✓</span>' : ''}
-            </div>
-            <span class="hotspot-label-pill">The Cooler</span>
-          </button>
+        <!-- 3. Her Water Bowl ("The Water One") -->
+        ${this.renderInteractable('bowl', 'Water Bowl', '🥣', `
+          <svg viewBox="0 0 80 60">
+            <ellipse cx="40" cy="46" rx="34" ry="12" fill="rgba(36, 52, 36, 0.45)" />
+            <path d="M12,24 L20,44 C22,48 58,48 60,44 L68,24 Z" fill="#94A3B8" />
+            <ellipse cx="40" cy="24" rx="28" ry="11" fill="#CBD5E1" />
+            <ellipse cx="40" cy="25" rx="24" ry="9" fill="#64748B" />
+            <ellipse cx="40" cy="27" rx="20" ry="7" fill="#38BDF8" />
+            <ellipse cx="48" cy="26" rx="8" ry="2.5" fill="rgba(255, 255, 255, 0.85)" />
+          </svg>
+        `)}
 
-          <!-- 2. The Dock Pin -->
-          <button 
-            class="act1-hotspot-pin hotspot-dock ${this.visitedLeads.has('dock') ? 'visited' : ''}" 
-            data-lead="dock"
-            data-editor-id="act1-pin-dock"
-            aria-label="Investigate The Dock"
-          >
-            <div class="hotspot-badge-circle">
-              <span>☀️</span>
-              ${this.visitedLeads.has('dock') ? '<span class="hotspot-check-icon">✓</span>' : ''}
-            </div>
-            <span class="hotspot-label-pill">The Dock</span>
-          </button>
-
-          <!-- 3. Her Water Bowl Pin -->
-          <button 
-            class="act1-hotspot-pin hotspot-bowl ${this.visitedLeads.has('bowl') ? 'visited' : ''}" 
-            data-lead="bowl"
-            data-editor-id="act1-pin-bowl"
-            aria-label="Investigate Her Water Bowl"
-          >
-            <div class="hotspot-badge-circle">
-              <span>🥣</span>
-              ${this.visitedLeads.has('bowl') ? '<span class="hotspot-check-icon">✓</span>' : ''}
-            </div>
-            <span class="hotspot-label-pill">Water Bowl</span>
-          </button>
-
-          <!-- 4. The Lake Pin -->
-          <button 
-            class="act1-hotspot-pin hotspot-lake ${this.visitedLeads.has('lake') ? 'visited' : ''}" 
-            data-lead="lake"
-            data-editor-id="act1-pin-lake"
-            aria-label="Investigate The Lake"
-          >
-            <div class="hotspot-badge-circle">
-              <span>🌊</span>
-              ${this.visitedLeads.has('lake') ? '<span class="hotspot-check-icon">✓</span>' : ''}
-            </div>
-            <span class="hotspot-label-pill">The Lake</span>
-          </button>
-        ` : ''}
+        <!-- 4. The Lake ("The Biggest Bowl") — open water is already painted in the background plate -->
+        ${this.renderInteractable('lake', 'The Lake', '🌊', '')}
 
       </div>
     `;
@@ -1150,51 +1140,14 @@ export class Act1Screen {
       });
     }
 
-    // 4. Hotspot Pins & In-Scene Asset Clicks
-    this.container.querySelectorAll('.act1-hotspot-pin').forEach(pin => {
-      pin.addEventListener('click', (e) => {
+    // 4. In-Scene Interactable Clicks (cooler, dock, bowl, lake) — only live during the hub
+    this.container.querySelectorAll('.act1-interactable').forEach(el => {
+      el.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        const leadId = pin.getAttribute('data-lead');
-        this.selectLead(leadId);
+        if (this.isEditModeActive() || this.currentBeat !== 'hub') return;
+        this.selectLead(el.getAttribute('data-lead'));
       });
     });
-
-    const coolerAsset = this.container.querySelector('.lake-scene-cooler');
-    if (coolerAsset) {
-      coolerAsset.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive() || this.currentBeat !== 'hub') return;
-        this.selectLead('cooler');
-      });
-    }
-
-    const dockAsset = this.container.querySelector('.lake-scene-dock');
-    if (dockAsset) {
-      dockAsset.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive() || this.currentBeat !== 'hub') return;
-        this.selectLead('dock');
-      });
-    }
-
-    const bowlAsset = this.container.querySelector('.lake-scene-bowl');
-    if (bowlAsset) {
-      bowlAsset.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive() || this.currentBeat !== 'hub') return;
-        this.selectLead('bowl');
-      });
-    }
-
-    const lakeAsset = this.container.querySelector('.lake-scene-lake');
-    if (lakeAsset) {
-      lakeAsset.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive() || this.currentBeat !== 'hub') return;
-        this.selectLead('lake');
-      });
-    }
 
     // 5. POV Viewport Close / Done Investigating Button
     const povCloseBtn = this.container.querySelector('#pov-btn-close');

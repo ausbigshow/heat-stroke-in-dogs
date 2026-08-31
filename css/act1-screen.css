@@ -52,7 +52,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 68% 55%;
   display: block;
   pointer-events: none;
   filter: saturate(calc(100% - var(--act1-saturation-drop, 0%)));
@@ -182,218 +181,175 @@
 }
 
 /* ==========================================================
-   INTERACTIVE LAKE HUB — HOTSPOT PINS
+   IN-SCENE INTERACTIVE OBJECTS — no floating pins/badges.
+   Each lead is the drawn object itself: it glows to invite the click, lifts on
+   hover/focus, reveals its name in a small tooltip, and shows a checkmark once
+   visited. Positions are chosen so no two lead hit-areas overlap.
    ========================================================== */
 
-.act1-hotspot-layer {
+.act1-interactable {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 25;
-}
-
-.act1-hotspot-pin {
-  position: absolute;
-  pointer-events: auto;
-  cursor: pointer;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
   background: transparent;
   border: none;
   padding: 0;
-  outline: none;
-  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  margin: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 14;
 }
 
-.act1-hotspot-pin:hover:not(:disabled),
-.act1-hotspot-pin:focus-visible:not(:disabled) {
-  transform: translate(-50%, -50%) scale(1.12);
+.act1-interactable:focus-visible {
+  outline: 3px solid #FDBA74;
+  outline-offset: 4px;
+  border-radius: 12px;
 }
 
-.hotspot-badge-circle {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: #C2410C;
-  color: #FFFFFF;
-  border: 3px solid #FFF8F3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.35rem;
-  box-shadow: 
-    0 8px 20px rgba(194, 65, 12, 0.45),
-    0 0 0 0 rgba(234, 88, 12, 0.6);
-  animation: hotspotPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
-  position: relative;
-  transition: background 0.3s, border-color 0.3s;
+.interactable-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 0 rgba(245, 158, 11, 0));
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
+  animation: interactablePulse 2.6s infinite ease-in-out;
 }
 
-@keyframes hotspotPulse {
-  0% {
-    box-shadow: 0 4px 12px rgba(194, 65, 12, 0.4), 0 0 0 0 rgba(234, 88, 12, 0.6);
-  }
-  70% {
-    box-shadow: 0 8px 24px rgba(194, 65, 12, 0.5), 0 0 0 14px rgba(234, 88, 12, 0);
-  }
-  100% {
-    box-shadow: 0 4px 12px rgba(194, 65, 12, 0.4), 0 0 0 0 rgba(234, 88, 12, 0);
-  }
+.interactable-art svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
-.act1-hotspot-pin.visited .hotspot-badge-circle {
-  background: #047857;
-  border-color: #ECFDF5;
+@keyframes interactablePulse {
+  0%, 100% { filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 0px rgba(245, 158, 11, 0)); }
+  50% { filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 16px rgba(245, 158, 11, 0.65)); }
+}
+
+.act1-interactable:hover .interactable-art,
+.act1-interactable:focus-visible .interactable-art {
+  transform: scale(1.1) translateY(-3px);
+  animation-play-state: paused;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 20px rgba(245, 158, 11, 0.75));
+}
+
+.act1-interactable.visited .interactable-art {
   animation: none;
-  box-shadow: 0 4px 12px rgba(4, 120, 87, 0.35);
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 8px rgba(16, 185, 129, 0.55));
 }
 
-.hotspot-check-icon {
+.act1-interactable.visited:hover .interactable-art,
+.act1-interactable.visited:focus-visible .interactable-art {
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 18px rgba(16, 185, 129, 0.75));
+}
+
+/* Name tooltip — replaces the old always-on floating label pill; only shows on hover/focus */
+.interactable-tooltip {
   position: absolute;
-  bottom: -3px;
-  right: -3px;
-  width: 18px;
-  height: 18px;
-  background: #10B981;
-  color: #FFFFFF;
-  border: 2px solid #FFFFFF;
-  border-radius: 50%;
-  font-size: 0.65rem;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.hotspot-label-pill {
-  background: rgba(39, 33, 30, 0.9);
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, 6px);
+  margin-bottom: 8px;
+  background: rgba(39, 33, 30, 0.92);
   backdrop-filter: blur(6px);
   color: #FFFFFF;
   font-family: var(--font-family-display);
   font-size: 0.78rem;
   font-weight: 700;
-  padding: 0.25rem 0.65rem;
+  padding: 0.3rem 0.75rem;
   border-radius: 100px;
   white-space: nowrap;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 20;
 }
 
-.act1-hotspot-pin.visited .hotspot-label-pill {
-  color: #D1FAE5;
-  border-color: rgba(16, 185, 129, 0.4);
+.act1-interactable:hover .interactable-tooltip,
+.act1-interactable:focus-visible .interactable-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
-/* ==========================================================
-   HOTSPOT LOCATIONS ON LAKESIDE MAP
-   ========================================================== */
-
-/* 1. The Cooler ("The Vault") — sits over the illustrated cooler in the scene photo */
-.hotspot-cooler {
-  top: 76%;
-  left: 84%;
-}
-
-/* 2. The Dock / Shore ("High Ground") — along the sandy shoreline, lower-left */
-.hotspot-dock {
-  top: 56%;
-  left: 15%;
-}
-
-/* 3. Water Bowl ("The Water One") — on the grass beside Tay */
-.hotspot-bowl {
-  top: 84%;
-  left: 50%;
-}
-
-/* 4. The Lake ("The Biggest Bowl") — open water, far shore */
-.hotspot-lake {
-  top: 48%;
-  left: 16%;
-}
-
-/* ==========================================================
-   IN-SCENE REDRAWN VECTOR ASSETS (CANOPY, CALLIE, TAY, COOLER, DOCK, BOWL)
-   ========================================================== */
-
-/* The Cooler hotzone — the cooler itself is already drawn in the scene photo (under the
-   canopy, beside Callie), so this is an invisible hit target with a soft hover affordance
-   rather than a redrawn icon. */
-.lake-scene-cooler {
+.interactable-check {
   position: absolute;
-  top: 70%;
-  left: 78%;
-  width: 15%;
-  height: 20%;
-  pointer-events: auto;
-  cursor: pointer;
-  z-index: 14;
-  border-radius: 18px;
-  transition: background 0.25s ease, box-shadow 0.25s ease;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  background: #10B981;
+  color: #FFFFFF;
+  border: 2px solid #FFFFFF;
+  border-radius: 50%;
+  font-size: 0.68rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  z-index: 21;
 }
 
-.lake-scene-cooler:hover {
-  background: rgba(253, 224, 71, 0.14);
-  box-shadow: 0 0 22px rgba(245, 158, 11, 0.35), inset 0 0 0 2px rgba(245, 158, 11, 0.3);
-}
-
-.lake-scene-dock {
+/* Pop-Up Shade Canopy — scenery only, not a lead, sits behind the cooler */
+.lake-scene-canopy {
   position: absolute;
-  top: 51%;
-  left: 5%;
-  width: 21%;
-  height: 16%;
-  pointer-events: auto;
-  cursor: pointer;
-  z-index: 13;
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+  top: 27%;
+  left: 60%;
+  width: 35%;
+  height: 52%;
+  pointer-events: none;
+  z-index: 11;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
 }
 
-.lake-scene-dock:hover {
-  transform: scale(1.05) translateY(-2px);
-  filter: drop-shadow(0 8px 20px rgba(245, 158, 11, 0.6));
+/* 1. The Cooler ("The Vault") — under the canopy */
+.interactable-cooler {
+  top: 69%;
+  left: 77%;
+  width: 12%;
+  height: 15%;
 }
 
-.lake-scene-bowl {
-  position: absolute;
+/* 2. The Dock ("High Ground") — sand at the water's edge, clear of the lake zone below it */
+.interactable-dock {
+  top: 59%;
+  left: 12%;
+  width: 22%;
+  height: 15%;
+}
+
+/* 3. Water Bowl ("The Water One") — open grass, clear of everything else */
+.interactable-bowl {
   top: 80%;
   left: 46%;
-  width: 6%;
-  height: 6.5%;
-  pointer-events: auto;
-  cursor: pointer;
-  z-index: 14;
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  width: 7%;
+  height: 7.5%;
 }
 
-.lake-scene-bowl:hover {
-  transform: scale(1.12) translateY(-2px);
-  filter: drop-shadow(0 6px 16px rgba(245, 158, 11, 0.6));
-}
-
-.lake-scene-lake {
-  position: absolute;
-  top: 37%;
+/* 4. The Lake ("The Biggest Bowl") — open water; no drawn icon needed, so give the
+   hit area its own glowing "you can click the water" affordance. */
+.interactable-lake {
+  top: 36%;
   left: 0%;
-  width: 39%;
-  height: 27%;
-  pointer-events: auto;
-  cursor: pointer;
-  z-index: 12;
-  border-radius: 40px;
-  transition: all 0.25s ease;
+  width: 38%;
+  height: 22%;
 }
 
-.lake-scene-lake:hover {
-  background: rgba(56, 189, 248, 0.12);
-  box-shadow: 0 0 24px rgba(56, 189, 248, 0.35);
+.interactable-lake .interactable-art {
+  border-radius: 40%;
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.16) 0%, rgba(56, 189, 248, 0.05) 60%, transparent 85%);
+  animation-name: interactableLakePulse;
+}
+
+@keyframes interactableLakePulse {
+  0%, 100% { box-shadow: 0 0 0px rgba(56, 189, 248, 0); }
+  50% { box-shadow: inset 0 0 30px rgba(56, 189, 248, 0.35); }
+}
+
+.interactable-lake:hover .interactable-art,
+.interactable-lake:focus-visible .interactable-art {
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.28) 0%, rgba(56, 189, 248, 0.1) 60%, transparent 85%);
+  box-shadow: inset 0 0 34px rgba(56, 189, 248, 0.5);
 }
 
 /* ==========================================================
@@ -1103,11 +1059,6 @@
     height: 32px;
     padding: 0 0.65rem;
     font-size: 0.75rem;
-  }
-  .hotspot-badge-circle {
-    width: 38px;
-    height: 38px;
-    font-size: 1.1rem;
   }
   .case-file-card {
     width: 96%;
