@@ -1252,7 +1252,7 @@ export class Act3Screen {
                           data-prevention="${opt.id}"
                           data-editor-id="act3-prevention-${opt.id}"
                           aria-pressed="${isChosen}"
-                          aria-describedby="${isChosen ? `act3-prevention-reply-${opt.id}` : ''}">
+                          ${isChosen ? `aria-describedby="act3-prevention-reply-${opt.id}"` : ''}>
                     <span class="act3-prevention-icon" aria-hidden="true">${opt.icon}</span>
                     <span class="act3-prevention-label">${opt.label}</span>
                     <!-- Chosen is a glyph and a word, never the green alone (§7.3). -->
