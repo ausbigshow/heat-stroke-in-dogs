@@ -756,7 +756,7 @@ export class Act1Screen {
                 </div>
                 <p class="speech-bubble-text">
                   <span class="tay-onomatopoeia">${isLake && visitCount > 1 ? 'Splash!' : 'Snort!'}</span>
-                  <span class="tay-sub-dialogue">("${currentDialogueLine}")</span>
+                  <span class="tay-sub-dialogue">("${currentDialogueLine}"${isCallieSpeaking && lead.tayFollowUp ? ` … "${lead.tayFollowUp}"` : ''})</span>
                 </p>
               </div>
             ` : ''}
@@ -961,10 +961,15 @@ export class Act1Screen {
     switch (this.currentBeat) {
       case 'cold_open':
         const isLastColdOpen = this.stepIndex === this.coldOpenSteps.length - 1;
+        const isMissionCardStep = this.coldOpenSteps[this.stepIndex]?.type === 'mission_card';
+        // The mission card modal carries its own "Start Investigation" button — showing
+        // a second, identical one in the bottom nav underneath it is a redundant control
+        // that isn't meant to be clicked from here, so hide it while the card is up.
+        if (isMissionCardStep) return '';
         return isLastColdOpen ? `
-          <button 
-            id="act1-btn-start-hub" 
-            class="act1-hud-btn btn-action-primary pulse-btn" 
+          <button
+            id="act1-btn-start-hub"
+            class="act1-hud-btn btn-action-primary pulse-btn"
             data-editor-id="act1-btn-start-hub"
           >
             Start Investigation ➔

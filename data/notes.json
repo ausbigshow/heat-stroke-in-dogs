@@ -26,7 +26,7 @@
     "createdAt": "2026-08-30T00:58:43.910Z"
   },
   {
-    "id": "note_1788144018245",
+    "id": "note_1788144819853",
     "screenId": "act1",
     "x": 120,
     "y": 120,
@@ -34,34 +34,34 @@
     "height": 160,
     "color": "yellow",
     "status": "implemented",
-    "text": "multiple interactables overlapping, not easy to use. ",
+    "text": "the dock does not appear to be on the water, looks out of place.",
     "targetElementId": "act1-asset-dock",
-    "createdAt": "2026-08-31T02:40:18.245Z"
+    "createdAt": "2026-08-31T02:53:39.853Z"
   },
   {
-    "id": "note_1788144050934",
+    "id": "note_1788144842929",
     "screenId": "act1",
-    "x": 74,
-    "y": 640,
+    "x": 10,
+    "y": 371,
     "width": 260,
     "height": 160,
-    "color": "green",
+    "color": "yellow",
     "status": "implemented",
-    "text": "what if we got rid of the pins and made the target objects more obviously interactive?",
-    "targetElementId": null,
-    "createdAt": "2026-08-31T02:40:50.934Z"
+    "text": "change the blinking to a ripple effect, and also have it stay within the bounds of the water. ",
+    "targetElementId": "act1-asset-lake",
+    "createdAt": "2026-08-31T02:54:02.929Z"
   },
   {
-    "id": "note_1788144125931",
+    "id": "note_1788144912119",
     "screenId": "act1",
-    "x": 635,
-    "y": 397,
+    "x": 1528,
+    "y": 319,
     "width": 260,
     "height": 160,
-    "color": "pink",
+    "color": "yellow",
     "status": "implemented",
-    "text": "go back to the blank background so that the interactive elements aren't baked in and can't be animated.",
-    "targetElementId": null,
-    "createdAt": "2026-08-31T02:42:05.931Z"
+    "text": "looks odd sitting on a tree stump, move it up a little bit so it doesn't look unrealistic.",
+    "targetElementId": "act1-asset-cooler",
+    "createdAt": "2026-08-31T02:55:12.119Z"
   }
 ]

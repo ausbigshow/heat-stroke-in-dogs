@@ -12,32 +12,15 @@ export class SaveManager {
   async saveChanges() {
     const rulesMap = {};
 
-    // Collect all elements with data-editor-id that have inline styles
-    const allEditable = document.querySelectorAll('[data-editor-id]');
-    allEditable.forEach(el => {
-      const id = el.getAttribute('data-editor-id');
-      const inline = el.style;
-      const decls = {};
-
-      // Collect all properties set in style
-      for (let i = 0; i < inline.length; i++) {
-        const prop = inline[i];
-        const val = inline.getPropertyValue(prop);
-        if (val) {
-          decls[prop] = val;
-        }
-      }
-
-      const properties = ['position', 'left', 'top', 'right', 'bottom', 'width', 'height', 'z-index', 'transform', 'display', '--stem-left', '--stem-right'];
-      properties.forEach(p => {
-        const val = inline.getPropertyValue(p) || inline[p];
-        if (val && typeof val === 'string' && val.trim() !== '') {
-          decls[p] = val;
-        }
-      });
-
-      if (Object.keys(decls).length > 0) {
-        rulesMap[`[data-editor-id="${id}"]`] = decls;
+    // Surgical save: only persist properties the editor itself recorded as an actual
+    // visual edit (drag/resize/lock/z-index/stem/delete), via state.modifiedStyles.
+    // Do NOT scan every [data-editor-id] element's live inline style — screens set
+    // their own transient inline styles for unrelated runtime state (e.g. Act 1's CSS
+    // custom properties driving the palette/shade-drift animation), and sweeping those
+    // up here would freeze them as permanent overrides on every unrelated Save.
+    this.state.modifiedStyles.forEach((decls, id) => {
+      if (decls && Object.keys(decls).length > 0) {
+        rulesMap[`[data-editor-id="${id}"]`] = { ...decls };
       }
     });
 

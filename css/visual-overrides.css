@@ -1,13 +1,1 @@
-/* Visual Edit Mode Overrides - Last updated: 2026-08-31T02:42:47.702Z */
-
-
-[data-editor-id="act1-viewport-card"] {
-  --act1-drift-opacity: 0 !important;
-  --act1-saturation-drop: 0% !important;
-}
-
-[data-editor-id="act1-hub-speech"] {
-  top: 24% !important;
-  left: 45% !important;
-  max-width: min(320px, 25vw) !important;
-}
+/* Visual Edit Mode Overrides - Last updated: 2026-08-31T02:55:56.398Z */

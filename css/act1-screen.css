@@ -302,20 +302,22 @@
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
 }
 
-/* 1. The Cooler ("The Vault") — under the canopy */
+/* 1. The Cooler ("The Vault") — flat grass under the canopy, clear of the trunk's
+   root flare above it and the fallen root/log crossing the ground below it */
 .interactable-cooler {
-  top: 69%;
-  left: 77%;
-  width: 12%;
-  height: 15%;
+  top: 55%;
+  left: 82%;
+  width: 11%;
+  height: 13%;
 }
 
-/* 2. The Dock ("High Ground") — sand at the water's edge, clear of the lake zone below it */
+/* 2. The Dock ("High Ground") — straddles the sand/water line so the structure
+   actually reads as extending out over the lake, not sitting on dry grass */
 .interactable-dock {
-  top: 59%;
-  left: 12%;
-  width: 22%;
-  height: 15%;
+  top: 44%;
+  left: 21%;
+  width: 18%;
+  height: 16%;
 }
 
 /* 3. Water Bowl ("The Water One") — open grass, clear of everything else */
@@ -326,30 +328,67 @@
   height: 7.5%;
 }
 
-/* 4. The Lake ("The Biggest Bowl") — open water; no drawn icon needed, so give the
-   hit area its own glowing "you can click the water" affordance. */
+/* 4. The Lake ("The Biggest Bowl") — the open water to the left of the dock; no drawn
+   icon needed, so the hit area gets its own ripple to read as clickable water. */
 .interactable-lake {
-  top: 36%;
+  top: 44%;
   left: 0%;
-  width: 38%;
-  height: 22%;
+  width: 20%;
+  height: 24%;
 }
 
 .interactable-lake .interactable-art {
-  border-radius: 40%;
-  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.16) 0%, rgba(56, 189, 248, 0.05) 60%, transparent 85%);
-  animation-name: interactableLakePulse;
-}
-
-@keyframes interactableLakePulse {
-  0%, 100% { box-shadow: 0 0 0px rgba(56, 189, 248, 0); }
-  50% { box-shadow: inset 0 0 30px rgba(56, 189, 248, 0.35); }
+  position: relative;
+  overflow: hidden;
+  border-radius: 38%;
+  background: rgba(56, 189, 248, 0.06);
+  animation: none;
+  transition: background 0.25s ease;
 }
 
 .interactable-lake:hover .interactable-art,
 .interactable-lake:focus-visible .interactable-art {
-  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.28) 0%, rgba(56, 189, 248, 0.1) 60%, transparent 85%);
-  box-shadow: inset 0 0 34px rgba(56, 189, 248, 0.5);
+  background: rgba(56, 189, 248, 0.16);
+  /* Water shouldn't lift/pop like a solid object, and its glow should read as
+     water (blue), not the shared orange "food" invitation color. */
+  transform: none;
+  filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.55));
+}
+
+/* Concentric ripple rings — clipped by the water box's own overflow:hidden above,
+   so the effect can never bleed past "the bounds of the water." */
+.interactable-lake .interactable-art::before,
+.interactable-lake .interactable-art::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22%;
+  height: 22%;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  transform: translate(-50%, -50%) scale(0.4);
+  opacity: 0;
+  pointer-events: none;
+  animation: lakeRipple 3.6s ease-out infinite;
+}
+
+.interactable-lake .interactable-art::after {
+  animation-delay: 1.8s;
+}
+
+@keyframes lakeRipple {
+  0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0.5; }
+  70% { opacity: 0.16; }
+  100% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
+}
+
+.interactable-lake:hover .interactable-art::before,
+.interactable-lake:hover .interactable-art::after,
+.interactable-lake:focus-visible .interactable-art::before,
+.interactable-lake:focus-visible .interactable-art::after {
+  animation-duration: 1.8s;
+  border-color: rgba(255, 255, 255, 0.85);
 }
 
 /* ==========================================================
@@ -376,7 +415,7 @@
   flex-direction: column;
   box-sizing: border-box;
   z-index: 50;
-  animation: stampSlam 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: stampSlamCentered 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   pointer-events: auto;
 }
 
@@ -664,6 +703,20 @@
   }
 }
 
+/* For elements centered on BOTH axes (top:50%; left:50%; transform: translate(-50%,-50%)).
+   stampSlam's translateX(-50%)-only end frame silently drops the vertical centering once
+   the animation's forwards fill-mode locks it in — this variant preserves both. */
+@keyframes stampSlamCentered {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
 .stamp-header {
   display: flex;
   align-items: center;
@@ -878,7 +931,7 @@
   overflow-y: auto;
   pointer-events: auto;
   z-index: 50;
-  animation: stampSlam 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: stampSlamCentered 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Custom sleek scrollbar for case-file card */
