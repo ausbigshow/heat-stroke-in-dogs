@@ -4,13 +4,18 @@
  * - Shows exactly ONE speech bubble at a time in sequence.
  * - Bubble stems are angled directly toward Callie or Tay.
  * - Tay's lines formatted with dog onomatopoeias + parenthetical dialogue: Bark! (that's me!)
+ * - Each step triggers its voiceover clip via the shared audio manager (Callie = Magnific VO,
+ *   Tay = CC0/public-domain dog vocalizations). See Assets/Audio/vo-manifest.json.
  */
+
+import { audioManager } from './audio-manager.js';
 
 export class Act0Screen {
   constructor(app) {
     this.app = app;
     this.currentStepIndex = 0;
     this.container = null;
+    this.isMounted = false;
 
     // Single-bubble sequence steps verbatim from Act 0 Dialogue Script
     // Callie is at ~39% X, 33% Y -> her bubbles sit closely to her left/above without obstructing face/hair
@@ -121,12 +126,36 @@ export class Act0Screen {
     this.container = document.getElementById('screen-act0');
     if (!this.container) return;
 
+    this.isMounted = true;
+    // Kick off manifest load + preload; render() will request the first clip once ready.
+    audioManager.init();
+
     this.render();
     window.addEventListener('keydown', this.handleKeyDown);
   }
 
   unmount() {
+    this.isMounted = false;
+    audioManager.stop();
     window.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  /**
+   * Play the current step's voiceover clip. Waits for the manifest to be ready, then
+   * re-checks that the learner hasn't already advanced past this step (rapid clicking)
+   * before starting playback. playForStep() itself cuts off any clip still playing.
+   */
+  playStepAudio() {
+    const step = this.steps[this.currentStepIndex];
+    if (!step) return;
+    const stepId = step.id;
+
+    audioManager.init().then(() => {
+      if (!this.isMounted) return;
+      const active = this.steps[this.currentStepIndex];
+      if (!active || active.id !== stepId) return;
+      audioManager.playForStep(stepId);
+    });
   }
 
   render() {
@@ -199,14 +228,15 @@ export class Act0Screen {
               >
                 ◀ Back
               </button>
-              <button 
-                id="act0-btn-title" 
-                class="act0-hud-btn" 
+              <button
+                id="act0-btn-title"
+                class="act0-hud-btn"
                 data-editor-id="act0-btn-title"
                 title="Return to Title Screen"
               >
                 🏠 Title
               </button>
+              ${audioManager.muteButtonHtml('act0-btn-mute', 'act0-hud-btn')}
             </div>
 
             <div class="act0-progress-badge" data-editor-id="act0-progress">
@@ -242,9 +272,13 @@ export class Act0Screen {
     `;
 
     this.bindEvents();
+    this.playStepAudio();
   }
 
   bindEvents() {
+    // Re-bind the HUD mute button; innerHTML re-render discards previous listeners.
+    audioManager.bindMuteButton(this.container);
+
     const card = this.container.querySelector('#act0-card');
     if (card) {
       card.addEventListener('click', (e) => {

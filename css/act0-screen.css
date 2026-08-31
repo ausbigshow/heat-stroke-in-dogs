@@ -20,13 +20,11 @@
   width: min(94vw, 1300px);
   aspect-ratio: 16 / 9;
   max-height: 84vh;
-  border-radius: 24px;
+  border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow: 
-    0 24px 60px -12px rgba(56, 36, 24, 0.3),
-    0 4px 18px rgba(56, 36, 24, 0.12);
-  border: 4px solid #FFFFFF;
-  background: #27211E;
+  box-shadow: var(--elev-card);
+  border: 4px solid var(--palette-warm-white);
+  background: var(--palette-text-dark);
   cursor: pointer;
   user-select: none;
 }
@@ -56,14 +54,14 @@
 .speech-bubble {
   position: absolute;
   padding: 1.1rem 1.4rem;
-  border-radius: 24px;
+  border-radius: var(--radius-xl);
   box-shadow: 
     0 16px 36px -4px rgba(56, 36, 24, 0.28),
     0 4px 12px rgba(56, 36, 24, 0.15);
   pointer-events: auto;
   cursor: default;
   box-sizing: border-box;
-  animation: bubblePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation: bubblePop 0.3s var(--ease-back) forwards;
   z-index: 20;
 }
 
@@ -100,7 +98,7 @@
 
 /* --- Callie's Speech Bubble (White / Dark Brown, seamless stem pointing toward Callie) --- */
 .speech-bubble.callie-bubble {
-  background: #FFFFFF;
+  background: var(--palette-warm-white);
   border: 3px solid var(--palette-brown-dark);
   color: var(--palette-brown-dark);
 }
@@ -132,19 +130,20 @@
   height: 0;
   border-left: 15px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 19px solid #FFFFFF;
+  border-top: 19px solid var(--palette-warm-white);
   z-index: 2;
 }
 
 /* --- Tay's Speech Bubble (Peach / Orange, seamless stem pointing toward Tay) --- */
 .speech-bubble.tay-bubble {
-  background: #FFF8F3;
-  border: 3px solid #C2410C;
-  color: #7C2D12;
+  background: var(--color-heat-tint);
+  border: 3px solid var(--color-heat);
+  color: var(--color-heat-deep);
 }
 
 .speech-bubble.tay-bubble .speech-bubble-speaker {
-  color: #EA580C;
+  /* WCAG AA: #EA580C on #FFF8F3 was 3.39:1. --color-heat is 4.93:1. */
+  color: var(--color-heat);
 }
 
 .speech-bubble.tay-bubble .speech-bubble-text {
@@ -154,7 +153,7 @@
 
 .speech-bubble.tay-bubble .tay-onomatopoeia {
   font-weight: 800;
-  color: #C2410C;
+  color: var(--color-heat);
   font-style: normal;
   display: inline;
   margin-right: 0.2rem;
@@ -162,7 +161,7 @@
 
 .speech-bubble.tay-bubble .tay-sub-dialogue {
   font-style: italic;
-  color: #7C2D12;
+  color: var(--color-heat-deep);
   display: inline;
 }
 
@@ -176,7 +175,7 @@
   height: 0;
   border-left: 6px solid transparent;
   border-right: 18px solid transparent;
-  border-top: 22px solid #C2410C;
+  border-top: 22px solid var(--color-heat);
   z-index: 1;
 }
 
@@ -189,7 +188,7 @@
   height: 0;
   border-left: 5px solid transparent;
   border-right: 15px solid transparent;
-  border-top: 19px solid #FFF8F3;
+  border-top: 19px solid var(--color-heat-tint);
   z-index: 2;
 }
 
@@ -219,30 +218,37 @@
 }
 
 .act0-hud-btn {
-  background: rgba(39, 33, 30, 0.85);
+  background: var(--surface-hud-btn);
   backdrop-filter: blur(8px);
-  color: #FFFFFF;
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  color: var(--text-inverse);
+  border: 1.5px solid var(--hairline-light);
   font-family: var(--font-family-display);
   font-size: 0.95rem;
   font-weight: 700;
   height: 40px;
   padding: 0 1.2rem;
-  border-radius: 100px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
   box-sizing: border-box;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s var(--ease-out-expo);
+  box-shadow: var(--elev-2);
 }
 
 .act0-hud-btn:hover:not(:disabled) {
-  background: rgba(39, 33, 30, 1);
+  background: var(--surface-hud-btn-hover);
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.6);
+  border-color: var(--hairline-light-strong);
+}
+
+.act0-hud-btn:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-on-dark);
+  outline-offset: var(--focus-ring-offset);
+  background: var(--surface-hud-btn-hover);
+  border-color: var(--hairline-light-strong);
 }
 
 .act0-hud-btn:disabled {
@@ -251,21 +257,30 @@
 }
 
 .act0-hud-btn.btn-start {
-  background: #EA580C;
-  color: #FFFFFF;
-  border: 2px solid #FDBA74;
+  /* WCAG AA: white on #EA580C was 3.56:1. --color-heat is 5.18:1, and matches
+     Act 1's .btn-action-primary so the module has one primary-action colour. */
+  background: var(--color-heat);
+  color: var(--text-inverse);
+  border: 2px solid var(--color-amber-tint);
   font-size: 1rem;
   font-weight: 800;
   height: 40px;
   padding: 0 1.4rem;
-  box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4);
+  box-shadow: 0 6px 20px rgba(194, 65, 12, 0.4);
   animation: pulseStartBtn 1.8s infinite;
 }
 
+.act0-hud-btn.btn-start:focus-visible {
+  background: var(--color-heat-hover);
+  border-color: var(--palette-warm-white);
+  outline: var(--focus-ring-width) solid var(--focus-ring-on-dark);
+  outline-offset: var(--focus-ring-offset);
+}
+
 .act0-hud-btn.btn-start:hover {
-  background: #9A3412 !important;
-  color: #FFFFFF !important;
-  border-color: #FFFFFF !important;
+  background: var(--color-heat-hover) !important;
+  color: var(--text-inverse) !important;
+  border-color: var(--palette-warm-white) !important;
   box-shadow: 0 8px 24px rgba(154, 52, 18, 0.6) !important;
   transform: translateY(-2px);
 }
@@ -288,9 +303,33 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  border-radius: 100px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--elev-1);
   pointer-events: auto;
+}
+
+/* ==========================================================
+   REDUCED MOTION
+   Looping animation is switched off entirely; entrances are shortened rather
+   than removed, so the element still appears (and keeps any transform its
+   final keyframe is responsible for).
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .act0-hud-btn.btn-start {
+    animation: none;
+  }
+
+  .speech-bubble {
+    animation-duration: 0.01s;
+    animation-delay: 0s;
+  }
+
+  .act0-hud-btn,
+  .act0-hud-btn:hover:not(:disabled) {
+    transition: none;
+    transform: none;
+  }
 }
 
 /* Responsive adjustments */

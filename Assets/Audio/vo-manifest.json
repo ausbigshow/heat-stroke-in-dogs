@@ -1,0 +1,225 @@
+{
+  "$comment": "Act 0 voiceover + Tay vocalization manifest. Single source of truth for js/audio-manager.js. stepId matches the `id` field of entries in Act0Screen.steps (js/act0-screen.js); stepIndex is the 0-based position and is advisory only — the manager resolves by stepId.",
+  "version": 1,
+  "generated": "2026-08-31",
+  "basePath": "Assets/Audio/",
+  "clips": [
+    {
+      "file": "callie/callie-01-hey-im-callie.mp3",
+      "speaker": "callie",
+      "stepId": "step1",
+      "stepIndex": 0,
+      "durationSec": 1.44,
+      "transcript": "Hey. I'm Callie.",
+      "source": "magnific:eIfBNBedqL",
+      "sourceUrl": "https://www.magnific.com/app/creation/eIfBNBedqL",
+      "sourceTool": "voiceover-generator (elevenlabs-voiceover-v3)",
+      "license": "Generated asset — Magnific/ElevenLabs voiceover, licensed to the project owner via their Magnific account."
+    },
+    {
+      "file": "callie/callie-02-this-is-tay.mp3",
+      "speaker": "callie",
+      "stepId": "step2",
+      "stepIndex": 1,
+      "durationSec": 1.36,
+      "transcript": "This is Tay.",
+      "source": "magnific:s79ShU1l8e",
+      "sourceUrl": "https://www.magnific.com/app/creation/s79ShU1l8e",
+      "sourceTool": "voiceover-generator (elevenlabs-voiceover-v3)",
+      "license": "Generated asset — Magnific/ElevenLabs voiceover, licensed to the project owner via their Magnific account."
+    },
+    {
+      "file": "tay/tay-bark-a.mp3",
+      "speaker": "tay",
+      "stepId": "step3",
+      "stepIndex": 2,
+      "durationSec": 0.6,
+      "transcript": "Bark! (that's me! that's my name!)",
+      "description": "Single bright small-dog bark, ~547 Hz fundamental. Trimmed from 0.92s of the source, high-passed at 180 Hz, denoised, loudness-normalised to -18 LUFS and peak-limited to -3.5 dBFS.",
+      "source": "https://commons.wikimedia.org/wiki/File:Ladrido_perro.ogg",
+      "sourceFileUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fd/Ladrido_perro.ogg",
+      "sourceAuthor": "Edo.pt2",
+      "license": "CC0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false
+    },
+    {
+      "file": "callie/callie-03-french-bulldog-snacks-lake.mp3",
+      "speaker": "callie",
+      "stepId": "step4",
+      "stepIndex": 3,
+      "durationSec": 6.72,
+      "transcript": "She's a French Bulldog. She loves snacks, the lake, and me. In whatever order you want.",
+      "source": "magnific:fH1uWFcCDY",
+      "sourceUrl": "https://www.magnific.com/app/creation/fH1uWFcCDY",
+      "sourceTool": "voiceover-generator (elevenlabs-voiceover-v3)",
+      "license": "Generated asset — Magnific/ElevenLabs voiceover, licensed to the project owner via their Magnific account."
+    },
+    {
+      "file": "tay/tay-yip.mp3",
+      "speaker": "tay",
+      "stepId": "step5",
+      "stepIndex": 4,
+      "durationSec": 0.9,
+      "transcript": "Yip! (snacks. definitely snacks first.)",
+      "description": "Excited puppy yip/whine, tonal ~547 Hz. Extracted from 37.55s of the source (the one clearly tonal vocalisation in an otherwise hiss-dominated night recording), band-passed 300-5000 Hz, +18 dB pre-gain, heavy spectral denoise, normalised and peak-limited.",
+      "source": "https://commons.wikimedia.org/wiki/File:Puppy_at_a_night.ogg",
+      "sourceFileUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7c/Puppy_at_a_night.ogg",
+      "sourceAuthor": "Knites",
+      "license": "CC0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false
+    },
+    {
+      "file": "callie/callie-04-never-known-somethings-wrong.mp3",
+      "speaker": "callie",
+      "stepId": "step6",
+      "stepIndex": 5,
+      "durationSec": 2.96,
+      "transcript": "She's also never once known when something's wrong with her.",
+      "source": "magnific:rgOL8gnxtc",
+      "sourceUrl": "https://www.magnific.com/app/creation/rgOL8gnxtc",
+      "sourceTool": "voiceover-generator (elevenlabs-voiceover-v3)",
+      "license": "Generated asset — Magnific/ElevenLabs voiceover, licensed to the project owner via their Magnific account."
+    },
+    {
+      "file": "tay/tay-huff.mp3",
+      "speaker": "tay",
+      "stepId": "step7",
+      "stepIndex": 6,
+      "durationSec": 0.98,
+      "transcript": "Huff! (i feel amazing! i always feel amazing!)",
+      "description": "Breathy dog huff/shake-off. Extracted from 76.30s of the source, band-passed 120-6000 Hz, denoised, compressed 4:1 to give the breath body, normalised and peak-limited. Intentionally softer than the barks — a huff is a low-energy sound.",
+      "source": "https://commons.wikimedia.org/wiki/File:Dog.ogg",
+      "sourceFileUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e8/Dog.ogg",
+      "sourceAuthor": "soerena (via PDsounds.org record 596)",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/Template:PD-author",
+      "attributionRequired": false
+    },
+    {
+      "file": "callie/callie-05-drove-out-to-the-lake.mp3",
+      "speaker": "callie",
+      "stepId": "step8",
+      "stepIndex": 7,
+      "durationSec": 6.8,
+      "transcript": "A couple summers ago, we drove out to the lake. It was a good day. Right up until it wasn't.",
+      "source": "magnific:JN2PQ6nOq4",
+      "sourceUrl": "https://www.magnific.com/app/creation/JN2PQ6nOq4",
+      "sourceTool": "voiceover-generator (elevenlabs-voiceover-v3)",
+      "license": "Generated asset — Magnific/ElevenLabs voiceover, licensed to the project owner via their Magnific account."
+    },
+    {
+      "file": "callie/callie-06-tay-had-heat-stroke.mp3",
+      "speaker": "callie",
+      "stepId": "step9",
+      "stepIndex": 8,
+      "durationSec": 4.56,
+      "transcript": "Tay had heat stroke. It almost killed her.",
+      "source": "magnific:BhuI3vAoQR",
+      "sourceUrl": "https://www.magnific.com/app/creation/BhuI3vAoQR",
+      "sourceTool": "voiceover-generator (elevenlabs-voiceover-v3)",
+      "license": "Generated asset — Magnific/ElevenLabs voiceover, licensed to the project owner via their Magnific account."
+    },
+    {
+      "file": "tay/tay-woof.mp3",
+      "speaker": "tay",
+      "stepId": "step10",
+      "stepIndex": 9,
+      "durationSec": 0.32,
+      "transcript": "Woof! (i was having such a good day!)",
+      "description": "Single short woof, ~422 Hz fundamental — small/medium dog. Used whole (source is only 0.33s), high-passed at 180 Hz, normalised and peak-limited.",
+      "source": "https://commons.wikimedia.org/wiki/File:George_vuf_1996.ogg",
+      "sourceFileUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4c/George_vuf_1996.ogg",
+      "sourceAuthor": "Broadbeer",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/Template:PD-self",
+      "attributionRequired": false
+    },
+    {
+      "file": "callie/callie-07-you-were-that-was-the-problem.mp3",
+      "speaker": "callie",
+      "stepId": "step11",
+      "stepIndex": 10,
+      "durationSec": 3.68,
+      "transcript": "You were. That was kind of the problem.",
+      "source": "magnific:vQKCnHOa47",
+      "sourceUrl": "https://www.magnific.com/app/creation/vQKCnHOa47",
+      "sourceTool": "voiceover-generator (elevenlabs-voiceover-v3)",
+      "license": "Generated asset — Magnific/ElevenLabs voiceover, licensed to the project owner via their Magnific account."
+    },
+    {
+      "file": "callie/callie-08-she-felt-it-before-i-saw-it.mp3",
+      "speaker": "callie",
+      "stepId": "step12",
+      "stepIndex": 11,
+      "durationSec": 3.12,
+      "transcript": "She felt it before I saw it. So she's telling this part.",
+      "source": "magnific:hu5fzFBvqL",
+      "sourceUrl": "https://www.magnific.com/app/creation/hu5fzFBvqL",
+      "sourceTool": "voiceover-generator (elevenlabs-voiceover-v3)",
+      "license": "Generated asset — Magnific/ElevenLabs voiceover, licensed to the project owner via their Magnific account."
+    },
+    {
+      "file": "tay/tay-bark-b.mp3",
+      "speaker": "tay",
+      "stepId": "step13",
+      "stepIndex": 12,
+      "durationSec": 0.7,
+      "transcript": "Bark! (i'll tell it! i'll tell it so good!)",
+      "description": "Second, distinct bark take from the same CC0 recording (trimmed from 2.68s) so the closing bark does not sound like a copy-paste of step 3.",
+      "source": "https://commons.wikimedia.org/wiki/File:Ladrido_perro.ogg",
+      "sourceFileUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fd/Ladrido_perro.ogg",
+      "sourceAuthor": "Edo.pt2",
+      "license": "CC0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false
+    }
+  ],
+  "unassigned": [
+    {
+      "file": "callie/unassigned-retake.mp3",
+      "speaker": "callie",
+      "stepId": null,
+      "stepIndex": null,
+      "durationSec": 4.16,
+      "transcript": "UNKNOWN — not auditioned. Recorded 2026-08-30T02:38:42Z, roughly 14 minutes after the batch of eight that maps to the script, so it is most likely a retake of one of the existing lines rather than a new line.",
+      "note": "SME/author action outstanding: audition this clip and either map it to a stepId in `clips` (replacing the current file for that step) or delete it. It is downloaded and staged but NOT wired into playback.",
+      "source": "magnific:yiG95hUPW9",
+      "sourceUrl": "https://www.magnific.com/app/creation/yiG95hUPW9",
+      "sourceTool": "voiceover-generator (elevenlabs-voiceover-v3)",
+      "license": "Generated asset — Magnific/ElevenLabs voiceover, licensed to the project owner via their Magnific account."
+    }
+  ],
+  "attributions": [
+    {
+      "title": "Ladrido perro",
+      "author": "Edo.pt2",
+      "license": "CC0 1.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Ladrido_perro.ogg",
+      "usedFor": ["tay/tay-bark-a.mp3", "tay/tay-bark-b.mp3"]
+    },
+    {
+      "title": "Puppy at a night",
+      "author": "Knites",
+      "license": "CC0 1.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Puppy_at_a_night.ogg",
+      "usedFor": ["tay/tay-yip.mp3"]
+    },
+    {
+      "title": "Dog",
+      "author": "soerena (PDsounds.org record 596)",
+      "license": "Public domain",
+      "url": "https://commons.wikimedia.org/wiki/File:Dog.ogg",
+      "usedFor": ["tay/tay-huff.mp3"]
+    },
+    {
+      "title": "George vuf 1996",
+      "author": "Broadbeer",
+      "license": "Public domain",
+      "url": "https://commons.wikimedia.org/wiki/File:George_vuf_1996.ogg",
+      "usedFor": ["tay/tay-woof.mp3"]
+    }
+  ],
+  "$licenseNote": "All Tay vocalizations are CC0 or public domain — no attribution is legally required and no share-alike obligation attaches. The `attributions` block is recorded as good practice and for the course credits screen. CC BY-SA candidates on Wikimedia Commons (e.g. 'Perro feliz.ogg', 'Barking of a dog.ogg') were deliberately NOT used, to keep the module free of copyleft obligations."
+}

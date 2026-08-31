@@ -38,7 +38,7 @@
   max-width: 900px;
   margin: 0 auto 1.5rem auto;
   text-align: center;
-  animation: titleDropIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: titleDropIn 0.9s var(--ease-out-expo) forwards;
 }
 
 .opening-title-badge {
@@ -51,7 +51,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  border-radius: 100px;
+  border-radius: var(--radius-pill);
   border: 1px solid rgba(107, 142, 109, 0.25);
 }
 
@@ -101,7 +101,7 @@
   justify-content: flex-end;
   align-items: center;
   pointer-events: auto;
-  animation: charactersFadeIn 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
+  animation: charactersFadeIn 1.1s var(--ease-out-expo) 0.2s backwards;
 }
 
 .character-card {
@@ -111,7 +111,7 @@
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  border-radius: 28px;
+  border-radius: var(--radius-2xl);
   overflow: hidden;
   box-shadow: 
     0 20px 40px -10px rgba(56, 36, 24, 0.12),
@@ -126,7 +126,7 @@
   object-fit: cover;
   object-position: center bottom;
   display: block;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.6s var(--ease-out-expo);
 }
 
 .character-card:hover .character-image {
@@ -142,7 +142,7 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: 0.5rem 1.25rem;
-  border-radius: 100px;
+  border-radius: var(--radius-pill);
   font-family: var(--font-family-display);
   font-size: 1rem;
   font-weight: 700;
@@ -185,7 +185,7 @@
   color: var(--palette-warm-white);
   background-color: var(--palette-teal);
   border: 2px solid transparent;
-  border-radius: 100px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
   box-shadow: 
     0 10px 25px -4px rgba(54, 107, 119, 0.35),
@@ -196,11 +196,11 @@
   transform: translateY(12px) scale(0.98);
   pointer-events: none;
   transition: 
-    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-    background-color 0.25s ease,
-    border-color 0.25s ease,
-    box-shadow 0.25s ease;
+    opacity var(--dur-slow) var(--ease-out-expo),
+    transform var(--dur-slow) var(--ease-out-expo),
+    background-color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -218,7 +218,7 @@
   justify-content: center;
   line-height: 1;
   transform-origin: center center;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), text-decoration 0.25s ease;
+  transition: transform var(--dur-fast) var(--ease-out-expo), text-decoration var(--dur-fast) ease;
   text-decoration: none;
 }
 
@@ -235,8 +235,8 @@
   opacity: 0;
   pointer-events: none;
   transition: 
-    opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity var(--dur-fast) var(--ease-out-expo),
+    transform var(--dur-fast) var(--ease-out-expo);
 }
 
 .continue-btn .continue-arrow svg {
@@ -260,14 +260,26 @@
   transform: translateY(-2px) scale(1.02);
 }
 
-.continue-btn:hover .continue-text {
+/* Keyboard users get the same affordance as mouse users: every :hover rule
+   above is mirrored on :focus-visible. */
+.continue-btn:focus-visible {
+  background-color: var(--palette-brown-dark);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 14px 30px -4px rgba(56, 36, 24, 0.4),
+    0 6px 14px -2px rgba(56, 36, 24, 0.25);
+}
+
+.continue-btn:hover .continue-text,
+.continue-btn:focus-visible .continue-text {
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
   transform: scale(1.05);
 }
 
-.continue-btn:hover .continue-arrow {
+.continue-btn:hover .continue-arrow,
+.continue-btn:focus-visible .continue-arrow {
   opacity: 1;
   transform: translateY(-50%) translateX(0);
 }
@@ -277,7 +289,7 @@
 }
 
 .continue-btn:focus-visible {
-  outline: 3px solid var(--palette-teal-dark);
+  outline: var(--focus-ring-width) solid var(--focus-ring-on-light);
   outline-offset: 4px;
 }
 
@@ -301,6 +313,50 @@
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+/* ==========================================================
+   REDUCED MOTION
+   Entrances are shortened rather than removed — the continue button's reveal
+   is a real state change (it becomes clickable), so it must still happen.
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .opening-title-container,
+  .characters-container {
+    animation-duration: 0.01s;
+    animation-delay: 0s;
+  }
+
+  .continue-btn {
+    transition: opacity 0.01s linear, background-color var(--dur-fast) ease;
+    transform: none;
+  }
+
+  .continue-btn.is-visible {
+    transform: none;
+  }
+
+  .continue-btn:hover,
+  .continue-btn:focus-visible,
+  .continue-btn:active {
+    transform: none;
+  }
+
+  .continue-btn .continue-text,
+  .continue-btn .continue-arrow,
+  .character-image {
+    transition: none;
+  }
+
+  .continue-btn:hover .continue-text,
+  .continue-btn:focus-visible .continue-text {
+    transform: none;
+  }
+
+  .character-card:hover .character-image {
+    transform: none;
   }
 }
 

@@ -18,10 +18,117 @@
   --palette-text-muted: #6E635C;
   --palette-shadow: rgba(56, 36, 24, 0.08);
 
+  /* ----------------------------------------------------------------
+     SEMANTIC TOKENS — see docs/design-language.md
+     The screens were carrying a second, unnamed palette (a cool slate
+     "clinical HUD" family and a warm ember "Tay / urgency" family), both
+     hardcoded. Named here so every screen draws from one source.
+     The --palette-* names above are referenced by game logic: EXTEND, NEVER RENAME.
+     ---------------------------------------------------------------- */
+
+  /* Dark surfaces */
+  --surface-hud: rgba(39, 33, 30, 0.88);
+  --surface-hud-btn: rgba(39, 33, 30, 0.85);
+  --surface-hud-btn-hover: rgba(39, 33, 30, 1);
+  --surface-tooltip: rgba(39, 33, 30, 0.92);
+  --surface-clock: rgba(30, 41, 59, 0.92);
+  --surface-card-dark: #0F172A;
+  --surface-card-darkest: #020617;
+  --surface-chip-dark: rgba(15, 23, 42, 0.88);
+  --surface-stamp: rgba(15, 23, 42, 0.94);
+  --surface-scrim: rgba(15, 23, 42, 0.78);
+  --surface-glass-light: rgba(255, 255, 255, 0.94);
+
+  /* Hairlines on dark surfaces */
+  --hairline-light: rgba(255, 255, 255, 0.25);
+  --hairline-light-strong: rgba(255, 255, 255, 0.6);
+  --hairline-light-soft: rgba(255, 255, 255, 0.15);
+  --hairline-light-faint: rgba(255, 255, 255, 0.08);
+
+  /* Text on dark */
+  --text-inverse: #FFFFFF;
+  --text-on-dark: #F8FAFC;
+  --text-on-dark-muted: #E2E8F0;
+  --text-on-dark-dim: #94A3B8;
+
+  /* Ember / heat — Tay's voice and every primary action */
+  --color-heat: #C2410C;         /* AA-safe ground for white text (5.18) */
+  --color-heat-hover: #9A3412;
+  --color-heat-bright: #EA580C;  /* DECORATIVE ONLY — white text on it is 3.56, fails AA */
+  --color-heat-deep: #7C2D12;
+  --color-heat-tint: #FFF8F3;
+
+  /* Amber — mission / truth-stamp accents */
+  --color-amber: #F59E0B;
+  --color-amber-deep: #B45309;   /* --color-amber-pale on this = 4.51, at threshold */
+  --color-amber-pale: #FEF3C7;
+  --color-amber-tint: #FDBA74;   /* focus ring on dark */
+  --color-amber-tint-2: #FCD34D;
+
+  /* Status */
+  --color-success: #15803D;         /* white text = 5.02 */
+  --color-success-strong: #047857;  /* white glyph = 5.48 */
+  --color-success-pale: #86EFAC;
+  --color-danger: #B91C1C;
+  --color-danger-bright: #EF4444;
+  --color-danger-pale: #FCA5A5;
+  --color-info-strong: #0369A1;  /* white text = 5.93 */
+  --color-info-mid: #0284C7;     /* NON-TEXT ONLY — white text on it is 4.10, fails AA */
+  --color-info: #38BDF8;
+  --color-info-pale: #BAE6FD;
+
+  /* Water & invitation glows */
+  --color-water: rgba(56, 189, 248, 0.13);
+  --color-water-edge: rgba(224, 242, 254, 0.5);
+  --color-water-glow: rgba(125, 211, 252, 0.75);
+  --color-food-glow: rgba(245, 158, 11, 0.65);
+
+  /* Tay's temperature ramp */
+  --temp-normal: #34D399;
+  --temp-elevated: #FCD34D;
+  --temp-danger: #F97316;
+  --temp-critical: #EF4444;
+
+  /* Radius */
+  --radius-xs: 6px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 28px;
+  --radius-pill: 100px;
+
+  /* Elevation. Shadows cast onto the warm page are warm-tinted; shadows cast
+     inside the scene card are neutral. */
+  --elev-1: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --elev-2: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --elev-3: 0 4px 14px rgba(0, 0, 0, 0.25);
+  --elev-4: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --elev-5: 0 10px 28px rgba(0, 0, 0, 0.45);
+  --elev-card: 0 24px 60px -12px rgba(56, 36, 24, 0.3), 0 4px 18px rgba(56, 36, 24, 0.12);
+  --elev-modal: 0 24px 60px rgba(0, 0, 0, 0.8);
+
+  /* Focus. Two rings, by ground. */
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 3px;
+  --focus-ring-on-light: var(--palette-teal-dark);
+  --focus-ring-on-dark: var(--color-amber-tint);
+
   /* Typography */
   --font-family-display: 'Outfit', 'Nunito', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-family-body: 'Plus Jakarta Sans', 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-back: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-instant: 0.18s;
+  --dur-fast: 0.25s;
+  --dur-base: 0.35s;
+  --dur-slow: 0.8s;
+  --dur-scene: 1.6s;
+  --dur-escalation: 2.5s;
+
   /* Transitions */
   --transition-fast: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);

@@ -6,6 +6,7 @@
 import { OpeningScreen } from './opening-screen.js';
 import { Act0Screen } from './act0-screen.js';
 import { Act1Screen } from './act1-screen.js';
+import { Act2Screen } from './act2-screen.js';
 import { initEditMode } from './editor/index.js';
 
 class CourseApp {
@@ -60,7 +61,20 @@ class CourseApp {
       }
       this.screens.act0.mount();
     } else if (screenKey === 'act2') {
-      this.renderAct2Placeholder();
+      stage.innerHTML = `<section id="screen-act2" aria-label="Act 2 Emergency Response Scene"></section>`;
+      this.screens.act2 = new Act2Screen(this);
+      if (options.beat) {
+        this.screens.act2.currentBeat = options.beat;
+      }
+      if (options.stepIndex !== undefined) {
+        this.screens.act2.stepIndex = options.stepIndex;
+      }
+      if (options.activeCheckId) {
+        this.screens.act2.activeCheckId = options.activeCheckId;
+      }
+      this.screens.act2.mount();
+    } else if (screenKey === 'act3') {
+      this.renderAct3Placeholder();
     } else if (screenKey === 'opening') {
       this.renderOpeningScreen();
       this.screens.opening = new OpeningScreen(this);
@@ -127,24 +141,29 @@ class CourseApp {
     `;
   }
 
-  renderAct2Placeholder() {
+  /**
+   * Act 3 placeholder — where Act 2's transport sequence hands off.
+   * (This replaces the old Act 2 placeholder, now that Act 2 is a real screen.)
+   */
+  renderAct3Placeholder() {
     const stage = document.getElementById('stage');
     if (!stage) return;
 
     stage.innerHTML = `
-      <section id="screen-act2-placeholder" class="act1-container" aria-label="Act 2 Preview">
-        <div class="act2-placeholder-modal" data-editor-id="act2-placeholder-modal">
-          <div style="font-size: 3rem; margin-bottom: 0.5rem;">🚨</div>
-          <h2 class="act2-placeholder-title">Act 2: Callie's Response</h2>
-          <p class="act2-placeholder-text">
-            <strong>Recognition, Triage & Active Lake Cooling</strong><br>
-            Act 1 is complete! Tay has refused the chicken scrap, the alarm has sounded, and the perspective has shifted to Callie's standing eyeline. Act 2 will guide emergency cooling and clinic transport.
+      <section id="screen-act3-placeholder" class="act2-container" aria-label="Act 3 Preview">
+        <div class="act3-placeholder-modal" data-editor-id="act3-placeholder-modal">
+          <div class="act3-placeholder-icon" aria-hidden="true">🏥</div>
+          <h2 class="act3-placeholder-title">Act 3: The Clinic</h2>
+          <p class="act3-placeholder-text">
+            <strong>Dr. Reyes, the report card, and Tay's voice coming back</strong><br>
+            You cooled her first and drove second, and you called ahead. Act 3 picks up in the
+            clinic lobby — and it is where Tay starts narrating again.
           </p>
-          <div style="display: flex; gap: 0.75rem; justify-content: center;">
-            <button id="btn-replay-act1" class="act1-hud-btn btn-action-primary" style="font-size: 0.9rem;">
-              ⏮ Replay Act 1
+          <div class="act3-placeholder-actions">
+            <button id="btn-replay-act2" class="act2-hud-btn btn-action-primary" data-editor-id="act3-btn-replay-act2">
+              ⏮ Replay Act 2
             </button>
-            <button id="btn-return-title" class="act1-hud-btn" style="font-size: 0.9rem;">
+            <button id="btn-return-title" class="act2-hud-btn" data-editor-id="act3-btn-return-title">
               🏠 Return to Title
             </button>
           </div>
@@ -152,8 +171,8 @@ class CourseApp {
       </section>
     `;
 
-    document.getElementById('btn-replay-act1')?.addEventListener('click', () => {
-      this.navigateTo('act1');
+    document.getElementById('btn-replay-act2')?.addEventListener('click', () => {
+      this.navigateTo('act2');
     });
     document.getElementById('btn-return-title')?.addEventListener('click', () => {
       this.navigateTo('opening');
