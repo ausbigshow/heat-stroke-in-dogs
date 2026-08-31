@@ -25,11 +25,16 @@ export class Act1Screen {
     this.visitedLeads = new Set();
     this.leadVisitOrder = []; // Stores order of leads visited for narration decay
     this.leadVisitCounts = { cooler: 0, dock: 0, bowl: 0, lake: 0 };
-    this.pantingLevel = 1; // 1 to 4
+    // 1 to 4. Per the Craft user-flow doc this is an audio-mix variable ("felt, not
+    // shown") — it is tracked here for that mix and for Act 2, and is no longer surfaced
+    // in the HUD now that the body-temperature gauge reports Tay's state visually.
+    this.pantingLevel = 1;
     
     // Sub-step index for multi-step beats
     this.stepIndex = 0;
     this.activeLeadId = null;
+    this.povStepIndex = 0;        // position within the active lead's dialogue
+    this.tayHasEnteredScene = false; // gates Tay's one-shot settle animation in the nap
 
     // Cold Open Steps (Beat 1A)
     this.coldOpenSteps = [
@@ -263,6 +268,27 @@ export class Act1Screen {
     return { driftOpacity, saturationDrop, shadeShiftX, shadeScaleY };
   }
 
+  // Tay's core temperature, driven by the same clock as the rest of the escalation.
+  // Reference points (Craft overview doc): a dog's normal range is 100.5–102.5°F,
+  // above 103 is hyperthermia, 105–106 is where heat stroke is recognised, and
+  // 107–109 is the organ-failure range. She starts normal and ends in trouble.
+  getBodyTemp() {
+    const t = Math.max(0, Math.min(1, (this.clockMinutes - 90) / (185 - 90)));
+    let temp = 101.8 + t * 4.6;
+    if (this.currentBeat === 'pov_rise') temp = Math.max(temp, 106.8);
+
+    let stage = 'normal';
+    let label = 'Normal';
+    if (temp >= 106.5) { stage = 'critical'; label = 'Critical'; }
+    else if (temp >= 105) { stage = 'danger'; label = 'Heat stroke range'; }
+    else if (temp >= 103) { stage = 'elevated'; label = 'Hyperthermic'; }
+
+    // Fill spans the meaningful clinical band, 100.5 → 108.
+    const fillPct = Math.max(0, Math.min(100, ((temp - 100.5) / (108 - 100.5)) * 100));
+
+    return { value: temp.toFixed(1), stage, label, fillPct: fillPct.toFixed(1) };
+  }
+
   render() {
     if (!this.container) return;
 
@@ -333,16 +359,28 @@ export class Act1Screen {
                 </div>
               `}
 
-              <!-- Panting Audio/Breath Indicator -->
-              <div class="act1-hud-pill" data-editor-id="act1-hud-panting" title="Tay's Panting Rhythm">
-                <span style="font-size: 0.8rem;">💨</span>
-                <div class="act1-panting-meter">
-                  <span class="panting-bar ${this.pantingLevel >= 1 ? 'active' : ''}"></span>
-                  <span class="panting-bar ${this.pantingLevel >= 2 ? 'active' : ''}"></span>
-                  <span class="panting-bar ${this.pantingLevel >= 3 ? 'active' : ''}"></span>
-                  <span class="panting-bar ${this.pantingLevel >= 4 ? 'active danger' : ''}"></span>
-                </div>
-              </div>
+              <!-- Tay's core body temperature — the one HUD element that is about HER,
+                   so it is styled apart from the neutral pills and reddens as she climbs. -->
+              ${(() => {
+                const t = this.getBodyTemp();
+                return `
+                  <div
+                    class="act1-temp-gauge stage-${t.stage}"
+                    data-editor-id="act1-hud-panting"
+                    style="--temp-fill: ${t.fillPct}%;"
+                    title="Tay's core body temperature — normal for a dog is 100.5–102.5°F"
+                    role="img"
+                    aria-label="Tay's body temperature ${t.value} degrees Fahrenheit, ${t.label}"
+                  >
+                    <span class="temp-gauge-icon">🌡️</span>
+                    <div class="temp-gauge-readout">
+                      <span class="temp-gauge-value">${t.value}°F</span>
+                      <span class="temp-gauge-label">${t.label}</span>
+                    </div>
+                    <div class="temp-gauge-track"><span class="temp-gauge-fill"></span></div>
+                  </div>
+                `;
+              })()}
             </div>
           </header>
 
@@ -370,6 +408,12 @@ export class Act1Screen {
     `;
 
     this.bindEvents();
+
+    // Tay's entrance is a one-shot: mark it spent once she's on screen, so subsequent
+    // re-renders within the nap/drift beats leave her settled where she is.
+    if (this.currentBeat === 'nap' || this.currentBeat === 'drift') {
+      this.tayHasEnteredScene = true;
+    }
   }
 
   // A single interactive lead object: no separate floating pin/badge — the drawn
@@ -478,9 +522,14 @@ export class Act1Screen {
           ${canopyArmed ? '<span class="canopy-tooltip">😴 Rest in the shade</span>' : ''}
         </div>
 
-        <!-- Tay, asleep under the canopy (Beats 1D/1E) -->
+        <!-- Tay, asleep under the canopy (Beats 1D/1E). Every dialogue click re-renders the
+             screen, so her settle-in animation is applied only on the render that first
+             brings her into the scene — otherwise she re-drops on each line. -->
         ${isNapping ? `
-          <div class="lake-scene-tay ${this.currentBeat === 'drift' ? 'tay-drifting' : ''}" data-editor-id="act1-tay-sleeping">
+          <div
+            class="lake-scene-tay ${this.tayHasEnteredScene ? '' : 'tay-entering'} ${this.currentBeat === 'drift' ? 'tay-drifting' : ''}"
+            data-editor-id="act1-tay-sleeping"
+          >
             ${this.renderTayLyingDown()}
           </div>
         ` : ''}
@@ -772,41 +821,62 @@ export class Act1Screen {
     return '';
   }
 
+  // The active lead's exchange, as a list of click-through beats.
+  // Narration decay (Craft rule): at lead slot N, play the first (5 − N) lines; the 4th
+  // lead investigated drops to its single short, muddled alternate.
+  buildPovSteps() {
+    const lead = this.leadsData[this.activeLeadId];
+    if (!lead) return [];
+
+    const isLake = this.activeLeadId === 'lake';
+    const visitCount = this.leadVisitCounts[this.activeLeadId] || 1;
+    const leadSlotIndex = this.leadVisitOrder.indexOf(this.activeLeadId);
+    const slotN = leadSlotIndex >= 0 ? leadSlotIndex + 1 : (this.visitedLeads.size || 1);
+    const isFourthSlot = slotN >= 4;
+
+    // Lake revisits are gag-only: no decay, no exchange, no exit line.
+    if (isLake && visitCount > 1) {
+      const gagIndex = Math.min(visitCount - 2, lead.revisitGags.length - 1);
+      return [{ speaker: 'tay', text: lead.revisitGags[gagIndex], onomatopoeia: 'Splash!' }];
+    }
+
+    const steps = [];
+    const riff = isFourthSlot ? [lead.fourthSlotLine] : lead.lines.slice(0, Math.max(1, 5 - slotN));
+    riff.forEach((text, i) => {
+      steps.push({ speaker: 'tay', text, onomatopoeia: i === 0 ? 'Snort!' : null });
+    });
+
+    // Callie's line lands over the top of the riff, then Tay answers her.
+    if (lead.callieLine) {
+      steps.push({ speaker: 'callie', text: lead.callieLine });
+      if (lead.tayFollowUp) {
+        steps.push({ speaker: 'tay', text: lead.tayFollowUp, onomatopoeia: 'Yip!' });
+      }
+    }
+
+    // She gives up on the lead. Skipped at the 4th slot, where narration has decayed
+    // to a single muddled line.
+    if (!isFourthSlot && lead.exitLine) {
+      steps.push({ speaker: 'tay', text: lead.exitLine, isExit: true });
+    }
+
+    return steps;
+  }
+
   renderLeadActive() {
     const lead = this.leadsData[this.activeLeadId];
     if (!lead) return '';
 
     const isLake = this.activeLeadId === 'lake';
-    const visitCount = this.leadVisitCounts[this.activeLeadId] || 1;
+    const steps = this.buildPovSteps();
+    const stepIdx = Math.min(this.povStepIndex, steps.length - 1);
+    const step = steps[stepIdx];
+    if (!step) return '';
 
-    // Narration decay (Craft rule): at lead slot N, play the first (5 − N) lines.
-    // The 4th lead investigated drops to its single short, muddled alternate.
-    const leadSlotIndex = this.leadVisitOrder.indexOf(this.activeLeadId);
-    const slotN = leadSlotIndex >= 0 ? leadSlotIndex + 1 : (this.visitedLeads.size || 1);
-    const isFourthSlot = slotN >= 4;
-
-    // The whole exchange plays on ONE screen — Tay's riff, Callie over the top, Tay's
-    // reply, then the line where she gives up on the lead. No per-visit line stepping.
-    let tayLines = [];
-    let showCallie = false;
-    let showExit = false;
+    const isLastStep = stepIdx === steps.length - 1;
     // The lake is the one lead the screen never corrects — its silence is the point.
-    let stamp = isLake ? null : lead.stamp;
-
-    if (isLake && visitCount > 1) {
-      // Lake revisits are gag-only: no decay, no exit line, one throwaway line.
-      const gagIndex = Math.min(visitCount - 2, lead.revisitGags.length - 1);
-      tayLines = [lead.revisitGags[gagIndex]];
-    } else if (isFourthSlot) {
-      tayLines = [lead.fourthSlotLine];
-      showCallie = !!lead.callieLine;
-    } else {
-      tayLines = lead.lines.slice(0, Math.max(1, 5 - slotN));
-      showCallie = !!lead.callieLine;
-      showExit = !!lead.exitLine;
-    }
-
-    const onomatopoeia = isLake && visitCount > 1 ? 'Splash!' : 'Snort!';
+    // The stamp lands with the final beat, once she has had her say.
+    const stamp = (!isLake && isLastStep) ? lead.stamp : null;
 
     return `
       <div class="act1-pov-viewport-modal" data-editor-id="act1-pov-viewport-modal">
@@ -825,63 +895,61 @@ export class Act1Screen {
           <!-- Close-Up Vector Scene from Tay's POV -->
           ${this.renderPovScene(this.activeLeadId)}
 
-          <!-- Dialogue Layer: the full exchange, all at once -->
+          <!-- Dialogue Layer: one beat at a time, advanced by the learner -->
           <div class="pov-overlay-speech">
-            <div
-              class="speech-bubble tay-bubble pov-dialogue-bubble"
-              data-editor-id="act1-lead-tay-speech"
-            >
-              <div class="speech-bubble-speaker">
-                <span>🐶</span>
-                <span>Tay</span>
+            ${step.speaker === 'tay' ? `
+              <div
+                class="speech-bubble tay-bubble pov-dialogue-bubble ${step.isExit ? 'is-exit-line' : ''}"
+                data-editor-id="act1-lead-tay-speech"
+              >
+                <div class="speech-bubble-speaker">
+                  <span>🐶</span>
+                  <span>Tay</span>
+                </div>
+                <p class="speech-bubble-text">
+                  ${step.onomatopoeia ? `<span class="tay-onomatopoeia">${step.onomatopoeia}</span>` : ''}
+                  <span class="tay-sub-dialogue">"${step.text}"</span>
+                </p>
               </div>
-              <p class="speech-bubble-text">
-                <span class="tay-onomatopoeia">${onomatopoeia}</span>
-              </p>
-              <div class="pov-dialogue-run">
-                ${tayLines.map(line => `
-                  <span class="tay-sub-dialogue pov-dialogue-line">"${line}"</span>
-                `).join('')}
+            ` : `
+              <div
+                class="speech-bubble callie-bubble pov-callie-bubble"
+                data-editor-id="act1-lead-callie-speech"
+              >
+                <div class="speech-bubble-speaker">
+                  <span>👩</span>
+                  <span>Callie</span>
+                </div>
+                <p class="speech-bubble-text">
+                  <span class="callie-dialogue">"${step.text}"</span>
+                </p>
               </div>
-            </div>
+            `}
 
-            ${showCallie ? `
-              <div class="callie-offscreen-banner pov-callie-banner" data-editor-id="act1-lead-callie-banner">
-                <div class="callie-offscreen-label">👩 Callie <span class="callie-offscreen-hint">(offscreen)</span></div>
-                <div>"${lead.callieLine}"</div>
-                ${lead.tayFollowUp ? `
-                  <div class="pov-tay-retort">
-                    <span class="pov-tay-retort-label">🐶 Tay</span>
-                    <span class="tay-sub-dialogue">"${lead.tayFollowUp}"</span>
-                  </div>
-                ` : ''}
-              </div>
-            ` : ''}
-
-            <!-- Bottom stack: her exit line, then the screen's correction. Flowed rather
-                 than individually pinned, so longer stamp copy can never collide. -->
-            ${(showExit || stamp) ? `
-              <div class="pov-bottom-stack">
-                ${showExit ? `
-                  <div class="pov-exit-line" data-editor-id="act1-lead-exit-line">
-                    <span class="tay-sub-dialogue">"${lead.exitLine}"</span>
-                  </div>
-                ` : ''}
-                ${stamp ? `
-                  <div class="act1-truth-stamp" data-editor-id="act1-truth-stamp">
-                    <span class="truth-stamp-metric">${stamp.metric}</span>
-                    <span class="truth-stamp-line">${stamp.line}</span>
-                  </div>
-                ` : ''}
+            ${stamp ? `
+              <div class="act1-truth-stamp" data-editor-id="act1-truth-stamp">
+                <span class="truth-stamp-metric">${stamp.metric}</span>
+                <span class="truth-stamp-line">${stamp.line}</span>
               </div>
             ` : ''}
           </div>
 
-          <!-- Navigation inside POV Viewport: ONLY "Done Investigating" -->
-          <nav class="act1-nav-bar" style="bottom: 0.9rem; left: 1.1rem; right: 1.1rem; justify-content: flex-end;">
-            <button id="act1-btn-finish-lead" class="act1-hud-btn btn-action-primary pulse-btn" data-editor-id="act1-btn-finish-lead">
-              Done Investigating ➔
-            </button>
+          <!-- Beat counter + advance / finish -->
+          <nav class="act1-nav-bar" style="bottom: 0.9rem; left: 1.1rem; right: 1.1rem; justify-content: space-between;">
+            <div class="pov-beat-dots" aria-hidden="true">
+              ${steps.map((s, i) => `
+                <span class="pov-beat-dot ${i === stepIdx ? 'current' : ''} ${i < stepIdx ? 'seen' : ''}"></span>
+              `).join('')}
+            </div>
+            ${isLastStep ? `
+              <button id="act1-btn-finish-lead" class="act1-hud-btn btn-action-primary pulse-btn" data-editor-id="act1-btn-finish-lead">
+                Done Investigating ➔
+              </button>
+            ` : `
+              <button id="act1-btn-pov-next" class="act1-hud-btn btn-action-primary" data-editor-id="act1-btn-pov-next">
+                Next ▶
+              </button>
+            `}
           </nav>
 
         </div>
@@ -1278,6 +1346,15 @@ export class Act1Screen {
       });
     }
 
+    const povNextBtn = this.container.querySelector('#act1-btn-pov-next');
+    if (povNextBtn) {
+      povNextBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.isEditModeActive()) return;
+        this.nextPovStep();
+      });
+    }
+
     const finishLeadBtn = this.container.querySelector('#act1-btn-finish-lead');
     if (finishLeadBtn) {
       finishLeadBtn.addEventListener('click', (e) => {
@@ -1384,6 +1461,7 @@ export class Act1Screen {
 
     this.activeLeadId = leadId;
     this.currentBeat = 'lead_active';
+    this.povStepIndex = 0;
 
     const isFirstVisit = !this.visitedLeads.has(leadId);
 
@@ -1403,8 +1481,17 @@ export class Act1Screen {
   returnToHub() {
     this.currentBeat = 'hub';
     this.activeLeadId = null;
-    this.activeLeadStep = 0;
+    this.povStepIndex = 0;
     this.render();
+  }
+
+  nextPovStep() {
+    const steps = this.buildPovSteps();
+    if (this.povStepIndex < steps.length - 1) {
+      this.povStepIndex++;
+      this.playBeep(500, 'sine', 0.08);
+      this.render();
+    }
   }
 
   nextSubStep() {
@@ -1433,6 +1520,7 @@ export class Act1Screen {
   startNap() {
     this.currentBeat = 'nap';
     this.stepIndex = 0;
+    this.tayHasEnteredScene = false;
     this.clockMinutes = 158; // 2:38 PM
     this.pantingLevel = 3;
     this.render();
@@ -1468,8 +1556,8 @@ export class Act1Screen {
         this.nextSubStep();
       } else if (this.currentBeat === 'lead_active') {
         e.preventDefault();
-        if (this.activeLeadStep < this.activeLeadTotalSteps - 1) {
-          this.nextLeadStep();
+        if (this.povStepIndex < this.buildPovSteps().length - 1) {
+          this.nextPovStep();
         } else {
           this.returnToHub();
         }

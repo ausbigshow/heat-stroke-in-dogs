@@ -24,5 +24,70 @@
     "text": "I'd make this slightly larger and also less full. it's hot outside, so the water should have evaporated some. ",
     "targetElementId": "act1-asset-bowl",
     "createdAt": "2026-08-31T03:36:11.976Z"
+  },
+  {
+    "id": "note_1788150284500",
+    "screenId": "act1",
+    "x": 334,
+    "y": 205,
+    "width": 260,
+    "height": 160,
+    "color": "yellow",
+    "status": "open",
+    "text": "make bigger and more obviously interactive. also, there's no truth stamp here.",
+    "targetElementId": "act1-asset-lake",
+    "createdAt": "2026-08-31T04:24:44.500Z"
+  },
+  {
+    "id": "note_1788150349883",
+    "screenId": "act1",
+    "x": 867,
+    "y": 323,
+    "width": 260,
+    "height": 160,
+    "color": "yellow",
+    "status": "implemented",
+    "text": "I wonder if changing this to a body temp scale that gets more red as tay gets hotter would be more effective? also, it kinda blends in with the rest of the ui elements, so let's have it stand out more. ",
+    "targetElementId": "act1-hud-panting",
+    "createdAt": "2026-08-31T04:25:49.883Z"
+  },
+  {
+    "id": "note_1788150465697",
+    "screenId": "act1",
+    "x": 120,
+    "y": 120,
+    "width": 260,
+    "height": 160,
+    "color": "yellow",
+    "status": "implemented",
+    "text": "i'd like to click through the dialogue rather than have it all pop up at once. also, make callie's one line a speech bubble, and ditch the parenthetical.",
+    "targetElementId": "act1-pov-scene-cooler",
+    "createdAt": "2026-08-31T04:27:45.697Z"
+  },
+  {
+    "id": "note_1788150566687",
+    "screenId": "act1",
+    "x": 499,
+    "y": 426,
+    "width": 260,
+    "height": 160,
+    "color": "yellow",
+    "status": "implemented",
+    "text": "the check mark for the dock after being investigated seems far away. bring it closer so it becomes apparent that it's associated with it.",
+    "targetElementId": "act1-asset-dock",
+    "createdAt": "2026-08-31T04:29:26.687Z"
+  },
+  {
+    "id": "note_1788150636605",
+    "screenId": "act1",
+    "x": 120,
+    "y": 120,
+    "width": 260,
+    "height": 160,
+    "color": "yellow",
+    "status": "implemented",
+    "text": "Tay keeps popping in on the rest sequence after clicking through each dialogue line. ",
+    "targetElementId": "act1-viewport-card",
+    "createdAt": "2026-08-31T04:30:36.605Z"
   }
 ]

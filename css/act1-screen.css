@@ -157,35 +157,100 @@
   50% { transform: scale(1.04); }
 }
 
-/* Panting breath meter indicator */
-.act1-panting-meter {
+/* ==========================================================
+   TAY'S BODY TEMPERATURE GAUGE
+   The only HUD element that reports on HER rather than on the scene, so it is
+   deliberately built differently from the neutral pills: taller, its own colour
+   ramp, and it heats up visibly as the afternoon runs on.
+   ========================================================== */
+
+.act1-temp-gauge {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  margin-left: 0.25rem;
+  gap: 0.55rem;
+  height: 46px;
+  padding: 0 0.9rem 0 0.75rem;
+  border-radius: 12px;
+  box-sizing: border-box;
+  background: linear-gradient(160deg, rgba(12, 20, 34, 0.96), rgba(24, 16, 14, 0.96));
+  border: 2px solid var(--temp-accent, #34D399);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 0 18px -4px var(--temp-glow, transparent);
+  overflow: hidden;
+  transition: border-color 0.6s ease, box-shadow 0.6s ease;
 }
 
-.panting-bar {
-  width: 3px;
-  height: 12px;
-  background: rgba(255, 255, 255, 0.35);
-  border-radius: 2px;
-  transition: background 0.3s ease, height 0.3s ease;
+.temp-gauge-icon {
+  font-size: 1.05rem;
+  line-height: 1;
 }
 
-.panting-bar.active {
-  background: #F97316;
-  animation: pantingWave 0.6s infinite alternate ease-in-out;
+.temp-gauge-readout {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
 }
 
-.panting-bar.active.danger {
-  background: #EF4444;
-  animation-duration: 0.38s;
+.temp-gauge-value {
+  font-family: var(--font-family-display);
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  color: var(--temp-accent, #34D399);
+  transition: color 0.6s ease;
 }
 
-@keyframes pantingWave {
-  0% { transform: scaleY(0.7); }
-  100% { transform: scaleY(1.3); }
+.temp-gauge-label {
+  font-family: var(--font-family-display);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+}
+
+/* Thermometer fill along the bottom edge */
+.temp-gauge-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.temp-gauge-fill {
+  display: block;
+  height: 100%;
+  width: var(--temp-fill, 0%);
+  background: linear-gradient(90deg, #34D399 0%, #FCD34D 42%, #F97316 68%, #EF4444 100%);
+  background-size: 260px 100%;
+  transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Colour ramp by clinical stage */
+.act1-temp-gauge.stage-normal   { --temp-accent: #34D399; --temp-glow: rgba(52, 211, 153, 0.35); }
+.act1-temp-gauge.stage-elevated { --temp-accent: #FCD34D; --temp-glow: rgba(252, 211, 77, 0.45); }
+.act1-temp-gauge.stage-danger   { --temp-accent: #F97316; --temp-glow: rgba(249, 115, 22, 0.6); }
+
+.act1-temp-gauge.stage-critical {
+  --temp-accent: #EF4444;
+  --temp-glow: rgba(239, 68, 68, 0.75);
+  animation: tempCritical 1.5s infinite ease-in-out;
+}
+
+.act1-temp-gauge.stage-critical .temp-gauge-label {
+  color: #FCA5A5;
+}
+
+@keyframes tempCritical {
+  0%, 100% { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 0 14px -4px rgba(239, 68, 68, 0.6); }
+  50% { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 0 26px 2px rgba(239, 68, 68, 0.9); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .act1-temp-gauge.stage-critical { animation: none; }
 }
 
 /* ==========================================================
@@ -403,6 +468,10 @@
   height: 12%;
   pointer-events: none;
   z-index: 13;
+}
+
+/* One-shot entrance, applied only on the render that first places her (see render()) */
+.lake-scene-tay.tay-entering {
   animation: taySettle 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
@@ -484,6 +553,13 @@
   transform: scale(1.06) translateY(-3px);
 }
 
+/* The deck art is an inset trapezoid, so the default top-right corner badge floats well
+   clear of it and reads as unrelated. Pull the tick onto the deck itself. */
+.interactable-dock .interactable-check {
+  top: 26%;
+  right: 34%;
+}
+
 /* 3. Water Bowl ("The Water One") — open grass, clear of everything else */
 .interactable-bowl {
   top: 79%;
@@ -496,27 +572,51 @@
    so the affordance is the water's own motion: wavefronts that run parallel to the
    shoreline and travel across the water toward the beach. */
 .interactable-lake {
-  top: 51%;
+  top: 44%;
   left: 0%;
-  width: 11%;
-  height: 11%;
+  width: 13%;
+  height: 19%;
 }
 
+/* The lake has no drawn object of its own, so without help it reads as background.
+   It gets a visible outlined patch of water that breathes, plus the shore-parallel
+   ripples, so it announces itself as clickable as clearly as the solid objects do. */
 .interactable-lake .interactable-art {
   position: relative;
   overflow: hidden;
-  background: rgba(56, 189, 248, 0.05);
-  animation: none;
-  transition: background 0.25s ease;
+  border-radius: 14px;
+  background: rgba(56, 189, 248, 0.13);
+  box-shadow: inset 0 0 0 2px rgba(224, 242, 254, 0.5);
+  animation: lakeInvite 2.8s infinite ease-in-out;
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+
+@keyframes lakeInvite {
+  0%, 100% {
+    background: rgba(56, 189, 248, 0.1);
+    box-shadow: inset 0 0 0 2px rgba(224, 242, 254, 0.4), 0 0 0 rgba(125, 211, 252, 0);
+  }
+  50% {
+    background: rgba(56, 189, 248, 0.2);
+    box-shadow: inset 0 0 0 2px rgba(224, 242, 254, 0.75), 0 0 20px rgba(125, 211, 252, 0.55);
+  }
 }
 
 .interactable-lake:hover .interactable-art,
 .interactable-lake:focus-visible .interactable-art {
-  background: rgba(56, 189, 248, 0.14);
+  background: rgba(56, 189, 248, 0.26);
+  box-shadow: inset 0 0 0 2px rgba(224, 242, 254, 0.95), 0 0 26px rgba(125, 211, 252, 0.8);
+  animation-play-state: paused;
   /* Water shouldn't lift/pop like a solid object, and its glow should read as
      water (blue), not the shared orange "food" invitation color. */
   transform: none;
-  filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.5));
+  filter: none;
+}
+
+/* The lake's tooltip is its main "this is a thing" signal, so it stays visible. */
+.interactable-lake .interactable-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 .lake-ripple-svg {
@@ -762,106 +862,68 @@
    POV DIALOGUE — the whole exchange on one screen
    ========================================================== */
 
+/* One beat at a time; the learner advances it. Tay speaks from the lower left, Callie
+   from the upper right, so an exchange alternates across the frame. */
 .pov-dialogue-bubble {
+  top: 14%;
+  left: 5%;
+  max-width: min(440px, 46%);
+  animation: povBeatIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.pov-callie-bubble {
   top: 12%;
-  left: 4%;
-  max-width: min(420px, 44%);
+  right: 5%;
+  left: auto;
+  max-width: min(400px, 44%);
+  animation: povBeatIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.pov-dialogue-run {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin-top: 0.15rem;
+.callie-dialogue {
+  font-family: var(--font-family-display);
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--palette-brown-dark);
 }
 
-/* Lines stagger in so the exchange still reads as beats rather than a wall of text,
-   but the learner never has to click through them one at a time. */
-.pov-dialogue-line {
-  opacity: 0;
-  animation: povLineIn 0.4s ease-out forwards;
-}
-
-.pov-dialogue-run .pov-dialogue-line:nth-child(1) { animation-delay: 0.15s; }
-.pov-dialogue-run .pov-dialogue-line:nth-child(2) { animation-delay: 0.75s; }
-.pov-dialogue-run .pov-dialogue-line:nth-child(3) { animation-delay: 1.35s; }
-.pov-dialogue-run .pov-dialogue-line:nth-child(4) { animation-delay: 1.95s; }
-
-@keyframes povLineIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.pov-callie-banner {
-  top: 3.8rem;
-  right: 1.5rem;
-  max-width: min(340px, 40%);
-  opacity: 0;
-  animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) 2.5s forwards;
-}
-
-.callie-offscreen-hint {
-  font-weight: 600;
-  opacity: 0.7;
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-/* Tay's retort sits inside Callie's card so the back-and-forth reads as one exchange */
-.pov-tay-retort {
-  margin-top: 0.5rem;
-  padding-top: 0.45rem;
-  border-top: 1px dashed rgba(120, 100, 90, 0.35);
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-}
-
-.pov-tay-retort-label {
-  font-size: 0.7rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #9A3412;
-  white-space: nowrap;
-}
-
-/* Bottom stack: her exit line, then the screen's flat correction beneath it. Flowed in a
-   column and anchored once, so neither can overlap the other however long the copy runs. */
-.pov-bottom-stack {
-  position: absolute;
-  bottom: 4rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(680px, 86%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* The line where she gives up on the lead and moves on. */
-.pov-exit-line {
-  max-width: 100%;
-  background: rgba(39, 33, 30, 0.9);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(253, 186, 116, 0.45);
-  border-radius: 14px;
-  padding: 0.6rem 1.1rem;
-  text-align: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  opacity: 0;
-  animation: povStackIn 0.45s ease-out 3.3s forwards;
-}
-
-.pov-exit-line .tay-sub-dialogue {
-  color: #FDE68A;
+/* The line where she gives up on the lead and moves on — same bubble, dimmer and
+   italic so it reads as her trailing off rather than a new thought. */
+.pov-dialogue-bubble.is-exit-line .tay-sub-dialogue {
   font-style: italic;
+  opacity: 0.9;
 }
 
-@keyframes povStackIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes povBeatIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Beat progress dots, so the learner can see how much of the exchange is left */
+.pov-beat-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto;
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(6px);
+  padding: 0.4rem 0.7rem;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.pov-beat-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.pov-beat-dot.seen { background: rgba(253, 186, 116, 0.55); }
+
+.pov-beat-dot.current {
+  background: #FDBA74;
+  transform: scale(1.45);
 }
 
 /* ==========================================================
@@ -871,7 +933,10 @@
    ========================================================== */
 
 .act1-truth-stamp {
-  width: 100%;
+  position: absolute;
+  bottom: 4rem;
+  left: 50%;
+  width: min(680px, 86%);
   display: flex;
   align-items: center;
   gap: 0.7rem;
@@ -883,9 +948,13 @@
   padding: 0.55rem 1rem;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
   box-sizing: border-box;
-  opacity: 0;
-  animation: povStackIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) 4s forwards;
+  animation: povStampIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
   pointer-events: auto;
+}
+
+@keyframes povStampIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 .truth-stamp-metric {
@@ -911,13 +980,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pov-dialogue-line,
-  .pov-callie-banner,
-  .pov-exit-line,
+  .pov-dialogue-bubble,
+  .pov-callie-bubble,
   .act1-truth-stamp {
     animation-duration: 0.01s;
     animation-delay: 0s;
-    opacity: 1;
   }
 }
 
