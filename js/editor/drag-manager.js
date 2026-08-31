@@ -107,7 +107,13 @@ export class DragManager {
     const id = target.getAttribute('data-editor-id');
 
     if (id) {
-      this.state.recordStyleChange(id, 'position', target.style.position || 'relative');
+      // Persist the position the element ACTUALLY uses. `target.style.position` is only
+      // set when we promoted a static element above, so falling back to 'relative' would
+      // silently rewrite absolute/fixed elements into normal flow — which re-lays them out
+      // (and, inside an overflow:hidden stage, can clip them out of the scene entirely).
+      const effectivePosition = target.style.position || window.getComputedStyle(target).position;
+
+      this.state.recordStyleChange(id, 'position', effectivePosition);
       this.state.recordStyleChange(id, 'left', target.style.left);
       this.state.recordStyleChange(id, 'top', target.style.top);
       this.state.recordStyleChange(id, 'right', 'auto');
@@ -118,7 +124,7 @@ export class DragManager {
         elementId: id,
         prev: this.initialStyles,
         next: {
-          position: target.style.position,
+          position: effectivePosition,
           left: target.style.left,
           top: target.style.top,
           right: 'auto',
@@ -150,9 +156,11 @@ export class DragManager {
     const parentRect = target.offsetParent ? target.offsetParent.getBoundingClientRect() : { left: 0, top: 0 };
     
     const computed = window.getComputedStyle(target);
+    // Same rule as drag: only promote a static element; never demote a positioned one.
     if (computed.position === 'static') {
       target.style.position = 'relative';
     }
+    const effectivePosition = target.style.position || computed.position;
 
     const currentLeft = targetRect.left - parentRect.left;
     const currentTop = targetRect.top - parentRect.top;
@@ -179,7 +187,7 @@ export class DragManager {
     target.style.bottom = 'auto';
 
     if (id) {
-      this.state.recordStyleChange(id, 'position', target.style.position);
+      this.state.recordStyleChange(id, 'position', effectivePosition);
       this.state.recordStyleChange(id, 'left', target.style.left);
       this.state.recordStyleChange(id, 'top', target.style.top);
       this.state.recordStyleChange(id, 'right', 'auto');
@@ -190,7 +198,7 @@ export class DragManager {
         elementId: id,
         prev: prevStyles,
         next: {
-          position: target.style.position,
+          position: effectivePosition,
           left: target.style.left,
           top: target.style.top,
           right: 'auto',

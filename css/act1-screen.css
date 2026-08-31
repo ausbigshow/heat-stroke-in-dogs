@@ -298,6 +298,18 @@
   z-index: 21;
 }
 
+/* The scene layer is a full-stage overlay. It must be explicitly positioned: as a static
+   block it sat AFTER the full-height background image in normal flow, i.e. below the
+   stage, so any child that lost its absolute positioning got laid out down there and
+   clipped away by the card's overflow:hidden. */
+.act1-scene-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 /* Pop-Up Shade Canopy. Scenery during the hunt; the break trigger once all four leads
    are worked. Its cast shadow is a separate layer so the sun can move it independently. */
 .lake-scene-canopy {
@@ -814,13 +826,23 @@
   white-space: nowrap;
 }
 
-/* The line where she gives up on the lead and moves on */
-.pov-exit-line {
+/* Bottom stack: her exit line, then the screen's flat correction beneath it. Flowed in a
+   column and anchored once, so neither can overlap the other however long the copy runs. */
+.pov-bottom-stack {
   position: absolute;
-  bottom: 4.4rem;
+  bottom: 4rem;
   left: 50%;
   transform: translateX(-50%);
-  max-width: min(520px, 76%);
+  width: min(680px, 86%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* The line where she gives up on the lead and moves on. */
+.pov-exit-line {
+  max-width: 100%;
   background: rgba(39, 33, 30, 0.9);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(253, 186, 116, 0.45);
@@ -829,7 +851,7 @@
   text-align: center;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
   opacity: 0;
-  animation: povExitIn 0.45s ease-out 3.3s forwards;
+  animation: povStackIn 0.45s ease-out 3.3s forwards;
 }
 
 .pov-exit-line .tay-sub-dialogue {
@@ -837,19 +859,76 @@
   font-style: italic;
 }
 
-@keyframes povExitIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+@keyframes povStackIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================
+   TRUTH STAMP — the flat third voice.
+   One metric, one sentence. It arrives after Tay has had her say, so the
+   contradiction lands in a single glance instead of a card to read through.
+   ========================================================== */
+
+.act1-truth-stamp {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  border-left: 4px solid #F59E0B;
+  border-radius: 12px;
+  padding: 0.55rem 1rem;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
+  opacity: 0;
+  animation: povStackIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) 4s forwards;
+  pointer-events: auto;
+}
+
+.truth-stamp-metric {
+  flex-shrink: 0;
+  background: #B45309;
+  color: #FEF3C7;
+  font-family: var(--font-family-display);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #FCD34D;
+  white-space: nowrap;
+}
+
+.truth-stamp-line {
+  font-family: var(--font-family-body);
+  font-size: 0.92rem;
+  line-height: 1.35;
+  color: #F1F5F9;
+  font-weight: 500;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .pov-dialogue-line,
   .pov-callie-banner,
-  .pov-exit-line {
+  .pov-exit-line,
+  .act1-truth-stamp {
     animation-duration: 0.01s;
     animation-delay: 0s;
     opacity: 1;
   }
+}
+
+@media (max-width: 768px) {
+  .act1-truth-stamp {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    padding: 0.5rem 0.75rem;
+  }
+  .truth-stamp-line { font-size: 0.82rem; }
 }
 
 /* Heat haze / shimmering animation for the Dock POV */

@@ -48,9 +48,9 @@ export class Act1Screen {
     // where "the four hotspot icons redraw with their real labels" — the Case File table is
     // the reveal, so the real names must not leak before it. `realName` is used there only.
     //
-    // TRUTH STAMPS: the `stamp`/`stamps` fields are retained as authored veterinary source
-    // content (they feed the Case File copy and Act 2), but are no longer rendered inline
-    // during Act 1 — see renderLeadActive().
+    // TRUTH STAMPS: the flat, factual third voice. Deliberately terse — one metric and one
+    // sentence, no headers or lesson footers. They land after Tay's riff has played, so the
+    // contradiction reads instantly instead of becoming a wall of text to wade through.
     this.leadsData = {
       cooler: {
         id: 'cooler',
@@ -70,10 +70,8 @@ export class Act1Screen {
         tayFollowUp: "I might.",
         exitLine: "…Okay. The vault wins. For now.",
         stamp: {
-          tag: 'Risk Factor: Conductive & Direct Radiant Heat',
-          temp: '99°F Direct Sun',
-          text: "She has been pressed against it for eleven minutes. Full sun, no shade within six feet. The cooler is cold. The spot she picked is not.",
-          lesson: "Dogs choose food over comfort, every single time."
+          metric: '99°F, full sun',
+          line: "The cooler is cold. The spot she picked is not. She'll take food over shade every time."
         }
       },
       dock: {
@@ -92,20 +90,10 @@ export class Act1Screen {
         // She abandons the dock because the SCENT is old — never because it's hot.
         // Tay never clocks the heat; that's the whole engine of the act.
         exitLine: "Old clues. No hot dog now. Moving on.",
-        stamps: [
-          {
-            tag: 'Risk Factor: Ground Surface Radiation',
-            temp: '137°F Dock Surface',
-            text: "Dock surface: 137°F. Ambient air: 96°F. Her paws are four inches off that board. Yours are not.",
-            lesson: "Pavement and dock wood absorb and radiate extreme heat directly onto short dogs."
-          },
-          {
-            tag: 'Veterinary Prevention: The Hand Test',
-            temp: '7-Second Test',
-            text: "Press the back of your hand firmly to the ground for seven seconds. If you cannot comfortably hold it there, she shouldn't stand or walk on it.",
-            lesson: "Paw pads burn easily and dogs cannot sweat to dissipate trapped ground heat."
-          }
-        ]
+        stamp: {
+          metric: '137°F deck, 96°F air',
+          line: "Her paws are four inches off that board. If your hand can't take seven seconds on it, neither can she."
+        }
       },
       bowl: {
         id: 'bowl',
@@ -122,10 +110,8 @@ export class Act1Screen {
         fourthSlotLine: "Water. Later. Not now.",
         exitLine: "Maybe later. Not a priority.",
         stamp: {
-          tag: 'Risk Factor: Dehydration & Heat Stagnation',
-          temp: 'Warm Water Since Noon',
-          text: "Half full. Sun-side. Warm since noon. She has not had a single drink of water since getting out of the car.",
-          lesson: "Water bowls placed in direct sunlight become unpalatable, leaving dogs dehydrated."
+          metric: 'Warm since noon',
+          line: "Not a drop since the car. Sun-warm water goes undrunk — a full bowl in the sun is not water access."
         }
       },
       lake: {
@@ -804,6 +790,8 @@ export class Act1Screen {
     let tayLines = [];
     let showCallie = false;
     let showExit = false;
+    // The lake is the one lead the screen never corrects — its silence is the point.
+    let stamp = isLake ? null : lead.stamp;
 
     if (isLake && visitCount > 1) {
       // Lake revisits are gag-only: no decay, no exit line, one throwaway line.
@@ -870,9 +858,21 @@ export class Act1Screen {
               </div>
             ` : ''}
 
-            ${showExit ? `
-              <div class="pov-exit-line" data-editor-id="act1-lead-exit-line">
-                <span class="tay-sub-dialogue">"${lead.exitLine}"</span>
+            <!-- Bottom stack: her exit line, then the screen's correction. Flowed rather
+                 than individually pinned, so longer stamp copy can never collide. -->
+            ${(showExit || stamp) ? `
+              <div class="pov-bottom-stack">
+                ${showExit ? `
+                  <div class="pov-exit-line" data-editor-id="act1-lead-exit-line">
+                    <span class="tay-sub-dialogue">"${lead.exitLine}"</span>
+                  </div>
+                ` : ''}
+                ${stamp ? `
+                  <div class="act1-truth-stamp" data-editor-id="act1-truth-stamp">
+                    <span class="truth-stamp-metric">${stamp.metric}</span>
+                    <span class="truth-stamp-line">${stamp.line}</span>
+                  </div>
+                ` : ''}
               </div>
             ` : ''}
           </div>
