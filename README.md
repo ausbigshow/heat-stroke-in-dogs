@@ -1,5 +1,21 @@
 # Callie and Tay: A Story About Heat Stroke in Dogs
 
+> ### ⚠️ Proof of concept — do not rely on this for veterinary decisions
+>
+> This is an **instructional design prototype**, built to explore how narrative structure
+> and interaction design can teach emergency recognition. It is not a finished course and
+> it is not veterinary guidance.
+>
+> **The veterinary content has not been fully verified or cross-referenced.** Facts,
+> figures, thresholds, and first-aid steps throughout the module are drawn from
+> preliminary research and are still awaiting review by a qualified subject matter expert.
+> At least one load-bearing point — whether to cool with ice or cool water — is a known
+> open question where the veterinary literature has moved, and the affected strings are
+> tagged `smePending: true` in the source pending that review.
+>
+> **If you think your dog has heat stroke, start cooling them and call your vet
+> immediately.** Do not use this module as a reference in an emergency.
+
 An interactive e-learning module about recognising and treating heat stroke in dogs,
 told in four acts from two points of view.
 
@@ -100,9 +116,20 @@ region that narrates Tay's observable state as it changes.
   [`Assets/Audio/vo-manifest.json`](Assets/Audio/vo-manifest.json).
 - **Callie's voiceover** was generated with Magnific / ElevenLabs and is licensed to the
   project owner through their Magnific account.
-- Veterinary guidance in the module is pending sign-off from the project's subject
-  matter expert. Strings affected by the outstanding ice-versus-cool-water question are
-  tagged `smePending: true` in `js/act2-screen.js` so they can be swapped in one pass.
+## Status
 
-> **Note:** This is an instructional design project, not veterinary advice. If you think
-> your dog has heat stroke, start cooling them and call your vet immediately.
+**Proof of concept.** The interaction design, narrative structure, and accessibility work
+are the finished part. The veterinary content is not — see the warning at the top of this
+file. Outstanding before this could be considered complete:
+
+- [ ] Full subject-matter review of every factual claim, figure, and first-aid step
+- [ ] Resolve the ice-versus-cool-water guidance (strings tagged `smePending: true` in
+      `js/act2-screen.js` so the correction is a single targeted pass)
+- [ ] Cross-reference all numbers against current veterinary literature and cite sources
+- [ ] Final voiceover pass, including the unassigned retake in `Assets/Audio/callie/`
+
+Placeholder SVG art stands in for the illustrated assets described in the project's
+visual asset brief.
+
+> **This is an instructional design portfolio project, not veterinary advice.** If you
+> think your dog has heat stroke, start cooling them and call your vet immediately.
