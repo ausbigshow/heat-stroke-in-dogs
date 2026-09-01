@@ -3,3 +3,10 @@ node_modules/
 Thumbs.db
 *.log
 .project-history/tmp/
+
+# Third-party design-skills library — a general-purpose collection that was not authored
+# for this project, so it is kept locally but not redistributed in the repo. The two
+# project-specific skills below ARE part of the project and stay tracked.
+.claude/skills/*
+!.claude/skills/new-act-screen/
+!.claude/skills/verify-in-browser/

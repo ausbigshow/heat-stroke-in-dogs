@@ -8,7 +8,24 @@ import { Act0Screen } from './act0-screen.js';
 import { Act1Screen } from './act1-screen.js';
 import { Act2Screen } from './act2-screen.js';
 import { Act3Screen } from './act3-screen.js';
-import { initEditMode } from './editor/index.js';
+
+/**
+ * Edit Mode is the AUTHORING tool, not part of the course.
+ *
+ * It talks to the Node dev server in dev-server.js over /api/* — reviewer notes,
+ * version history, and writing css/visual-overrides.css back to disk. None of that
+ * exists on a static host, so loading it there would 404 on every visit and hand
+ * learners a toolbar whose Save button cannot work.
+ *
+ * So it loads only where the backend actually is: a localhost origin, or an explicit
+ * ?edit=1 for testing the authoring build elsewhere. The import is dynamic, so on a
+ * static host the eleven editor modules are never fetched at all.
+ */
+function isAuthoringEnvironment() {
+  const host = window.location.hostname;
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host === '';
+  return isLocal || new URLSearchParams(window.location.search).has('edit');
+}
 
 class CourseApp {
   constructor() {
@@ -17,17 +34,27 @@ class CourseApp {
     this.editor = null;
   }
 
-  init() {
+  async init() {
     console.log('🐾 Initializing Heatstroke in Dogs eLearning Module...');
 
     // 1. Initialize Scene Engine
     this.screens.opening = new OpeningScreen(this);
     this.screens.opening.mount();
 
-    // 2. Initialize Visual Edit Mode System
-    this.editor = initEditMode();
-
     console.log('✅ Course Ready.');
+
+    // 2. Visual Edit Mode — authoring environments only. The course above is already
+    // interactive by this point, so a slow or failed editor load never blocks a learner.
+    if (isAuthoringEnvironment()) {
+      try {
+        const { initEditMode } = await import('./editor/index.js');
+        this.editor = initEditMode();
+      } catch (err) {
+        console.warn('Edit Mode failed to load — continuing without it.', err);
+      }
+    } else {
+      console.log('📖 Learner build — Edit Mode is not loaded on this host.');
+    }
   }
 
   navigateTo(screenKey, options = {}) {
