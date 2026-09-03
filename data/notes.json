@@ -26,19 +26,6 @@
     "createdAt": "2026-08-31T03:36:11.976Z"
   },
   {
-    "id": "note_1788150284500",
-    "screenId": "act1",
-    "x": 334,
-    "y": 205,
-    "width": 260,
-    "height": 160,
-    "color": "yellow",
-    "status": "implemented",
-    "text": "make bigger and more obviously interactive. also, there's no truth stamp here.",
-    "targetElementId": "act1-asset-lake",
-    "createdAt": "2026-08-31T04:24:44.500Z"
-  },
-  {
     "id": "note_1788150349883",
     "screenId": "act1",
     "x": 867,
