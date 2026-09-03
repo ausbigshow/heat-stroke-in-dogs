@@ -39,19 +39,6 @@
     "createdAt": "2026-08-31T04:25:49.883Z"
   },
   {
-    "id": "note_1788150566687",
-    "screenId": "act1",
-    "x": 499,
-    "y": 426,
-    "width": 260,
-    "height": 160,
-    "color": "yellow",
-    "status": "implemented",
-    "text": "the check mark for the dock after being investigated seems far away. bring it closer so it becomes apparent that it's associated with it.",
-    "targetElementId": "act1-asset-dock",
-    "createdAt": "2026-08-31T04:29:26.687Z"
-  },
-  {
     "id": "note_1788466117362",
     "screenId": "act3",
     "x": 120,
