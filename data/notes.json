@@ -26,19 +26,6 @@
     "createdAt": "2026-08-31T03:36:11.976Z"
   },
   {
-    "id": "note_1788150349883",
-    "screenId": "act1",
-    "x": 867,
-    "y": 323,
-    "width": 260,
-    "height": 160,
-    "color": "yellow",
-    "status": "implemented",
-    "text": "I wonder if changing this to a body temp scale that gets more red as tay gets hotter would be more effective? also, it kinda blends in with the rest of the ui elements, so let's have it stand out more. ",
-    "targetElementId": "act1-hud-panting",
-    "createdAt": "2026-08-31T04:25:49.883Z"
-  },
-  {
     "id": "note_1788466117362",
     "screenId": "act3",
     "x": 120,
