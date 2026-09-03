@@ -39,19 +39,6 @@
     "createdAt": "2026-08-31T04:25:49.883Z"
   },
   {
-    "id": "note_1788150465697",
-    "screenId": "act1",
-    "x": 120,
-    "y": 120,
-    "width": 260,
-    "height": 160,
-    "color": "yellow",
-    "status": "implemented",
-    "text": "i'd like to click through the dialogue rather than have it all pop up at once. also, make callie's one line a speech bubble, and ditch the parenthetical.",
-    "targetElementId": "act1-pov-scene-cooler",
-    "createdAt": "2026-08-31T04:27:45.697Z"
-  },
-  {
     "id": "note_1788150566687",
     "screenId": "act1",
     "x": 499,
