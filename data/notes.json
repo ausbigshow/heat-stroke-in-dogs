@@ -89,5 +89,18 @@
     "text": "Tay keeps popping in on the rest sequence after clicking through each dialogue line. ",
     "targetElementId": "act1-viewport-card",
     "createdAt": "2026-08-31T04:30:36.605Z"
+  },
+  {
+    "id": "note_1788466117362",
+    "screenId": "act3",
+    "x": 120,
+    "y": 120,
+    "width": 260,
+    "height": 160,
+    "color": "yellow",
+    "status": "open",
+    "text": "",
+    "targetElementId": null,
+    "createdAt": "2026-09-03T20:08:37.362Z"
   }
 ]
