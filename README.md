@@ -16,13 +16,13 @@
 > **If you think your dog has heat stroke, start cooling them and call your vet
 > immediately.** Do not use this module as a reference in an emergency.
 
-An interactive e-learning module about recognising and treating heat stroke in dogs,
+An interactive e-learning module about recognizing and treating heat stroke in dogs,
 told in four acts from two points of view.
 
 Callie takes her French Bulldog, Tay, to the lake on a hot afternoon. Act 1 is Tay's
 story — she hunts for food and gets everything wrong, and every promising lead is a heat
 risk factor. Act 2 is Callie's, and it is the same afternoon from outside the dog:
-recognising it, calling the clinic, cooling her, and driving her in. The learner spends
+recognizing it, calling the clinic, cooling her, and driving her in. The learner spends
 the first act causing the emergency without knowing it, and the second act reading it
 back as a case history.
 
@@ -48,7 +48,7 @@ A few rules the code holds to deliberately:
   the payoff, so no other Tay line exists anywhere in `js/act2-screen.js`.
 - **No fail state.** Waiting or choosing wrongly costs visible time and worsens her
   condition on screen, but never ends the run. The learner always gets to fix it.
-- **Colourblind-safe vitals.** Gum state is never carried by colour alone — every render
+- **Colorblind-safe vitals.** Gum state is never carried by color alone — every render
   pairs the swatch with a written label, a distinct SVG fill pattern, the capillary
   refill time in seconds against the printed normal, and a severity word.
 - **The misconceptions are unattributed.** The wrong cooling answers ("pack her in ice",
@@ -93,7 +93,7 @@ js/act0-screen.js       Intro: Callie and Tay on the couch
 js/act1-screen.js       Tay's POV at the lake — four leads, any order
 js/act2-screen.js       Callie's POV — triage call, cooling, transport
 js/act3-screen.js       The clinic, then home
-js/audio-manager.js     Voiceover and dog vocalisations
+js/audio-manager.js     Voiceover and dog vocalizations
 js/a11y-focus.js        Focus continuity across re-renders
 js/editor/              Edit Mode (authoring only, not shipped to learners)
 css/                    One stylesheet per screen, tokens in main.css
@@ -111,11 +111,21 @@ region that narrates Tay's observable state as it changes.
 
 ## Credits and licensing
 
-- **Dog vocalisations** are CC0 / public domain, sourced from Wikimedia Commons.
-  Per-clip source URLs, authors, licences, and the processing applied are recorded in
+- **Dog vocalizations** are CC0 / public domain, sourced from Wikimedia Commons.
+  Per-clip source URLs, authors, licenses, and the processing applied are recorded in
   [`Assets/Audio/vo-manifest.json`](Assets/Audio/vo-manifest.json).
 - **Callie's voiceover** was generated with Magnific / ElevenLabs and is licensed to the
   project owner through their Magnific account.
+
+## AI disclosure
+
+This project was built with the assistance of artificial intelligence tools:
+
+- **Code and architecture:** Application logic, state machines, responsive CSS layouts, accessibility systems, and debugging passes were developed in collaboration with AI coding assistants (Anthropic Claude and Google Gemini).
+- **Voiceover audio:** Character voiceover narration for Callie was synthesized using ElevenLabs / Magnific text-to-speech tools.
+- **Visual artwork:** Illustrated scene backgrounds and character model sheets were created with generative AI image tooling and vector styling passes.
+- **Instructional design:** Narrative branching, scenario beats, and educational dialogue were co-developed and structured using LLMs, with final instructional review and curation by the author.
+
 ## Status
 
 **Proof of concept.** The interaction design, narrative structure, and accessibility work
