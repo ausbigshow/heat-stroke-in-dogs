@@ -545,19 +545,33 @@ export class Act3Screen {
     if (this.isEditModeActive()) return;
     this.waitSeconds += 1;
 
+    const remaining = Math.max(0, this.WAIT_SECONDS - this.waitSeconds);
     const bar = this.container?.querySelector('#act3-wait-bar');
-    if (bar) bar.style.setProperty('--act3-wait-progress', `${Math.min(100, (this.waitSeconds / this.WAIT_SECONDS) * 100)}%`);
+    if (bar) {
+      bar.style.setProperty('--act3-wait-progress', `${Math.min(100, (this.waitSeconds / this.WAIT_SECONDS) * 100)}%`);
+      bar.setAttribute('aria-valuenow', String(this.waitSeconds));
+      bar.setAttribute('aria-label', `Waiting for clinic staff: approximately ${remaining} seconds remaining`);
+    }
+
+    const srStatus = this.container?.querySelector('#act3-wait-sr-status');
+    if (srStatus) {
+      if (remaining === 6) {
+        srStatus.textContent = 'Waiting for clinic staff: approximately 6 seconds remaining.';
+      } else if (remaining === 0) {
+        srStatus.textContent = 'The door to the back opens.';
+      }
+    }
 
     if (this.waitSeconds >= this.WAIT_SECONDS) {
-      this.stopWaitTimer();
-      this.waitOver = true;
-      this.render();
+      this.endWait();
     }
   }
 
   endWait() {
     this.stopWaitTimer();
     this.waitOver = true;
+    this.currentBeat = 'verdict';
+    this.stepIndex = 0;
     this.render();
   }
 
@@ -693,6 +707,9 @@ export class Act3Screen {
 
   renderHudBar() {
     const status = this.getTayStatus();
+    const order = ['wait', 'verdict', 'report', 'tayReturn', 'nextTime', 'recheck', 'home', 'end'];
+    const currentBeatNum = Math.max(1, order.indexOf(this.currentBeat) + 1);
+    const totalBeats = order.length;
 
     return `
       <header class="act3-hud-bar" data-editor-id="act3-hud-bar">
@@ -704,6 +721,12 @@ export class Act3Screen {
         </div>
 
         <div class="act3-hud-group">
+          <div class="act3-hud-pill progress-pill" data-editor-id="act3-hud-progress"
+               aria-label="Act 3 progress: Beat ${currentBeatNum} of ${totalBeats}">
+            <span class="act3-hud-label" aria-hidden="true">BEAT</span>
+            <span class="act3-hud-count">${currentBeatNum}/${totalBeats}</span>
+          </div>
+
           <div class="act3-hud-pill clock-pill" data-editor-id="act3-hud-clock" title="Clinic time">
             <span aria-hidden="true">🕒</span>
             <span>${this.getFormattedTime()}</span>
@@ -975,33 +998,28 @@ export class Act3Screen {
 
   // ---- Beat 3A — the wait -----------------------------------------------
   renderWait() {
-    if (this.waitOver) {
-      return `
-        <div class="act3-door-card" data-editor-id="act3-door-card" role="note">
-          <p class="act3-door-line">The door to the back opens.</p>
-        </div>
-      `;
-    }
-
     const pct = Math.min(100, (this.waitSeconds / this.WAIT_SECONDS) * 100);
+    const remaining = Math.max(0, this.WAIT_SECONDS - this.waitSeconds);
 
     return `
       <div class="act3-wait-panel" data-editor-id="act3-wait-panel">
         <span class="act3-wait-badge">4:02 PM · Lakeside Veterinary</span>
-        <p class="act3-wait-line" id="act3-fold-line">${this.foldLines[this.foldCount % this.foldLines.length]}</p>
+        <p class="act3-wait-line" id="act3-wait-line">You keep holding the towel. It is still damp and it is still cold.</p>
         <p class="act3-wait-sub">Nobody has told you anything.</p>
 
-        <button id="act3-btn-fold" class="act3-fold-btn" data-editor-id="act3-btn-fold"
-                aria-label="Fold the towel again. Nothing happens.">
-          <span aria-hidden="true">🧺</span>
-          <span>Fold the towel again</span>
-        </button>
-
-        <!-- Not a loading bar: a wait, shown honestly so it does not read as a hang.
-             The skip control in the nav bar is present from the first frame. -->
+        <!-- A finite wait with accessible progress. The skip control in the nav bar is present from the first frame. -->
         <div id="act3-wait-bar" class="act3-wait-bar" style="--act3-wait-progress: ${pct}%;"
-             data-editor-id="act3-wait-bar" aria-hidden="true">
+             data-editor-id="act3-wait-bar"
+             role="progressbar"
+             aria-valuemin="0"
+             aria-valuemax="${this.WAIT_SECONDS}"
+             aria-valuenow="${this.waitSeconds}"
+             aria-label="Waiting for clinic staff: approximately ${remaining} seconds remaining">
           <span class="act3-wait-bar-fill"></span>
+        </div>
+
+        <div id="act3-wait-sr-status" class="sr-only" aria-live="polite">
+          ${this.waitSeconds === 0 ? 'Waiting for clinic staff. The doctor will appear in approximately 12 seconds, or you can skip the wait.' : ''}
         </div>
       </div>
     `;
@@ -1404,17 +1422,17 @@ export class Act3Screen {
   // =======================================================================
 
   renderBottomLeftControls() {
-    if (this.currentBeat === 'wait' && !this.waitOver) {
+    if (this.currentBeat === 'wait') {
       return `
         <button id="act3-btn-skip-wait" class="act3-hud-btn act3-btn-quiet"
                 data-editor-id="act3-btn-skip-wait"
-                aria-label="Skip the wait and go straight to the verdict">Skip the wait ▶</button>
+                aria-label="Skip the wait and go straight to the verdict (or wait approximately 12 seconds for the doctor to appear)">Skip the wait ▶</button>
       `;
     }
     const back = this.canStepBack() ? `
       <button id="act3-btn-prev-step" class="act3-hud-btn act3-btn-quiet"
-              data-editor-id="act3-btn-prev-step"
-              aria-label="Go back one step">◀ Back</button>
+                data-editor-id="act3-btn-prev-step"
+                aria-label="Go back one step">◀ Back</button>
     ` : '';
 
     if (this.currentBeat === 'nextTime' && this.stepIndex === 0 && this.preventionChosen.size === 0) {
@@ -1432,10 +1450,7 @@ export class Act3Screen {
   renderBottomRightControls() {
     switch (this.currentBeat) {
       case 'wait':
-        return this.waitOver ? `
-          <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">See who it is ➔</button>
-        ` : '';
+        return '';
 
       case 'verdict':
         return this.stepIndex < this.verdictSteps.length - 1 ? `
@@ -1463,7 +1478,7 @@ export class Act3Screen {
           return `
             <button id="act3-btn-next-step" class="act3-hud-btn ${all ? 'btn-action-primary pulse-btn' : ''}"
                     data-editor-id="act3-btn-next-step">
-              ${all ? "That's all of them ➔" : some ? "That's what changes ▶" : 'Skip ahead ▶'}
+              ${all ? "That's all of them ➔" : some ? "That's what changes ▶" : 'Nothing changes ▶'}
             </button>
           `;
         }
@@ -1528,7 +1543,6 @@ export class Act3Screen {
 
     // --- Beat 3A ---
     on('#act3-btn-skip-wait', () => this.endWait());
-    on('#act3-btn-fold', () => this.foldTowel());
 
     // --- Beat 3C ---
     on('#act3-btn-report-next', () => this.nextReportStep());
@@ -1618,7 +1632,6 @@ export class Act3Screen {
     if (!steps) return;
     if (this.stepIndex < steps.length - 1) {
       this.stepIndex++;
-      this.clockMinutes += 1; // the afternoon keeps moving while she talks
       this.render();
     }
   }
@@ -1665,7 +1678,6 @@ export class Act3Screen {
       if (this.stepIndex === 0 || !this.stepsForBeat()) return false;
       this.stepIndex--;
     }
-    this.clockMinutes = Math.max(242, this.clockMinutes - 1);
     this.render();
     return true;
   }
@@ -1718,8 +1730,7 @@ export class Act3Screen {
 
     if (this.currentBeat === 'wait') {
       e.preventDefault();
-      if (this.waitOver) this.nextBeat();
-      else this.endWait();
+      this.endWait();
       return;
     }
 

@@ -386,29 +386,31 @@
 /* Mobile (< 768px) */
 @media (max-width: 768px) {
   .opening-screen {
-    padding: 1.5rem 1.25rem 2rem 1.25rem;
+    padding: 1.25rem 1rem max(5.5rem, calc(4.5rem + env(safe-area-inset-bottom, 0px))) 1rem;
     justify-content: flex-start;
-    gap: 1.25rem;
+    gap: 1rem;
     overflow-y: auto;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
 
   .opening-title-container {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
   }
 
   .opening-title-badge {
     font-size: 0.75rem;
     padding: 0.25rem 0.75rem;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.35rem;
   }
 
   .opening-title {
-    font-size: 1.65rem;
+    font-size: clamp(1.5rem, 5.5vw, 2.2rem);
+    line-height: 1.18;
   }
 
   .opening-title .subtitle-part {
-    font-size: 1.05rem;
+    font-size: clamp(0.95rem, 3.8vw, 1.35rem);
     margin-top: 0.25rem;
   }
 
@@ -417,10 +419,11 @@
     position: relative;
     width: 100%;
     height: auto;
-    min-height: 380px;
+    min-height: 0;
     display: flex;
     justify-content: center;
     align-items: center;
+    margin: auto 0;
   }
 
   .characters-container {
@@ -428,37 +431,59 @@
     left: auto;
     bottom: auto;
     width: 100%;
-    max-width: 360px;
-    height: 48vh;
-    min-height: 300px;
+    max-width: 380px;
+    height: clamp(230px, 45vh, 380px);
+    min-height: 220px;
   }
 
   .character-card {
-    border-radius: 20px;
+    border-radius: var(--radius-lg);
     border-width: 3px;
   }
 
   .character-label-pill {
     bottom: 0.75rem;
-    font-size: 0.85rem;
-    padding: 0.35rem 0.9rem;
+    font-size: 0.88rem;
+    padding: 0.35rem 0.95rem;
   }
 
   .continue-btn-container {
     position: fixed;
     right: 1.25rem;
-    bottom: 1.25rem;
+    bottom: max(1.25rem, env(safe-area-inset-bottom, 1.25rem));
     left: 1.25rem;
     display: flex;
     justify-content: flex-end;
     pointer-events: none;
+    z-index: 50;
   }
 
   .continue-btn {
     width: 100%;
-    max-width: 280px;
+    max-width: 300px;
+    min-height: 48px;
     justify-content: center;
-    padding: 0.95rem 1.5rem;
-    font-size: 1.1rem;
+    padding: 0.9rem 1.6rem;
+    font-size: 1.12rem;
+    touch-action: manipulation;
+  }
+}
+
+/* Small mobile devices (<= 480px) */
+@media (max-width: 480px) {
+  .opening-screen {
+    padding-top: max(1rem, env(safe-area-inset-top, 1rem));
+  }
+
+  .opening-title {
+    font-size: 1.55rem;
+  }
+
+  .characters-container {
+    height: clamp(200px, 42vh, 320px);
+  }
+
+  .continue-btn {
+    max-width: 100%;
   }
 }

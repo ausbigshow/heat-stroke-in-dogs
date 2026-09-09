@@ -38,8 +38,20 @@ class CourseApp {
     console.log('🐾 Initializing Heatstroke in Dogs eLearning Module...');
 
     // 1. Initialize Scene Engine
-    this.screens.opening = new OpeningScreen(this);
-    this.screens.opening.mount();
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialScreen = urlParams.get('screen') || urlParams.get('act');
+    if (initialScreen) {
+      const key = initialScreen.startsWith('act') ? initialScreen : `act${initialScreen}`;
+      const beat = urlParams.get('beat');
+      const stepIndex = urlParams.has('step') ? parseInt(urlParams.get('step'), 10) : undefined;
+      const options = {};
+      if (beat) options.beat = beat;
+      if (stepIndex !== undefined) options.stepIndex = stepIndex;
+      this.navigateTo(key, options);
+    } else {
+      this.screens.opening = new OpeningScreen(this);
+      this.screens.opening.mount();
+    }
 
     console.log('✅ Course Ready.');
 
@@ -105,7 +117,7 @@ class CourseApp {
       if (options.activeCheckId) {
         this.screens.act2.activeCheckId = options.activeCheckId;
       }
-      this.screens.act2.mount();
+      this.screens.act2.mount(options);
     } else if (screenKey === 'act3') {
       stage.innerHTML = `<section id="screen-act3" aria-label="Act 3: At the Clinic, Then Home"></section>`;
       this.screens.act3 = new Act3Screen(this);

@@ -39,13 +39,19 @@ export class Act1Screen {
     this.povStepIndex = 0;        // position within the active lead's dialogue
     this.tayHasEnteredScene = false; // gates Tay's one-shot settle animation in the nap
 
+    // Tay in-scene avatar positioning and walk state
+    this.tayPosition = { top: 72, left: 52 };
+    this.tayFacingLeft = true;
+    this.isTayWalking = false;
+    this.walkTimeout = null;
+
     // Cold Open Steps (Beat 1A)
     this.coldOpenSteps = [
-      { speaker: 'tay', onomatopoeia: 'Sniff!', dialogue: "Okay. New place. Big water.", pos: 'top: 24%; left: 45%; max-width: min(290px, 22vw);' },
-      { speaker: 'tay', onomatopoeia: 'Huff!', dialogue: "There is food here somewhere.", pos: 'top: 24%; left: 45%; max-width: min(290px, 22vw);' },
-      { speaker: 'tay', onomatopoeia: 'Snort!', dialogue: "I can feel it in my face.", pos: 'top: 24%; left: 45%; max-width: min(290px, 22vw);' },
-      { speaker: 'callie_offscreen', text: "Stay where I can see you, ma'am." },
-      { speaker: 'tay', onomatopoeia: 'Yip!', dialogue: "She said my name. Basically.", pos: 'top: 24%; left: 45%; max-width: min(290px, 22vw);' },
+      { speaker: 'tay', onomatopoeia: 'Sniff!', dialogue: "Okay. New place. Big water.", pos: 'top: 24%; left: 45%; max-width: var(--bubble-max-w, 320px);' },
+      { speaker: 'tay', onomatopoeia: 'Huff!', dialogue: "There is food here somewhere.", pos: 'top: 24%; left: 45%; max-width: var(--bubble-max-w, 320px);' },
+      { speaker: 'tay', onomatopoeia: 'Snort!', dialogue: "I can feel it in my face.", pos: 'top: 24%; left: 45%; max-width: var(--bubble-max-w, 320px);' },
+      { speaker: 'callie_offscreen', text: "Stay where I can see you, ma'am.", pos: 'top: 24%; left: 45%; max-width: var(--bubble-max-w, 320px);' },
+      { speaker: 'tay', onomatopoeia: 'Yip!', dialogue: "She said my name. Basically.", pos: 'top: 24%; left: 45%; max-width: var(--bubble-max-w, 320px);' },
       { type: 'mission_card' }
     ];
 
@@ -237,6 +243,7 @@ export class Act1Screen {
   }
 
   unmount() {
+    clearTimeout(this.walkTimeout);
     window.removeEventListener('keydown', this.handleKeyDown);
   }
 
@@ -321,8 +328,9 @@ export class Act1Screen {
     const allLeadsVisited = leadsCount === 4;
     const isPovRaised = this.currentBeat === 'pov_rise';
     const { driftOpacity, saturationDrop, shadeShiftX, shadeScaleY } = this.getEscalation();
-    // Beats 1D/1E push in on the canopy so the nap and the shade drift read at close range.
-    const isCanopyFocus = this.currentBeat === 'nap' || this.currentBeat === 'drift';
+    // Beats 1D/1E/1F push in on the canopy so the nap, shade drift, and alarm read at close range.
+    const isCanopyFocus = this.currentBeat === 'nap' || this.currentBeat === 'drift' || this.currentBeat === 'alarm';
+    const isColdOpenClickable = this.currentBeat === 'cold_open' && this.coldOpenSteps[this.stepIndex]?.type !== 'mission_card';
 
     this.container.innerHTML = `
       <div class="act1-container" data-editor-id="act1-screen-container">
@@ -330,9 +338,10 @@ export class Act1Screen {
         <!-- Main 16:9 Viewport Stage -->
         <div
           id="act1-card"
-          class="act1-viewport-card ${isPovRaised ? 'pov-raised' : 'low-cam'} ${isCanopyFocus ? 'canopy-focus' : ''}"
+          class="act1-viewport-card ${isPovRaised ? 'pov-raised' : 'low-cam'} ${isCanopyFocus ? 'canopy-focus' : ''} ${isColdOpenClickable ? 'is-cold-open-active' : ''}"
           data-editor-id="act1-viewport-card"
           style="--act1-drift-opacity: ${driftOpacity}; --act1-saturation-drop: ${saturationDrop}%; --act1-shade-shift: ${shadeShiftX}%; --act1-shade-scale-y: ${shadeScaleY};"
+          ${isColdOpenClickable ? 'title="Click anywhere to continue (or press Space)"' : ''}
         >
           <!-- Background Scene Illustration -->
           <img
@@ -378,12 +387,14 @@ export class Act1Screen {
                 <div class="act1-hud-pill hints-dropped-pill" data-editor-id="act1-hud-hints"
                      role="status" aria-live="polite">
                   <span aria-hidden="true">⚠️</span>
-                  <span>HINTS DROPPED: 4</span>
+                  <span class="hud-label-full">HINTS DROPPED: 4</span>
+                  <span class="hud-label-short">HINTS: 4</span>
                 </div>
               ` : `
                 <div class="act1-hud-pill leads-pill ${allLeadsVisited ? 'all-done' : ''}" data-editor-id="act1-hud-leads">
-                  <span>🐾</span>
-                  <span>LEADS INVESTIGATED: ${leadsCount}/4</span>
+                  <span aria-hidden="true">🐾</span>
+                  <span class="hud-label-full">LEADS INVESTIGATED: ${leadsCount}/4</span>
+                  <span class="hud-label-short">LEADS: ${leadsCount}/4</span>
                 </div>
               `}
 
@@ -466,58 +477,176 @@ export class Act1Screen {
   }
 
   // Tay, drawn to the character model sheet (coat #34383B, white blaze/chest, ear pink
-  // #DC7F77, pads #43484B). Rigged as named groups so beats can animate her independently:
-  // `tay-rig-chest` breathes, `tay-rig-ear` twitches, `tay-rig-head` settles for the nap.
+  // Calculate exhaustion stage based on unique leads visited:
+  // 0 leads visited: Neutral standing pose (Tay-StandingSideProfile.png)
+  // 1 lead visited: Stage 1 (Alert) (Tay-StandingStage1-Alert.png)
+  // 2 leads visited: Stage 2 (Warm) (Tay-StandingStage2-Warm.png)
+  // 3 leads visited: Stage 3 (Panting) (Tay-StandingStage3-Panting.png)
+  // 4 leads visited: Stage 4 (Distressed) (Tay-StandingStage4-Distressed.png)
+  getTayStageInfo() {
+    const visitedCount = this.visitedLeads ? this.visitedLeads.size : 0;
+    if (visitedCount === 0) {
+      return {
+        stageNum: 0,
+        label: 'Neutral',
+        standingSrc: 'Assets/Image/Tay-StandingSideProfile.png',
+        sniffingSrc: 'Assets/Image/Tay-SniffingGround.png'
+      };
+    } else if (visitedCount === 1) {
+      return {
+        stageNum: 1,
+        label: 'Stage 1: Alert',
+        standingSrc: 'Assets/Image/Tay-StandingStage1-Alert.png',
+        sniffingSrc: 'Assets/Image/Tay-SniffingGround.png'
+      };
+    } else if (visitedCount === 2) {
+      return {
+        stageNum: 2,
+        label: 'Stage 2: Warm',
+        standingSrc: 'Assets/Image/Tay-StandingStage2-Warm.png',
+        sniffingSrc: 'Assets/Image/Tay-SniffingGround.png'
+      };
+    } else if (visitedCount === 3) {
+      return {
+        stageNum: 3,
+        label: 'Stage 3: Panting',
+        standingSrc: 'Assets/Image/Tay-StandingStage3-Panting.png',
+        sniffingSrc: 'Assets/Image/Tay-SniffingGround.png'
+      };
+    } else {
+      return {
+        stageNum: 4,
+        label: 'Stage 4: Distressed',
+        standingSrc: 'Assets/Image/Tay-StandingStage4-Distressed.png',
+        sniffingSrc: 'Assets/Image/Tay-SniffingGround.png'
+      };
+    }
+  }
+
+  // Calculate perspective scale factor based on vertical depth in scene
+  // top: 50% (distant shoreline) -> 0.72x
+  // top: 82% (close foreground) -> 1.18x
+  getDepthScale(top = 70) {
+    const minTop = 50;
+    const maxTop = 82;
+    const minScale = 0.72;
+    const maxScale = 1.18;
+    const t = Math.max(0, Math.min(1, (top - minTop) / (maxTop - minTop)));
+    return Number((minScale + t * (maxScale - minScale)).toFixed(3));
+  }
+
+  // Tay, lying flat in lateral recumbency under the shade canopy (Beats 1D/1E).
+  // Uses the transparent PNG asset (facing left) with an animated swelling abdomen representing labored breathing.
   renderTayLyingDown() {
     return `
-      <svg class="tay-lying-svg" viewBox="0 0 260 150" data-editor-id="act1-asset-tay">
-        <ellipse cx="130" cy="136" rx="96" ry="12" fill="rgba(30, 41, 30, 0.32)" />
-
-        <!-- Hind leg (far) -->
-        <path d="M196,116 C210,112 222,116 224,124 C226,132 214,134 200,132 Z" fill="#2C3033" />
-
-        <!-- Tail -->
-        <path d="M212,104 C226,98 236,102 234,112 C232,118 224,116 218,110 Z" fill="#2C3033" />
-
-        <!-- Body, lying flat -->
-        <g class="tay-rig-chest">
-          <path d="M64,120 C60,92 84,74 122,74 C166,74 202,88 210,110 C214,122 206,132 190,133 L84,133 C70,133 65,128 64,120 Z" fill="#34383B" />
-          <!-- White chest/belly blaze -->
-          <path d="M92,133 C86,120 92,106 106,102 C118,99 128,106 130,118 C131,127 126,133 118,133 Z" fill="#FFFFFF" />
-        </g>
-
-        <!-- Front paws stretched forward -->
-        <path d="M64,124 C50,122 36,126 34,132 C33,137 40,139 52,138 L78,136 Z" fill="#34383B" />
-        <path d="M60,136 C50,136 42,137 38,138 C44,140 54,140 62,139 Z" fill="#43484B" />
-
-        <g class="tay-rig-head">
-          <!-- Head resting on the paws -->
-          <path d="M40,110 C34,96 44,82 62,80 C82,78 96,88 97,104 C98,118 86,128 68,128 C52,128 44,122 40,110 Z" fill="#34383B" />
-
-          <!-- Ears -->
-          <g class="tay-rig-ear">
-            <path d="M60,82 C56,66 62,54 70,54 C78,54 82,66 79,82 Z" fill="#34383B" />
-            <path d="M64,79 C61,68 65,60 70,60 C75,60 77,68 75,79 Z" fill="#DC7F77" />
+      <div class="tay-lateral-wrapper" data-editor-id="act1-asset-tay">
+        <svg class="tay-lateral-svg" viewBox="0 0 1376 768" aria-label="Tay lying in lateral recumbency, facing left, panting heavily with labored breathing">
+          <defs>
+            <!-- Ground shadow under the lateral dog -->
+            <radialGradient id="tay-lateral-ground-shadow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="rgba(24, 36, 24, 0.45)" />
+              <stop offset="70%" stop-color="rgba(24, 36, 24, 0.2)" />
+              <stop offset="100%" stop-color="rgba(24, 36, 24, 0)" />
+            </radialGradient>
+            <!-- Smooth clip path enclosing the ribcage, flank, and abdomen for labored swelling (facing left) -->
+            <clipPath id="tay-abdomen-clip">
+              <path d="M936,245 C856,215 696,215 616,220 C606,300 616,420 626,560 C696,565 856,565 926,545 C936,460 941,330 936,245 Z" />
+            </clipPath>
+          </defs>
+          <!-- Ground Shadow -->
+          <ellipse cx="686" cy="585" rx="540" ry="42" fill="url(#tay-lateral-ground-shadow)" />
+          <!-- Base full dog image (facing left) -->
+          <image href="Assets/Image/Tay-LayingLateralPanting.png" xlink:href="Assets/Image/Tay-LayingLateralPanting.png" x="0" y="0" width="1376" height="768" />
+          <!-- Swelling abdomen layer for labored panting respiration -->
+          <g class="tay-labored-abdomen">
+            <image href="Assets/Image/Tay-LayingLateralPanting.png" xlink:href="Assets/Image/Tay-LayingLateralPanting.png" x="0" y="0" width="1376" height="768" clip-path="url(#tay-abdomen-clip)" />
           </g>
-          <path d="M86,84 C86,70 92,60 99,62 C105,64 105,76 99,88 Z" fill="#2C3033" />
-
-          <!-- Muzzle & white blaze -->
-          <path d="M40,112 C34,104 36,94 44,90 C54,85 66,90 68,100 C70,112 60,120 50,119 C45,118 42,116 40,112 Z" fill="#FFFFFF" />
-          <ellipse cx="41" cy="103" rx="7" ry="5.5" fill="#1A1D1F" />
-          <!-- Closed, sleepy eye -->
-          <path d="M62,97 C66,94 72,94 76,97" stroke="#1A1D1F" stroke-width="2.6" fill="none" stroke-linecap="round" />
-          <!-- Mouth, slightly open panting -->
-          <path d="M45,113 C50,117 57,117 61,114" stroke="#1A1D1F" stroke-width="2" fill="none" stroke-linecap="round" />
-          <path class="tay-rig-tongue" d="M50,116 C54,116 57,118 56,122 C55,125 50,125 49,121 Z" fill="#DC7F77" />
-        </g>
-      </svg>
+        </svg>
+      </div>
     `;
+  }
+
+  // Tay, standing & trotting in the lake scene during investigation (Beats 1A, 1B, 1C).
+  // Renders the flat-vector PNG assets with sequential exhaustion stages and ground sniffing while walking.
+  renderTayStanding() {
+    const info = this.getTayStageInfo();
+    return `
+      <div class="act1-avatar-tay-sprite" data-editor-id="act1-avatar-tay-sprite">
+        <div class="tay-ground-shadow"></div>
+        <img
+          class="tay-avatar-img tay-standing-img"
+          src="${info.standingSrc}"
+          alt="Tay standing (${info.label})"
+          draggable="false"
+        />
+        <img
+          class="tay-avatar-img tay-sniffing-img"
+          src="${info.sniffingSrc}"
+          alt="Tay sniffing the ground"
+          draggable="false"
+        />
+      </div>
+    `;
+  }
+
+  // Trigger Tay's trot to the clicked hotspot before opening its dialogue
+  triggerWalkToLead(leadId) {
+    if (this.isEditModeActive()) return;
+    if (this.isTayWalking) return;
+
+    const targetCoords = {
+      cooler: { top: 71, left: 47 },
+      dock: { top: 60, left: 22 },
+      bowl: { top: 81, left: 48 },
+      lake: { top: 56, left: 11 },
+      canopy: { top: 70, left: 74 }
+    }[leadId] || { top: 70, left: 50 };
+
+    const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const movingLeft = targetCoords.left < this.tayPosition.left;
+    this.tayFacingLeft = movingLeft;
+    this.tayPosition = targetCoords;
+
+    if (isReducedMotion) {
+      if (leadId === 'canopy') {
+        this.startNap();
+      } else {
+        this.selectLead(leadId);
+      }
+      return;
+    }
+
+    this.isTayWalking = true;
+    this.playBeep(320, 'triangle', 0.08);
+
+    const tayEl = this.container?.querySelector('.act1-avatar-tay');
+    if (tayEl) {
+      tayEl.classList.add('is-walking');
+      tayEl.classList.toggle('facing-left', movingLeft);
+      tayEl.classList.toggle('facing-right', !movingLeft);
+      tayEl.style.setProperty('--tay-scale', this.getDepthScale(targetCoords.top));
+      tayEl.style.top = `${targetCoords.top}%`;
+      tayEl.style.left = `${targetCoords.left}%`;
+    }
+
+    clearTimeout(this.walkTimeout);
+    this.walkTimeout = setTimeout(() => {
+      this.isTayWalking = false;
+      if (tayEl) tayEl.classList.remove('is-walking');
+      if (leadId === 'canopy') {
+        this.startNap();
+      } else {
+        this.selectLead(leadId);
+      }
+    }, 3200);
   }
 
   renderSceneLayer() {
     // The canopy becomes the "take a break" trigger once every lead has been worked.
     const canopyArmed = this.currentBeat === 'hub' && this.visitedLeads.size === 4;
-    const isNapping = this.currentBeat === 'nap' || this.currentBeat === 'drift';
+    // Persist Tay lying under the canopy through nap, drift, alarm, case_file, and pov_rise beats
+    const isNapping = this.currentBeat === 'nap' || this.currentBeat === 'drift' || this.currentBeat === 'alarm' || this.currentBeat === 'case_file' || this.currentBeat === 'pov_rise';
+    const showStandingTay = this.currentBeat === 'hub' || this.currentBeat === 'cold_open' || this.currentBeat === 'gate';
 
     return `
       <!-- Redrawn Scene Layer on Lake-Blank.jpg from Tay's Low First-Person Dog Eyeline -->
@@ -551,12 +680,22 @@ export class Act1Screen {
           ${canopyArmed ? '<span class="canopy-tooltip">😴 Rest in the shade</span>' : ''}
         </div>
 
-        <!-- Tay, asleep under the canopy (Beats 1D/1E). Every dialogue click re-renders the
-             screen, so her settle-in animation is applied only on the render that first
-             brings her into the scene — otherwise she re-drops on each line. -->
+        <!-- Tay, standing & investigating in the hub/cold open/gate beats -->
+        ${showStandingTay ? `
+          <div
+            class="act1-avatar-tay stage-${this.getTayStageInfo().stageNum} ${this.isTayWalking ? 'is-walking' : ''} ${this.tayFacingLeft ? 'facing-left' : 'facing-right'}"
+            data-editor-id="act1-avatar-tay"
+            style="top: ${this.tayPosition.top}%; left: ${this.tayPosition.left}%; --tay-scale: ${this.getDepthScale(this.tayPosition.top)};"
+            aria-hidden="true"
+          >
+            ${this.renderTayStanding()}
+          </div>
+        ` : ''}
+
+        <!-- Tay, asleep under the canopy (Beats 1D/1E/1F/1G/1H) -->
         ${isNapping ? `
           <div
-            class="lake-scene-tay ${this.tayHasEnteredScene ? '' : 'tay-entering'} ${this.currentBeat === 'drift' ? 'tay-drifting' : ''}"
+            class="lake-scene-tay ${this.tayHasEnteredScene ? '' : 'tay-entering'} ${this.currentBeat !== 'nap' ? 'tay-drifting' : ''}"
             data-editor-id="act1-tay-sleeping"
           >
             ${this.renderTayLyingDown()}
@@ -703,27 +842,44 @@ export class Act1Screen {
 
     if (step.speaker === 'callie_offscreen') {
       return `
-        <div class="callie-offscreen-banner" data-editor-id="act1-coldopen-callie">
-          <div class="callie-offscreen-label">👩 Callie</div>
-          <div>"${step.text}"</div>
+        <div 
+          class="speech-bubble callie-bubble act1-callie-offscreen-bubble" 
+          style="${step.pos || 'top: 24%; left: 45%; max-width: var(--bubble-max-w, 320px);'}" 
+          data-editor-id="act1-coldopen-callie"
+        >
+          <div class="speech-bubble-speaker">
+            <span aria-hidden="true">👩</span>
+            <span>Callie (Off-screen)</span>
+          </div>
+          <p class="speech-bubble-text">
+            "${step.text}"
+          </p>
+          <div class="bubble-click-hint" aria-hidden="true">
+            <span>Click anywhere to continue</span>
+            <span class="hint-arrow">▶</span>
+          </div>
         </div>
       `;
     }
 
     return `
       <div 
-        class="speech-bubble tay-bubble" 
+        class="speech-bubble tay-bubble act1-coldopen-tay-bubble" 
         style="${step.pos}" 
         data-editor-id="act1-coldopen-bubble-${this.stepIndex}"
       >
         <div class="speech-bubble-speaker">
-          <span>🐶</span>
+          <span aria-hidden="true">🐶</span>
           <span>Tay</span>
         </div>
         <p class="speech-bubble-text">
           <span class="tay-onomatopoeia">${step.onomatopoeia}</span>
           <span class="tay-sub-dialogue">(${step.dialogue})</span>
         </p>
+        <div class="bubble-click-hint" aria-hidden="true">
+          <span>Click anywhere to continue</span>
+          <span class="hint-arrow">▶</span>
+        </div>
       </div>
     `;
   }
@@ -733,7 +889,7 @@ export class Act1Screen {
     return `
       <div 
         class="speech-bubble tay-bubble" 
-        style="top: 24%; left: 45%; max-width: min(320px, 25vw);" 
+        style="top: 24%; left: 45%; max-width: var(--bubble-max-w, 320px);" 
         data-editor-id="act1-hub-speech"
       >
         <div class="speech-bubble-speaker">
@@ -994,7 +1150,7 @@ export class Act1Screen {
     return `
       <div 
         class="speech-bubble tay-bubble" 
-        style="top: 24%; left: 45%; max-width: min(340px, 26vw);" 
+        style="top: 24%; left: 45%; max-width: var(--bubble-max-w, 340px);" 
         data-editor-id="act1-gate-bubble"
       >
         <div class="speech-bubble-speaker">
@@ -1111,7 +1267,7 @@ export class Act1Screen {
     return `
       <div 
         class="speech-bubble callie-bubble" 
-        style="top: 18%; left: 35%; max-width: min(340px, 28vw);" 
+        style="top: 18%; left: 35%; max-width: var(--bubble-max-w, 340px);" 
         data-editor-id="act1-pov-callie-bubble"
       >
         <div class="speech-bubble-speaker">
@@ -1126,6 +1282,17 @@ export class Act1Screen {
   }
 
   renderBottomLeftControls() {
+    if (this.currentBeat === 'cold_open') {
+      const isMissionCardStep = this.coldOpenSteps[this.stepIndex]?.type === 'mission_card';
+      if (isMissionCardStep) return '';
+      return `
+        <div class="act1-hud-pill act1-nudge-pill" data-editor-id="act1-coldopen-prompt">
+          <span aria-hidden="true">👆</span>
+          <span>Click anywhere or press Space to continue</span>
+        </div>
+      `;
+    }
+
     if (this.currentBeat === 'hub') {
       return `
         <button 
@@ -1177,8 +1344,8 @@ export class Act1Screen {
         ` : `
           <button 
             id="act1-btn-next-step" 
-            class="act1-hud-btn" 
-            data-editor-id="act1-btn-next-step" aria-label="Next"
+            class="act1-hud-btn btn-action-primary pulse-btn" 
+            data-editor-id="act1-btn-next-step" aria-label="Next line"
           >
             Next ▶
           </button>
@@ -1311,6 +1478,19 @@ export class Act1Screen {
       });
     }
 
+    // Card click-through: clicking anywhere on the scene advances during cold_open dialogue
+    const card = this.container.querySelector('#act1-card');
+    if (card) {
+      card.addEventListener('click', (e) => {
+        if (this.isEditModeActive()) return;
+        if (e.target.closest('.act1-nav-bar, .act1-hud-bar, .act1-mission-card, .act1-interactable, .act1-pov-card')) return;
+        if (this.currentBeat === 'cold_open') {
+          if (this.coldOpenSteps[this.stepIndex]?.type === 'mission_card') return;
+          this.nextSubStep();
+        }
+      });
+    }
+
     // 2. Generic "Next Step" Button
     const nextStepBtn = this.container.querySelector('#act1-btn-next-step');
     if (nextStepBtn) {
@@ -1350,8 +1530,8 @@ export class Act1Screen {
     this.container.querySelectorAll('.act1-interactable').forEach(el => {
       el.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (this.isEditModeActive() || this.currentBeat !== 'hub') return;
-        this.selectLead(el.getAttribute('data-lead'));
+        if (this.isEditModeActive() || this.currentBeat !== 'hub' || this.isTayWalking) return;
+        this.triggerWalkToLead(el.getAttribute('data-lead'));
       });
     });
 
@@ -1360,9 +1540,9 @@ export class Act1Screen {
     if (canopyEl) {
       const triggerBreak = (e) => {
         e.stopPropagation();
-        if (this.isEditModeActive() || this.currentBeat !== 'hub') return;
+        if (this.isEditModeActive() || this.currentBeat !== 'hub' || this.isTayWalking) return;
         if (this.visitedLeads.size < 4) return;
-        this.startNap();
+        this.triggerWalkToLead('canopy');
       };
       canopyEl.addEventListener('click', triggerBreak);
       canopyEl.addEventListener('keydown', (e) => {

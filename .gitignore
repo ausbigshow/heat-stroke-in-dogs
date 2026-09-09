@@ -10,3 +10,5 @@ Thumbs.db
 .claude/skills/*
 !.claude/skills/new-act-screen/
 !.claude/skills/verify-in-browser/
+.agents/skills/*
+

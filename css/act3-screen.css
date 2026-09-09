@@ -166,6 +166,21 @@
   box-sizing: border-box;
 }
 
+.act3-hud-pill.progress-pill {
+  background: var(--surface-clock);
+  border-color: var(--hairline-light);
+  color: var(--text-on-dark);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.act3-hud-pill.progress-pill .act3-hud-label {
+  color: var(--text-on-dark-dim);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+
 .act3-hud-pill.clock-pill {
   background: var(--surface-clock);
   border-color: var(--color-amber-tint);

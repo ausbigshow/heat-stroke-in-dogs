@@ -348,22 +348,72 @@
   .act0-container {
     padding: 0.5rem;
     height: 100vh;
+    justify-content: center;
   }
   .act0-viewport-card {
     width: 100%;
     aspect-ratio: 4 / 3;
-    max-height: 88vh;
+    max-height: 86vh;
+    border-radius: var(--radius-lg);
   }
   .speech-bubble {
-    max-width: 78vw;
-    padding: 0.8rem 1rem;
+    --bubble-max-w: min(92vw, 360px);
+    max-width: min(92vw, 360px) !important;
+    padding: 0.85rem 1.1rem;
+    border-radius: var(--radius-lg);
+  }
+  .speech-bubble.callie-bubble {
+    top: 5% !important;
+    left: 4% !important;
+    --stem-right: 32px;
+  }
+  .speech-bubble.tay-bubble {
+    top: 18% !important;
+    left: auto !important;
+    right: 4% !important;
+    --stem-left: 28px;
   }
   .speech-bubble-text {
-    font-size: 0.95rem;
+    font-size: clamp(0.92rem, 3.2vw, 1.05rem);
+    line-height: 1.38;
   }
   .act0-nav-bar {
-    bottom: 0.75rem;
-    left: 0.75rem;
-    right: 0.75rem;
+    bottom: max(0.65rem, env(safe-area-inset-bottom, 0.65rem));
+    left: 0.65rem;
+    right: 0.65rem;
+    height: 44px;
+  }
+  .act0-hud-btn {
+    height: 42px;
+    min-width: 44px;
+    padding: 0 1rem;
+    font-size: 0.88rem;
+    touch-action: manipulation;
+  }
+  .act0-progress-badge {
+    height: 34px;
+    padding: 0 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .act0-container {
+    padding: 0.25rem;
+  }
+  .speech-bubble {
+    padding: 0.7rem 0.9rem;
+  }
+  .speech-bubble-speaker {
+    font-size: 0.75rem;
+    margin-bottom: 0.2rem;
+  }
+  .act0-hud-btn {
+    height: 40px;
+    padding: 0 0.85rem;
+    font-size: 0.82rem;
+  }
+  .act0-progress-badge {
+    display: none;
   }
 }

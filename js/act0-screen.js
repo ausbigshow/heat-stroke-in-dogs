@@ -27,14 +27,14 @@ export class Act0Screen {
         speaker: 'callie',
         name: 'Callie',
         text: "Hey. I'm Callie.",
-        style: 'top: 10%; left: 20%; max-width: min(260px, 20vw);'
+        style: 'top: 10%; left: 20%; max-width: var(--bubble-max-w, 280px);'
       },
       {
         id: 'step2',
         speaker: 'callie',
         name: 'Callie',
         text: "This is Tay.",
-        style: 'top: 11%; left: 24%; max-width: min(250px, 20vw);'
+        style: 'top: 11%; left: 24%; max-width: var(--bubble-max-w, 270px);'
       },
       {
         id: 'step3',
@@ -42,14 +42,14 @@ export class Act0Screen {
         name: 'Tay',
         onomatopoeia: 'Bark!',
         dialogue: "that's me! that's my name!",
-        style: 'top: 24%; left: 48%; max-width: min(290px, 22vw);'
+        style: 'top: 24%; left: 48%; max-width: var(--bubble-max-w, 300px);'
       },
       {
         id: 'step4',
         speaker: 'callie',
         name: 'Callie',
         text: "She's a French Bulldog. She loves snacks, the lake, and me. In whatever order you want.",
-        style: 'top: 7%; left: 11%; max-width: min(310px, 23vw);'
+        style: 'top: 7%; left: 11%; max-width: var(--bubble-max-w, 320px);'
       },
       {
         id: 'step5',
@@ -57,14 +57,14 @@ export class Act0Screen {
         name: 'Tay',
         onomatopoeia: 'Yip!',
         dialogue: 'snacks. definitely snacks first.',
-        style: 'top: 24%; left: 48%; max-width: min(290px, 22vw);'
+        style: 'top: 24%; left: 48%; max-width: var(--bubble-max-w, 300px);'
       },
       {
         id: 'step6',
         speaker: 'callie',
         name: 'Callie',
         text: "She's also never once known when something's wrong with her.",
-        style: 'top: 9%; left: 12%; max-width: min(300px, 22vw);'
+        style: 'top: 9%; left: 12%; max-width: var(--bubble-max-w, 310px);'
       },
       {
         id: 'step7',
@@ -72,21 +72,21 @@ export class Act0Screen {
         name: 'Tay',
         onomatopoeia: 'Huff!',
         dialogue: 'i feel amazing! i always feel amazing!',
-        style: 'top: 24%; left: 48%; max-width: min(300px, 23vw);'
+        style: 'top: 24%; left: 48%; max-width: var(--bubble-max-w, 310px);'
       },
       {
         id: 'step8',
         speaker: 'callie',
         name: 'Callie',
         text: "A couple summers ago, we drove out to the lake. It was a good day. Right up until it wasn't.",
-        style: 'top: 7%; left: 11%; max-width: min(310px, 23vw);'
+        style: 'top: 7%; left: 11%; max-width: var(--bubble-max-w, 320px);'
       },
       {
         id: 'step9',
         speaker: 'callie',
         name: 'Callie',
         text: "Tay had heat stroke. It almost killed her.",
-        style: 'top: 10%; left: 13%; max-width: min(290px, 22vw);'
+        style: 'top: 10%; left: 13%; max-width: var(--bubble-max-w, 300px);'
       },
       {
         id: 'step10',
@@ -94,21 +94,21 @@ export class Act0Screen {
         name: 'Tay',
         onomatopoeia: 'Woof!',
         dialogue: 'i was having such a good day!',
-        style: 'top: 24%; left: 48%; max-width: min(290px, 22vw);'
+        style: 'top: 24%; left: 48%; max-width: var(--bubble-max-w, 300px);'
       },
       {
         id: 'step11',
         speaker: 'callie',
         name: 'Callie',
         text: "You were. That was kind of the problem.",
-        style: 'top: 10%; left: 13%; max-width: min(290px, 22vw);'
+        style: 'top: 10%; left: 13%; max-width: var(--bubble-max-w, 300px);'
       },
       {
         id: 'step12',
         speaker: 'callie',
         name: 'Callie',
         text: "She felt it before I saw it. So she's telling this part.",
-        style: 'top: 9%; left: 12%; max-width: min(300px, 22vw);'
+        style: 'top: 9%; left: 12%; max-width: var(--bubble-max-w, 310px);'
       },
       {
         id: 'step13',
@@ -116,7 +116,7 @@ export class Act0Screen {
         name: 'Tay',
         onomatopoeia: 'Bark!',
         dialogue: "i'll tell it! i'll tell it so good!",
-        style: 'top: 24%; left: 48%; max-width: min(300px, 23vw);'
+        style: 'top: 24%; left: 48%; max-width: var(--bubble-max-w, 310px);'
       }
     ];
 

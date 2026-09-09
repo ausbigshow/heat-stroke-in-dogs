@@ -330,9 +330,16 @@ export class Act2Screen {
   // LIFECYCLE
   // =======================================================================
 
-  mount() {
+  mount(options = {}) {
     this.container = document.getElementById('screen-act2');
     if (!this.container) return;
+
+    if (options.beat) {
+      this.currentBeat = options.beat;
+    }
+    if (options.stepIndex !== undefined) {
+      this.stepIndex = options.stepIndex;
+    }
 
     this.render();
     window.addEventListener('keydown', this.handleKeyDown);
@@ -519,27 +526,37 @@ export class Act2Screen {
     if (!this.container) return;
 
     const { saturationDrop, heatOpacity, severity } = this.getEscalation();
-    const isTransport = this.currentBeat === 'transport';
+    const isTransport = this.currentBeat === 'transport' || this.currentBeat === 'handoff';
+    const isCloseCanopy = this.currentBeat === 'arrival' || this.currentBeat === 'call';
+    const isFpvInspect = !isTransport && !isCloseCanopy;
 
     this.container.innerHTML = `
       <div class="act2-container" data-editor-id="act2-screen-container">
 
-        <!-- Main 16:9 Viewport Stage — matches Act 1's card so the product reads as one piece.
-             Act 2's camera is at Callie's standing eyeline, so there is no low-cam tilt. -->
+        <!-- Main 16:9 Viewport Stage: close canopy framing, FPV downward inspection, or car interior -->
         <div
           id="act2-card"
-          class="act2-viewport-card ${isTransport ? 'in-car' : 'at-lake'}"
+          class="act2-viewport-card ${isTransport ? 'in-car' : ''} ${isCloseCanopy ? 'view-close-canopy' : ''} ${isFpvInspect ? 'view-fpv-inspect' : ''}"
           data-editor-id="act2-viewport-card"
           style="--act2-saturation-drop: ${saturationDrop}%; --act2-heat-opacity: ${heatOpacity}; --act2-severity: ${severity};"
         >
-          ${isTransport ? this.renderCarBackdrop() : `
-            <img
-              src="Assets/Image/Lake-Blank.jpg"
-              alt="Lakeside park landscape, late afternoon"
-              class="act2-scene-img"
-              data-editor-id="act2-lake-img"
-            />
-          `}
+          ${isTransport ? this.renderCarBackdrop() : (
+            isCloseCanopy ? `
+              <img
+                src="Assets/Image/Lake-CanopyClose-BG.jpg"
+                alt="Lakeside park under the shade canopy, close perspective"
+                class="act2-scene-img act2-close-canopy-bg"
+                data-editor-id="act2-lake-close-img"
+              />
+            ` : `
+              <img
+                src="Assets/Image/Lake-GrassTopDown-BG.jpg"
+                alt="Shaded grass ground beneath the canopy, top-down perspective"
+                class="act2-scene-img act2-fpv-ground-bg"
+                data-editor-id="act2-lake-fpv-img"
+              />
+            `
+          )}
 
           <!-- Heat / palette-drain wash -->
           <div class="act2-heat-wash" data-editor-id="act2-heat-wash" aria-hidden="true"></div>
@@ -551,7 +568,7 @@ export class Act2Screen {
           ${this.renderSceneLayer()}
 
           <!-- Dialogue / modal layer -->
-          <div class="act2-speech-layer" data-editor-id="act2-speech-layer">
+          <div class="act2-speech-layer ${this.beatHasModal() ? 'has-modal' : ''}" data-editor-id="act2-speech-layer">
             ${this.renderActiveBeatContent()}
           </div>
 
@@ -577,6 +594,14 @@ export class Act2Screen {
     } else {
       this.stopTowelTimer();
     }
+  }
+
+  /**
+   * Whether this beat renders a modal dialog. When active, the speech layer is lifted
+   * above the HUD bars (z-index 45 vs 40) so the modal scrim cleanly overlays the chrome.
+   */
+  beatHasModal() {
+    return this.currentBeat === 'check_active';
   }
 
   renderSrStatusText() {
@@ -654,71 +679,144 @@ export class Act2Screen {
   // Flat vector, no outlines, warm limited palette, per the Visual Asset Brief.
   // =======================================================================
 
-  // PLACEHOLDER ART — Tay, down on the grass at Callie's eyeline (not Act 1's low cam).
+  // Tay, down on the grass in lateral recumbency.
+  // In close canopy beats (arrival, call): uses the lateral side view with animated abdomen.
+  // In inspection beats (checks, gate, payoff, cooling): uses the FPV downward angle looking down at the dog.
   renderTayDown() {
     const still = this.prefersReducedMotion() ? 'is-still' : '';
+    const isFpv = !['arrival', 'call', 'transport', 'handoff'].includes(this.currentBeat);
+
+    if (isFpv) {
+      return `
+        <svg class="act2-tay-svg act2-tay-fpv-svg ${still}" viewBox="0 0 1376 768" data-editor-id="act2-art-tay"
+             role="img" aria-label="First person view looking down at Tay lying flat on her side on the grass, panting heavily with labored breathing">
+          <defs>
+            <clipPath id="act2-fpv-tay-abdomen-clip">
+              <path d="M460,250 C620,240 850,250 990,280 C1000,390 950,520 880,550 C760,570 580,560 480,540 C440,460 440,330 460,250 Z" />
+            </clipPath>
+          </defs>
+          <!-- Base full dog image from top-down FPV angle -->
+          <image href="Assets/Image/Tay-FPV-LateralLookingDown.png" xlink:href="Assets/Image/Tay-FPV-LateralLookingDown.png" x="0" y="0" width="1376" height="768" />
+          <!-- Swelling abdomen layer for labored panting respiration -->
+          <g class="act2-tay-labored-abdomen fpv-labored-abdomen">
+            <image href="Assets/Image/Tay-FPV-LateralLookingDown.png" xlink:href="Assets/Image/Tay-FPV-LateralLookingDown.png" x="0" y="0" width="1376" height="768" clip-path="url(#act2-fpv-tay-abdomen-clip)" />
+          </g>
+        </svg>
+      `;
+    }
+
     return `
-      <svg class="act2-tay-svg ${still}" viewBox="0 0 300 150" data-editor-id="act2-art-tay"
-           role="img" aria-label="Tay lying flat on her side on the grass, panting">
-        <ellipse cx="150" cy="136" rx="112" ry="13" fill="rgba(30, 41, 30, 0.3)" />
-        <path d="M228,116 C244,111 258,116 260,125 C262,134 248,136 232,133 Z" fill="#2C3033" />
-        <path d="M246,102 C262,96 274,100 272,111 C270,118 260,116 253,109 Z" fill="#2C3033" />
-        <g class="act2-tay-chest">
-          <path d="M70,122 C64,92 92,72 136,72 C188,72 230,88 240,112 C245,125 236,134 218,135 L92,135 C76,135 71,130 70,122 Z" fill="#34383B" />
-          <path d="M104,135 C97,121 104,105 120,101 C134,97 145,105 147,118 C148,128 142,135 133,135 Z" fill="#FFFFFF" />
-        </g>
-        <path d="M70,126 C54,124 38,128 36,134 C35,139 43,141 57,140 L86,138 Z" fill="#34383B" />
-        <path d="M66,138 C55,138 46,139 41,140 C48,142 59,142 68,141 Z" fill="#43484B" />
-        <g class="act2-tay-head">
-          <path d="M44,110 C37,95 48,80 68,78 C90,76 106,87 107,104 C108,120 95,130 74,130 C56,130 48,123 44,110 Z" fill="#34383B" />
-          <path d="M65,80 C60,63 67,50 76,50 C85,50 89,63 86,80 Z" fill="#34383B" />
-          <path d="M70,77 C66,65 70,56 76,56 C82,56 84,65 82,77 Z" fill="#DC7F77" />
-          <path d="M95,82 C95,67 102,56 110,58 C117,60 117,73 110,86 Z" fill="#2C3033" />
-          <path d="M44,112 C37,104 39,93 48,89 C59,84 72,89 74,100 C76,113 65,121 54,120 C48,119 46,116 44,112 Z" fill="#FFFFFF" />
-          <ellipse cx="45" cy="102" rx="7.5" ry="6" fill="#1A1D1F" />
-          <ellipse cx="70" cy="96" rx="5" ry="4.4" fill="#1A1D1F" />
-          <path d="M48,113 C55,120 66,120 71,114" stroke="#1A1D1F" stroke-width="2.2" fill="none" stroke-linecap="round" />
-          <path class="act2-tay-tongue" d="M54,118 C60,118 64,121 62,127 C60,132 53,131 52,125 Z" fill="#DC7F77" />
+      <svg class="act2-tay-svg act2-tay-close-svg ${still}" viewBox="0 0 1376 768" data-editor-id="act2-art-tay"
+           role="img" aria-label="Tay lying flat on her side on the grass, panting heavily with labored breathing">
+        <defs>
+          <radialGradient id="act2-tay-lateral-ground-shadow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(24, 36, 24, 0.45)" />
+            <stop offset="70%" stop-color="rgba(24, 36, 24, 0.2)" />
+            <stop offset="100%" stop-color="rgba(24, 36, 24, 0)" />
+          </radialGradient>
+          <clipPath id="act2-tay-abdomen-clip">
+            <path d="M936,245 C856,215 696,215 616,220 C606,300 616,420 626,560 C696,565 856,565 926,545 C936,460 941,330 936,245 Z" />
+          </clipPath>
+        </defs>
+        <ellipse cx="686" cy="585" rx="540" ry="42" fill="url(#act2-tay-lateral-ground-shadow)" />
+        <image href="Assets/Image/Tay-LayingLateralPanting.png" xlink:href="Assets/Image/Tay-LayingLateralPanting.png" x="0" y="0" width="1376" height="768" />
+        <g class="act2-tay-labored-abdomen tay-labored-abdomen">
+          <image href="Assets/Image/Tay-LayingLateralPanting.png" xlink:href="Assets/Image/Tay-LayingLateralPanting.png" x="0" y="0" width="1376" height="768" clip-path="url(#act2-tay-abdomen-clip)" />
         </g>
       </svg>
     `;
   }
 
-  // PLACEHOLDER ART — Callie, crouched, phone to her ear.
+  // Callie, crouched beside Tay.
+  // In Beat arrival: caring posture with hands reaching toward Tay.
+  // In Beat call: phone to ear, talking urgently to Marcus at the clinic.
   renderCallieCrouched() {
+    const isOnPhone = this.currentBeat === 'call';
+    const imgSrc = isOnPhone
+      ? 'Assets/Image/Callie-CrouchedPhone.png'
+      : 'Assets/Image/Callie-CrouchedCaring.png';
+    const ariaLabel = isOnPhone
+      ? 'Callie crouched beside Tay with a phone to her ear, talking urgently'
+      : 'Callie crouched beside Tay with hands reaching forward in deep concern';
+
     return `
-      <svg class="act2-callie-svg" viewBox="0 0 200 260" data-editor-id="act2-art-callie"
-           role="img" aria-label="Callie crouched beside Tay with a phone to her ear">
-        <ellipse cx="100" cy="248" rx="66" ry="11" fill="rgba(30, 41, 30, 0.28)" />
-        <path d="M64,150 C58,196 62,232 70,244 L104,244 C100,214 100,182 104,158 Z" fill="#2F5D7C" />
-        <path d="M104,150 C118,190 126,224 128,244 L96,244 C94,212 92,180 92,156 Z" fill="#35688A" />
-        <path d="M60,86 C62,64 82,52 102,54 C124,56 138,74 136,98 L134,152 C132,166 116,172 98,171 C76,170 62,162 60,146 Z" fill="#6E93AE" />
-        <path d="M78,72 C86,80 96,84 108,84 C118,84 126,80 132,74 L134,96 C122,102 96,102 78,94 Z" fill="#B5563C" opacity="0.55" />
-        <path d="M60,100 C46,126 42,150 44,168 C46,178 58,180 62,170 C66,152 70,130 76,116 Z" fill="#6E93AE" />
-        <path d="M136,100 C150,122 156,140 152,150 C148,158 138,156 134,148 C130,134 128,118 126,108 Z" fill="#6E93AE" />
-        <circle cx="152" cy="150" r="10" fill="#8A5A3E" />
-        <circle cx="52" cy="172" r="10" fill="#8A5A3E" />
-        <path d="M76,26 C76,8 122,8 124,28 C126,44 122,52 116,56 C104,62 92,62 84,56 C78,52 76,42 76,26 Z" fill="#8A5A3E" />
-        <path d="M72,26 C72,4 128,2 130,28 C132,50 128,64 126,86 C124,110 132,140 128,160 L136,160 C144,120 142,80 140,52 C138,20 116,-2 96,2 C80,5 70,14 72,26 Z" fill="#141013" />
-        <path d="M64,30 C58,58 56,96 58,132 C59,152 56,164 52,172 L44,168 C50,140 50,96 52,62 C54,38 58,28 64,30 Z" fill="#141013" />
-        <ellipse cx="97" cy="40" rx="3.4" ry="4.4" fill="#141013" />
-        <ellipse cx="113" cy="40" rx="3.4" ry="4.4" fill="#141013" />
-        <rect x="118" y="30" width="12" height="24" rx="4" fill="#27211E" transform="rotate(12 124 42)" />
-      </svg>
+      <img
+        src="${imgSrc}"
+        alt="${ariaLabel}"
+        class="act2-callie-img ${isOnPhone ? 'callie-on-phone' : 'callie-caring'}"
+        data-editor-id="act2-art-callie"
+        draggable="false"
+      />
     `;
   }
 
-  // PLACEHOLDER ART — Callie's own ice chest. It is the Act 1 "cooler" lead, still sitting in
-  // the sun where Tay spent ninety minutes pressed against it, and it is the thing the learner
-  // will be tempted to open in Beat 2C. Set dressing that makes an argument.
+  // Callie's cooler ("The Vault"). Matches Act 1 asset exactly for spatial continuity.
   renderIceChest() {
     return `
-      <svg class="act2-cooler-svg" viewBox="0 0 140 100" data-editor-id="act2-art-ice-chest" aria-hidden="true">
-        <ellipse cx="70" cy="90" rx="58" ry="9" fill="rgba(30, 41, 30, 0.3)" />
-        <rect x="18" y="30" width="104" height="54" rx="9" fill="#3E7C93" />
-        <rect x="28" y="46" width="84" height="30" rx="5" fill="#2E6274" />
-        <rect x="12" y="16" width="116" height="18" rx="6" fill="#F3EDE4" />
-        <rect x="62" y="26" width="16" height="12" rx="3" fill="#B5563C" />
+      <svg class="act2-cooler-svg" viewBox="0 0 130 90" data-editor-id="act2-art-ice-chest" aria-hidden="true">
+        <ellipse cx="65" cy="80" rx="55" ry="9" fill="rgba(36, 52, 36, 0.45)" />
+        <rect x="15" y="24" width="100" height="50" rx="8" fill="#0284C7" />
+        <rect x="25" y="40" width="80" height="28" rx="4" fill="#0369A1" />
+        <circle cx="28" cy="74" r="10" fill="#1E293B" />
+        <circle cx="28" cy="74" r="4" fill="#64748B" />
+        <circle cx="102" cy="74" r="10" fill="#1E293B" />
+        <circle cx="102" cy="74" r="4" fill="#64748B" />
+        <rect x="10" y="12" width="110" height="16" rx="5" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5" />
+        <rect x="58" y="22" width="14" height="12" rx="2" fill="#DC2626" />
+        <rect x="6" y="32" width="8" height="14" rx="3" fill="#64748B" />
+        <rect x="116" y="32" width="8" height="14" rx="3" fill="#64748B" />
+      </svg>
+    `;
+  }
+
+  // Persistent background objects maintaining continuity from Act 1:
+  renderDock() {
+    return `
+      <svg viewBox="0 0 200 150">
+        <rect x="80" y="44" width="7" height="30" rx="2" fill="#452A1D" />
+        <rect x="114" y="44" width="7" height="30" rx="2" fill="#452A1D" />
+        <ellipse cx="83" cy="74" rx="9" ry="3" fill="rgba(24, 62, 74, 0.5)" />
+        <ellipse cx="118" cy="74" rx="9" ry="3" fill="rgba(24, 62, 74, 0.5)" />
+        <rect x="52" y="96" width="9" height="42" rx="2" fill="#3A2317" />
+        <rect x="140" y="96" width="9" height="42" rx="2" fill="#3A2317" />
+        <polygon points="78,40 122,40 160,140 40,140" fill="#5E3D2A" />
+        <polygon points="79,44 121,44 123,58 77,58" fill="#D97706" />
+        <polygon points="77,60 123,60 126,76 74,76" fill="#B45309" />
+        <polygon points="74,78 126,78 130,95 70,95" fill="#D97706" />
+        <polygon points="71,97 129,97 134,115 66,115" fill="#B45309" />
+        <polygon points="67,117 133,117 138,137 62,137" fill="#D97706" />
+        <polygon points="40,140 160,140 156,145 44,145" fill="#3A2317" />
+      </svg>
+    `;
+  }
+
+  renderWaterBowl() {
+    return `
+      <svg viewBox="0 0 100 80">
+        <ellipse cx="50" cy="62" rx="42" ry="12" fill="rgba(36, 52, 36, 0.45)" />
+        <ellipse cx="50" cy="46" rx="40" ry="18" fill="#94A3B8" />
+        <ellipse cx="50" cy="46" rx="36" ry="15" fill="#CBD5E1" />
+        <ellipse cx="50" cy="48" rx="28" ry="10" fill="#38BDF8" opacity="0.8" />
+        <ellipse cx="46" cy="47" rx="16" ry="4" fill="#E0F2FE" opacity="0.6" />
+      </svg>
+    `;
+  }
+
+  renderCanopy() {
+    return `
+      <svg class="canopy-shade-svg" viewBox="0 0 350 260" aria-hidden="true">
+        <polygon points="10,240 330,240 345,190 25,190" fill="rgba(36, 52, 36, 0.38)" />
+      </svg>
+      <svg class="canopy-frame-svg" viewBox="0 0 350 260" aria-hidden="true">
+        <rect x="35" y="60" width="8" height="145" fill="#5E3D2A" rx="2" />
+        <rect x="305" y="60" width="8" height="145" fill="#5E3D2A" rx="2" />
+        <rect x="15" y="70" width="10" height="165" fill="#784E34" rx="2" />
+        <rect x="325" y="70" width="10" height="165" fill="#784E34" rx="2" />
+        <polygon points="170,5 5,75 170,75" fill="#E2D4C3" />
+        <polygon points="170,5 170,75 335,75" fill="#CFC2AC" />
+        <polygon points="170,5 150,75 190,75" fill="#DDD0BC" />
+        <polygon points="5,75 335,75 335,90 5,90" fill="#C8BAA4" />
+        <polygon points="5,90 335,90 330,95 10,95" fill="#B3A58F" />
       </svg>
     `;
   }
@@ -926,11 +1024,12 @@ export class Act2Screen {
   // =======================================================================
 
   renderSceneLayer() {
-    if (this.currentBeat === 'transport') return '';
+    if (this.currentBeat === 'transport' || this.currentBeat === 'handoff') return '';
 
+    const isCloseCanopy = this.currentBeat === 'arrival' || this.currentBeat === 'call';
     // The four observation hotspots are live only while the checks hub is on screen.
     const hotspotsLive = this.currentBeat === 'checks';
-    const showCooler = ['cooling', 'checks', 'gate', 'payoff', 'decision', 'waiting'].includes(this.currentBeat);
+    const showCooler = ['cooling'].includes(this.currentBeat);
     // The cooler leans into frame on exactly the step where reaching for it is the wrong move.
     const coolerTempting = this.currentBeat === 'cooling'
       && this.coolingSteps[this.coolingIndex]?.id === 'water_source'
@@ -939,22 +1038,25 @@ export class Act2Screen {
     return `
       <div class="act2-scene-layer" data-editor-id="act2-scene-layer">
 
-        <!-- Callie's cooler, at the edge of frame. Nobody is holding it and nobody is arguing
-             for it — the pull toward the ice is the learner's own, which is the point. -->
-        ${showCooler ? `
-          <div class="act2-cooler-group ${coolerTempting ? 'is-tempting' : ''}" data-editor-id="act2-cooler-group">
-            ${this.renderIceChest()}
+        ${isCloseCanopy ? `
+          <!-- Callie crouched beside Tay (taking up majority of close canopy framing) -->
+          <div class="act2-callie-group" data-editor-id="act2-callie-group">
+            ${this.renderCallieCrouched()}
           </div>
         ` : ''}
 
-        <div class="act2-callie-group" data-editor-id="act2-callie-group">
-          ${this.renderCallieCrouched()}
-        </div>
-
+        <!-- Tay: lateral recumbency in close canopy, or full-width downward FPV view in triage/cooling -->
         <div class="act2-tay-group" data-editor-id="act2-tay-group">
           ${this.renderTayDown()}
           ${hotspotsLive ? this.renderCheckHotspots() : ''}
         </div>
+
+        ${showCooler ? `
+          <!-- Cooler accessible during cooling intervention -->
+          <div class="act2-cooler-group ${coolerTempting ? 'is-tempting' : ''}" data-editor-id="act2-cooler-group">
+            ${this.renderIceChest()}
+          </div>
+        ` : ''}
 
       </div>
     `;
@@ -1025,7 +1127,7 @@ export class Act2Screen {
     if (step.speaker === 'tay_final') {
       return `
         <div class="speech-bubble tay-bubble act2-tay-final-bubble"
-             style="top: 46%; left: 12%; max-width: min(300px, 24vw);"
+             style="top: 44%; left: 66%; max-width: min(300px, 24vw);"
              data-editor-id="act2-tay-final-bubble">
           <div class="speech-bubble-speaker">
             <span aria-hidden="true">🐶</span>
@@ -1042,7 +1144,7 @@ export class Act2Screen {
 
     return `
       <div class="speech-bubble callie-bubble act2-callie-bubble"
-           style="top: 20%; left: 40%; max-width: min(360px, 28vw);"
+           style="top: 22%; left: 45%; max-width: min(350px, 28vw);"
            data-editor-id="act2-arrival-callie-bubble">
         <div class="speech-bubble-speaker">
           <span aria-hidden="true">👩</span>

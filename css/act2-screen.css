@@ -298,71 +298,223 @@
   z-index: 30;
 }
 
-.act2-tay-group {
+/* When holding a modal dialog, out-rank the HUD bars (z-index 40) so the scrim covers chrome */
+.act2-speech-layer.has-modal {
+  z-index: 45;
+}
+
+/* ==========================================================
+   CAMERA MODE 1: CLOSE CANOPY VIEW (arrival & call beats)
+   Callie and Tay take up the majority of the viewport.
+   ========================================================== */
+
+.act2-viewport-card.view-close-canopy .act2-callie-group {
   position: absolute;
-  left: 6%;
-  bottom: 9%;
-  width: 30%;
+  left: 8%;
+  top: 20%;
+  width: 38%;
+  min-width: 260px;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.act2-callie-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 14px 28px rgba(24, 20, 18, 0.35));
+}
+
+.act2-viewport-card.view-close-canopy .act2-tay-group {
+  position: absolute;
+  left: 40%;
+  top: 44%;
+  width: 54%;
+  min-width: 360px;
+  aspect-ratio: 1376 / 768;
+  pointer-events: none;
+  z-index: 14;
+}
+
+.act2-viewport-card.view-close-canopy .act2-callie-bubble {
+  top: 12%;
+  left: 16%;
+  max-width: min(380px, 32vw);
+}
+
+.act2-viewport-card.view-close-canopy .act2-tay-final-bubble {
+  top: 36%;
+  left: 52%;
+  max-width: min(340px, 28vw);
+}
+
+.act2-viewport-card.view-close-canopy .act2-call-panel {
+  top: 5rem;
+  left: auto;
+  right: 2rem;
+  width: min(380px, 34%);
+}
+
+/* ==========================================================
+   CAMERA MODE 2: FIRST-PERSON VIEW (FPV) LOOKING DOWN (checks, gate, payoff, cooling)
+   Callie's downward perspective looking at Tay on the grass.
+   ========================================================== */
+
+.act2-viewport-card.view-fpv-inspect .act2-tay-group {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 86%;
+  max-width: 1120px;
+  aspect-ratio: 1376 / 768;
   pointer-events: auto;
+  z-index: 22;
+}
+
+.act2-viewport-card.view-fpv-inspect .act2-call-panel {
+  top: 4.8rem;
+  left: 1.5rem;
+  width: min(360px, 30%);
 }
 
 .act2-tay-svg {
   width: 100%;
   height: auto;
   display: block;
-  filter: drop-shadow(0 10px 18px rgba(24, 20, 18, 0.34));
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.32));
 }
 
-.act2-tay-chest {
-  transform-origin: 150px 105px;
-  animation: act2TayBreathe 1.1s ease-in-out infinite;
+/* Heavy labored breathing: abdominal and thoracic heaving anchored along the dorsal spine */
+.act2-tay-labored-abdomen,
+.act2-tay-svg .tay-labored-abdomen {
+  transform-origin: 766px 240px;
+  transform-box: view-box;
+  animation: tayLaboredHeave 0.52s infinite ease-in-out;
 }
 
-.act2-tay-tongue {
-  transform-origin: 58px 118px;
-  animation: act2TayPant 0.55s ease-in-out infinite alternate;
+/* FPV labored breathing anchored along downward dorsal spine */
+.act2-tay-labored-abdomen.fpv-labored-abdomen,
+.act2-tay-svg .fpv-labored-abdomen {
+  transform-origin: 750px 250px;
+  transform-box: view-box;
+  animation: tayLaboredHeave 0.52s infinite ease-in-out;
 }
 
-@keyframes act2TayBreathe {
-  0%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(1.045); }
+@keyframes tayLaboredHeave {
+  0%, 100% {
+    transform: scale(1, 1);
+  }
+  35% {
+    transform: scale(1.025, 1.075) translateY(2px);
+  }
+  65% {
+    transform: scale(1.015, 1.04) translateY(1px);
+  }
 }
 
-@keyframes act2TayPant {
-  from { transform: translateY(0) scaleY(1); }
-  to { transform: translateY(2px) scaleY(1.12); }
-}
-
+.act2-tay-svg.is-still .act2-tay-labored-abdomen,
+.act2-tay-svg.is-still .tay-labored-abdomen,
 .act2-tay-svg.is-still .act2-tay-chest,
 .act2-tay-svg.is-still .act2-tay-tongue {
   animation: none;
 }
 
+/* Legacy 3rd-person positioning fallback */
+.act2-tay-group {
+  position: absolute;
+  top: 66.5%;
+  left: 68%;
+  width: 16%;
+  aspect-ratio: 1376 / 768;
+  pointer-events: auto;
+  z-index: 13;
+}
+
 .act2-callie-group {
   position: absolute;
-  left: 33%;
-  bottom: 8%;
-  width: 13%;
-  min-width: 120px;
+  top: 56%;
+  left: 57%;
+  width: 11%;
+  min-width: 95px;
+  pointer-events: none;
+  z-index: 14;
 }
 
-.act2-callie-svg {
+/* Pop-Up Shade Canopy — matches Act 1 position (top: 27%, left: 60%) */
+.act2-canopy-group {
+  position: absolute;
+  top: 27%;
+  left: 60%;
+  width: 35%;
+  height: 52%;
+  pointer-events: none;
+  z-index: 11;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
+}
+
+.act2-canopy-group .canopy-shade-svg,
+.act2-canopy-group .canopy-frame-svg {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
-  filter: drop-shadow(0 12px 20px rgba(24, 20, 18, 0.32));
 }
 
-/* The cooler sits in frame the whole time as set dressing, then comes forward on the one
-   step where reaching for it is the wrong answer. It is never interactive — the temptation
-   is carried by the option text; this only makes sure the object is on screen when it counts. */
+.act2-canopy-group .canopy-shade-svg {
+  transform: translateX(32%) scaleY(0.72);
+  transform-origin: 50% 92%;
+}
+
+/* The Wooden Dock ("High Ground") — matches Act 1 position */
+.act2-dock-group {
+  position: absolute;
+  top: 46%;
+  left: 14%;
+  width: 20%;
+  height: 22%;
+  transform: rotate(-9deg);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.act2-dock-group svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Water Bowl ("The Water One") — matches Act 1 position */
+.act2-bowl-group {
+  position: absolute;
+  top: 79%;
+  left: 45%;
+  width: 9.5%;
+  height: 10%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.act2-bowl-group svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Callie's cooler ("The Vault") — matches Act 1 position (top: 63%, left: 38%) */
 .act2-cooler-group {
   position: absolute;
-  right: 6%;
-  bottom: 9%;
-  width: 13%;
-  min-width: 110px;
-  opacity: 0.7;
+  top: 63%;
+  left: 38%;
+  width: 11%;
+  height: 13%;
+  min-width: 80px;
+  pointer-events: none;
+  z-index: 12;
+  opacity: 0.92;
   transition: opacity var(--transition-smooth, 0.35s ease), transform var(--transition-smooth, 0.35s ease);
 }
 
@@ -387,13 +539,13 @@
 
 .act2-hotspot {
   position: absolute;
-  width: 46px;
-  height: 46px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  border: 3px solid var(--focus-ring-on-dark);
+  border: 2.5px solid var(--focus-ring-on-dark);
   background: var(--surface-hud);
   color: var(--text-inverse);
-  font-size: 1.15rem;
+  font-size: 0.95rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -402,6 +554,19 @@
   box-shadow: var(--elev-4);
   transition: transform 0.2s var(--ease-out-expo), background 0.2s ease, border-color 0.2s ease;
   animation: act2HotspotInvite 2.2s ease-in-out infinite;
+}
+
+.act2-hotspot::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+  width: 125%;
+  height: 125%;
+  pointer-events: auto;
 }
 
 .act2-hotspot:hover,
@@ -448,10 +613,11 @@
   transform: translateX(-50%) translateY(0);
 }
 
-.act2-hotspot.hotspot-gums    { left: 17%; top: 74%; }
-.act2-hotspot.hotspot-ears    { left: 25%; top: 26%; }
-.act2-hotspot.hotspot-panting { left: 52%; top: 58%; }
-.act2-hotspot.hotspot-name    { left: 3%;  top: 40%; }
+/* Observation Hotspots aligned with Tay FPV downward body */
+.act2-hotspot.hotspot-ears    { left: 31%; top: 34%; }
+.act2-hotspot.hotspot-gums    { left: 15%; top: 62%; }
+.act2-hotspot.hotspot-name    { left: 19%; top: 40%; }
+.act2-hotspot.hotspot-panting { left: 55%; top: 47%; }
 
 /* ==========================================================
    BEAT: ARRIVAL — Tay's one subtitle, then the silence card
@@ -524,8 +690,9 @@
 .act2-call-panel {
   position: absolute;
   top: 5.5rem;
-  right: 2rem;
-  width: min(400px, 34%);
+  left: 2rem;
+  right: auto;
+  width: min(380px, 34%);
   pointer-events: auto;
   z-index: 34;
   animation: act2SlideIn 0.35s var(--ease-out-expo) forwards;
@@ -533,10 +700,12 @@
 
 .act2-call-panel.is-docked {
   top: 5.5rem;
+  left: 2rem;
+  right: auto;
 }
 
 @keyframes act2SlideIn {
-  from { opacity: 0; transform: translateX(18px); }
+  from { opacity: 0.99; transform: translateX(-18px); }
   to { opacity: 1; transform: translateX(0); }
 }
 
@@ -1130,7 +1299,7 @@
 }
 
 @keyframes act2CardIn {
-  from { opacity: 0; transform: translate(-50%, -48%) scale(0.97); }
+  from { opacity: 0.99; transform: translate(-50%, -48%) scale(0.97); }
   to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
@@ -1719,7 +1888,8 @@
 
   .act2-call-panel {
     width: min(340px, 46%);
-    right: 1rem;
+    left: 1rem;
+    right: auto;
   }
 }
 
@@ -1752,6 +1922,8 @@
 
   .act2-call-panel {
     width: min(320px, 54%);
+    left: 0.8rem;
+    right: auto;
   }
 
   .act2-payoff-card,
@@ -1792,6 +1964,8 @@
   .act2-gum-press,
   .act2-heat-lines path,
   .act2-pant-trace,
+  .act2-tay-labored-abdomen,
+  .act2-tay-svg .tay-labored-abdomen,
   .act2-tay-chest,
   .act2-tay-tongue {
     animation: none !important;
