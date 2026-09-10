@@ -101,5 +101,18 @@
     "text": "this is positioned in such a way that makes clicking on tay's various spots impossible.",
     "targetElementId": "act2-art-phone-bezel",
     "createdAt": "2026-09-10T02:57:03.806Z"
+  },
+  {
+    "id": "note_1789009082193",
+    "screenId": "act2",
+    "x": 120,
+    "y": 120,
+    "width": 260,
+    "height": 160,
+    "color": "yellow",
+    "status": "open",
+    "text": "",
+    "targetElementId": null,
+    "createdAt": "2026-09-10T02:58:02.193Z"
   }
 ]
