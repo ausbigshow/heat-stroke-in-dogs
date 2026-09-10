@@ -26,19 +26,6 @@
     "createdAt": "2026-09-03T20:08:37.362Z"
   },
   {
-    "id": "note_1789011951554",
-    "screenId": "act2",
-    "x": 196,
-    "y": 455,
-    "width": 260,
-    "height": 160,
-    "color": "yellow",
-    "status": "implemented",
-    "text": "Remove \"Last one\" from the dialogue. if the learner can complete these in any order, it does not make sense. ",
-    "targetElementId": "act2-check-tech-line",
-    "createdAt": "2026-09-10T03:45:51.554Z"
-  },
-  {
     "id": "note_1789012035585",
     "screenId": "act2",
     "x": 149,
