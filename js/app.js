@@ -44,9 +44,13 @@ class CourseApp {
       const key = initialScreen.startsWith('act') ? initialScreen : `act${initialScreen}`;
       const beat = urlParams.get('beat');
       const stepIndex = urlParams.has('step') ? parseInt(urlParams.get('step'), 10) : undefined;
+      const check = urlParams.get('check');
+      const checkStep = urlParams.get('checkStep');
       const options = {};
       if (beat) options.beat = beat;
       if (stepIndex !== undefined) options.stepIndex = stepIndex;
+      if (check) options.activeCheckId = check;
+      if (checkStep !== null && checkStep !== undefined) options.checkStepIndex = parseInt(checkStep, 10);
       this.navigateTo(key, options);
     } else {
       this.screens.opening = new OpeningScreen(this);

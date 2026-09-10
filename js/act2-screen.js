@@ -103,16 +103,15 @@ export class Act2Screen {
         dialogue: "I'm okay. I'm okay.",
         note: "Tay's last line of the act."
       },
-      { type: 'silence' },
       { speaker: 'callie', text: "You're not okay. You're not okay. Where's my phone —" }
     ];
 
-    // Beat 2A: the call itself. The vet tech is voice-only (no visual asset needed).
+    // Beat 2A: the call itself. The vet tech (Dana) speaks over the phone.
     this.callSteps = [
-      { speaker: 'system', text: 'Calling Lakeside Veterinary Clinic…' },
-      { speaker: 'tech', text: "Lakeside Veterinary, this is Marcus." },
+      { speaker: 'system', text: 'Calling Lakeside Emergency Clinic…' },
+      { speaker: 'tech', text: "Lakeside Emergency, this is Dana." },
       { speaker: 'callie', text: "My dog's down. French Bulldog, she's four, she won't get up. We're out at the lake." },
-      { speaker: 'tech', text: "Okay. I'm not going to ask you to guess at anything. I'm going to ask you to look at four things and tell me what you see." },
+      { speaker: 'tech', text: "Okay. Is she breathing? Is she standing up? Alright, stay with me. I need you to look at four things and tell me what you see. Don't move her yet." },
       { speaker: 'tech', text: "You're my eyes right now. Take them in whatever order you can get to. Start whenever you're ready." }
     ];
 
@@ -173,7 +172,7 @@ export class Act2Screen {
         label: 'Say her name',
         hudLabel: 'Name response',
         hotspotAria: 'Say Tay\'s name and count how long she takes to respond',
-        techPrompt: "Last one. Say her name in your normal voice and count out loud until she reacts. I want the number, even if the number is 'she didn't'.",
+        techPrompt: "Say her name in your normal voice and count out loud until she reacts. I want the number, even if the number is 'she didn't'.",
         techResponse: "Okay. I have everything I need from you.",
         flashback: {
           leadId: 'shade',
@@ -341,7 +340,11 @@ export class Act2Screen {
       this.stepIndex = options.stepIndex;
     }
 
-    this.render();
+    if (options.activeCheckId) {
+      this.openCheck(options.activeCheckId, options.checkStepIndex ?? 0);
+    } else {
+      this.render();
+    }
     window.addEventListener('keydown', this.handleKeyDown);
   }
 
@@ -550,8 +553,8 @@ export class Act2Screen {
               />
             ` : `
               <img
-                src="Assets/Image/Lake-GrassTopDown-BG.jpg"
-                alt="Shaded grass ground beneath the canopy, top-down perspective"
+                src="Assets/Image/Lake-GrassClean-BG.jpg"
+                alt="Shaded grass ground beneath the canopy, downward first person perspective"
                 class="act2-scene-img act2-fpv-ground-bg"
                 data-editor-id="act2-lake-fpv-img"
               />
@@ -692,12 +695,12 @@ export class Act2Screen {
              role="img" aria-label="First person view looking down at Tay lying flat on her side on the grass, panting heavily with labored breathing">
           <defs>
             <clipPath id="act2-fpv-tay-abdomen-clip">
-              <path d="M460,250 C620,240 850,250 990,280 C1000,390 950,520 880,550 C760,570 580,560 480,540 C440,460 440,330 460,250 Z" />
+              <path d="M640,225 C700,215 800,215 850,235 C855,330 850,480 850,555 C800,565 720,575 640,575 C635,500 635,330 640,225 Z" />
             </clipPath>
           </defs>
           <!-- Base full dog image from top-down FPV angle -->
           <image href="Assets/Image/Tay-FPV-LateralLookingDown.png" xlink:href="Assets/Image/Tay-FPV-LateralLookingDown.png" x="0" y="0" width="1376" height="768" />
-          <!-- Swelling abdomen layer for labored panting respiration -->
+          <!-- Swelling abdomen layer for labored panting respiration strictly isolated to flank -->
           <g class="act2-tay-labored-abdomen fpv-labored-abdomen">
             <image href="Assets/Image/Tay-FPV-LateralLookingDown.png" xlink:href="Assets/Image/Tay-FPV-LateralLookingDown.png" x="0" y="0" width="1376" height="768" clip-path="url(#act2-fpv-tay-abdomen-clip)" />
           </g>
@@ -729,7 +732,7 @@ export class Act2Screen {
 
   // Callie, crouched beside Tay.
   // In Beat arrival: caring posture with hands reaching toward Tay.
-  // In Beat call: phone to ear, talking urgently to Marcus at the clinic.
+  // In Beat call: phone to ear, talking urgently to Dana at the clinic.
   renderCallieCrouched() {
     const isOnPhone = this.currentBeat === 'call';
     const imgSrc = isOnPhone
@@ -848,32 +851,17 @@ export class Act2Screen {
   // COLOURBLIND SAFETY (Craft doc, and the single most important observation in the act):
   // gum state is NEVER carried by colour alone. Every gum render pairs the swatch with
   //   (a) a written colour label,
-  //   (b) an SVG fill PATTERN that differs between states,
-  //   (c) the capillary refill TIME in seconds against the printed normal range,
-  //   (d) a severity word ("Abnormal").
-  // Remove any one of those and the check still reads. Remove the colour and it still reads.
+  //   (c) the capillary refill TIME in seconds against the printed normal range.
   renderGumArt(v) {
-    const patternId = `act2-gum-${v.gumPattern}`;
     return `
       <div class="act2-check-art" data-editor-id="act2-art-gums">
-        <svg viewBox="0 0 320 190" class="act2-check-svg" role="img"
-             aria-label="Close-up of Tay's lifted lip. Gums: ${v.gumLabel}. Capillary refill ${v.refillSeconds} seconds, normal is under 2 seconds.">
-          <defs>
-            <pattern id="${patternId}" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
-              ${v.gumPattern === 'hatch'
-                ? '<rect width="4" height="10" fill="rgba(255,255,255,0.34)" />'
-                : '<circle cx="3" cy="3" r="2.2" fill="rgba(255,255,255,0.34)" />'}
-            </pattern>
-          </defs>
-          <rect width="320" height="190" rx="14" fill="#F3E4DA" />
-          <path d="M22,150 C40,96 100,66 162,66 C226,66 288,96 300,150 Z" fill="#4A3430" />
-          <path d="M46,150 C60,108 108,86 162,86 C216,86 264,108 278,150 Z" fill="${v.gumSwatch}" />
-          <path d="M46,150 C60,108 108,86 162,86 C216,86 264,108 278,150 Z" fill="url(#${patternId})" />
-          <path d="M92,150 C100,124 128,112 162,112 C196,112 224,124 232,150 Z" fill="#F6F1E8" />
-          <ellipse cx="162" cy="160" rx="72" ry="16" fill="#C77C74" />
-          <circle class="act2-gum-press" cx="118" cy="118" r="15" fill="#F6F1E8" opacity="0.9" />
-          <path d="M0,166 C60,150 118,146 162,146 C206,146 262,150 320,166 L320,190 L0,190 Z" fill="#2E2320" />
-        </svg>
+        <div class="act2-check-art-media" style="--gum-color: ${v.gumSwatch};">
+          <img
+            src="Assets/Image/Check-Gums-Art.jpg"
+            alt="Close-up of Tay's snout and upper gum at the lake park, showing canine tooth and capillary refill blanch spot"
+            class="act2-check-char-img"
+          />
+        </div>
 
         <!-- The refill-time counter: the colourblind-safe half of this observation. -->
         <div class="act2-refill-counter" data-editor-id="act2-art-refill-counter"
@@ -900,45 +888,42 @@ export class Act2Screen {
     `;
   }
 
-  // PLACEHOLDER ART — ear closeup, hands cupped around it.
+  // CHARACTER ART — ear closeup with Callie cupping Tay's bat ears (Note 4).
   renderEarArt(v) {
     return `
       <div class="act2-check-art" data-editor-id="act2-art-ears">
-        <svg viewBox="0 0 320 190" class="act2-check-svg" role="img"
-             aria-label="Close-up of Callie's hands cupping Tay's bat ear. ${v.earLabel}">
-          <rect width="320" height="190" rx="14" fill="#F3E4DA" />
-          <path d="M132,168 C118,120 128,62 160,44 C192,62 202,120 188,168 Z" fill="#34383B" />
-          <path d="M144,162 C134,124 142,78 160,66 C178,78 186,124 176,162 Z" fill="#DC7F77" />
-          <path d="M60,190 C56,140 84,112 122,116 C140,118 142,140 128,146 C104,156 96,172 96,190 Z" fill="#C89A78" />
-          <path d="M260,190 C264,140 236,112 198,116 C180,118 178,140 192,146 C216,156 224,172 224,190 Z" fill="#C89A78" />
-          <g class="act2-heat-lines" aria-hidden="true">
-            <path d="M150,36 C158,22 144,14 152,2" stroke="#C2410C" stroke-width="4" fill="none" stroke-linecap="round" />
-            <path d="M172,38 C180,24 166,16 174,4" stroke="#C2410C" stroke-width="4" fill="none" stroke-linecap="round" />
-          </g>
-        </svg>
+        <div class="act2-check-art-media">
+          <img
+            src="Assets/Image/Check-Ears-Art.jpg"
+            alt="Callie crouched outdoors on the grass by the lake, with a concerned, worried expression gently feeling Tay's bat ears"
+            class="act2-check-char-img"
+          />
+          <div class="act2-ear-heat-overlay" aria-hidden="true">
+            <svg viewBox="0 0 320 200" class="act2-ear-heat-waves" style="position: absolute; inset: 0; width: 100%; height: 100%;">
+              <path d="M120,70 C126,52 114,42 122,26" stroke="#C2410C" stroke-width="2.5" fill="none" stroke-linecap="round" />
+              <path d="M152,74 C158,56 146,46 154,30" stroke="#EA580C" stroke-width="2" fill="none" stroke-linecap="round" />
+            </svg>
+          </div>
+        </div>
         <dl class="act2-check-readout" data-editor-id="act2-readout-ears">
           <div><dt>Feel</dt><dd>${v.earLabel}</dd></div>
-          <div><dt>Compare</dt><dd>Warmer than the back of your own neck</dd></div>
+          <div><dt>Compare</dt><dd>Radiating heat — noticeably hotter than your hands</dd></div>
         </dl>
       </div>
     `;
   }
 
-  // PLACEHOLDER ART — panting rhythm, as a moving trace so rhythm reads without sound.
+  // CHARACTER ART — panting rhythm with actual character art of Tay (Note 10).
   renderPantingArt(v) {
-    const still = this.prefersReducedMotion() ? 'is-still' : '';
     return `
       <div class="act2-check-art" data-editor-id="act2-art-panting">
-        <svg viewBox="0 0 320 190" class="act2-check-svg" role="img"
-             aria-label="Tay's rib cage rising and falling. ${v.pantLabel} About ${v.pantRate} breaths per minute.">
-          <rect width="320" height="190" rx="14" fill="#F3E4DA" />
-          <path d="M20,150 C30,104 80,80 150,80 C222,80 288,106 300,150 Z" fill="#34383B" />
-          <path d="M96,150 C90,124 104,104 128,100 C150,97 164,110 166,130 C168,142 160,150 150,150 Z" fill="#FFFFFF" />
-          <g class="act2-pant-trace ${still}">
-            <polyline points="16,58 44,40 60,58 88,40 104,58 132,40 148,58 176,40 192,58 220,40 236,58 264,40 280,58 308,40"
-                      fill="none" stroke="#C2410C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
-          </g>
-        </svg>
+        <div class="act2-panting-img-wrap">
+          <img
+            src="Assets/Image/Check-Panting-Art.jpg"
+            alt="Tay panting heavily with mouth open and tongue extended from heat exhaustion"
+            class="act2-check-char-img"
+          />
+        </div>
         <dl class="act2-check-readout" data-editor-id="act2-readout-panting">
           <div><dt>Rhythm</dt><dd>${v.pantLabel}</dd></div>
           <div><dt>Rate</dt><dd>About ${v.pantRate} breaths per minute — she never closes her mouth</dd></div>
@@ -947,23 +932,19 @@ export class Act2Screen {
     `;
   }
 
-  // PLACEHOLDER ART — name response, as a counting strip. The subtitle bar is EMPTY here,
-  // and that emptiness is the point: in Act 1 this space was never empty.
+  // CHARACTER ART — Callie calls Tay's name, measuring responsiveness (Note 3).
   renderNameArt(v) {
     const delay = Math.round(3 + Math.max(0, Math.min(1, this.severity)) * 5);
     const ticks = [1, 2, 3, 4, 5, 6, 7, 8];
     return `
       <div class="act2-check-art" data-editor-id="act2-art-name">
-        <svg viewBox="0 0 320 190" class="act2-check-svg" role="img"
-             aria-label="Callie says Tay's name. Response ${v.responseWord}. ${v.responseLabel}">
-          <rect width="320" height="190" rx="14" fill="#F3E4DA" />
-          <path d="M30,164 C44,120 96,96 160,96 C226,96 286,122 298,164 Z" fill="#34383B" />
-          <path d="M56,148 C50,124 62,108 84,106 C104,104 116,116 118,132 C120,144 112,150 102,150 Z" fill="#FFFFFF" />
-          <ellipse cx="86" cy="126" rx="6" ry="5" fill="#1A1D1F" />
-          <rect x="40" y="24" width="240" height="42" rx="10" fill="#2E2320" opacity="0.9" />
-          <text x="160" y="50" text-anchor="middle" font-family="Outfit, sans-serif" font-size="17"
-                font-weight="700" fill="#8C807A">— no response —</text>
-        </svg>
+        <div class="act2-check-art-media">
+          <img
+            src="Assets/Image/Check-Name-Art.jpg"
+            alt="Callie kneeling on the grass by the lake calling Tay's name with concern while Tay lies unresponsive"
+            class="act2-check-char-img"
+          />
+        </div>
         <div class="act2-count-strip" data-editor-id="act2-art-name-counter"
              role="group" aria-label="Seconds counted before Tay responded: ${v.responseWord.toLowerCase()} after ${delay} seconds">
           ${ticks.map(n => `
@@ -1111,23 +1092,10 @@ export class Act2Screen {
     const step = this.arrivalSteps[this.stepIndex];
     if (!step) return '';
 
-    if (step.type === 'silence') {
-      return `
-        <div class="act2-silence-card" data-editor-id="act2-silence-card" role="note">
-          <span class="act2-silence-mark" aria-hidden="true">—</span>
-          <p class="act2-silence-line">Tay stops narrating.</p>
-          <p class="act2-silence-sub">
-            You will not hear from her again until the clinic. From here you only have
-            what you can see, touch, and count.
-          </p>
-        </div>
-      `;
-    }
-
     if (step.speaker === 'tay_final') {
       return `
         <div class="speech-bubble tay-bubble act2-tay-final-bubble"
-             style="top: 44%; left: 66%; max-width: min(300px, 24vw);"
+             style="bottom: 22%; top: auto; left: 42%; max-width: min(320px, 26vw);"
              data-editor-id="act2-tay-final-bubble">
           <div class="speech-bubble-speaker">
             <span aria-hidden="true">🐶</span>
@@ -1144,7 +1112,7 @@ export class Act2Screen {
 
     return `
       <div class="speech-bubble callie-bubble act2-callie-bubble"
-           style="top: 22%; left: 45%; max-width: min(350px, 28vw);"
+           style="top: 14%; left: 18%; max-width: min(380px, 32vw);"
            data-editor-id="act2-arrival-callie-bubble">
         <div class="speech-bubble-speaker">
           <span aria-hidden="true">👩</span>
@@ -1157,26 +1125,56 @@ export class Act2Screen {
     `;
   }
 
-  // ---- Beat 2A: the call ------------------------------------------------
+  // ---- Beat 2A: the call (Note 4: separate Callie and comic phone radio bubbles) ----
   renderCall() {
     const step = this.callSteps[this.stepIndex];
     if (!step) return '';
 
-    const isDialing = step.speaker === 'system';
-    const body = isDialing
-      ? `<p class="act2-phone-dialing">${step.text}</p>`
-      : `
-        <div class="act2-phone-line line-${step.speaker}">
-          <span class="act2-phone-line-who">${step.speaker === 'tech' ? 'Marcus · Vet Tech' : 'Callie'}</span>
-          <p class="act2-phone-line-text">"${step.text}"</p>
+    if (step.speaker === 'system') {
+      return `
+        <div class="act2-call-calling-pill" data-editor-id="act2-call-status">
+          <span class="act2-phone-dot" aria-hidden="true"></span>
+          <span>${step.text}</span>
         </div>
       `;
+    }
 
-    return `
-      <div class="act2-call-panel" data-editor-id="act2-call-panel">
-        ${this.renderPhoneUi(body, { status: isDialing ? 'Dialling…' : 'On call' })}
-      </div>
-    `;
+    if (step.speaker === 'callie') {
+      return `
+        <div class="speech-bubble callie-bubble act2-callie-bubble act2-call-callie-bubble"
+             style="top: 14%; left: 18%; max-width: min(380px, 32vw);"
+             data-editor-id="act2-call-callie-bubble">
+          <div class="speech-bubble-speaker">
+            <span aria-hidden="true">👩</span>
+            <span>Callie</span>
+          </div>
+          <p class="speech-bubble-text">
+            <span class="callie-dialogue">"${step.text}"</span>
+          </p>
+        </div>
+      `;
+    }
+
+    if (step.speaker === 'tech') {
+      return `
+        <div class="speech-bubble phone-radio-bubble"
+             style="top: 12%; left: 26%; max-width: min(440px, 36vw);"
+             data-editor-id="act2-art-phone-bezel">
+          <div class="speech-bubble-speaker comic-radio-speaker">
+            <span aria-hidden="true">⚡ 📱</span>
+            <span>Dana · Lakeside Emergency (Phone)</span>
+          </div>
+          <p class="speech-bubble-text comic-radio-text">
+            "${step.text}"
+          </p>
+          <svg class="electric-lightning-tail" viewBox="0 0 40 40" aria-hidden="true">
+            <polygon points="2,0 36,0 26,14 38,18 10,38 18,22 4,18" fill="#08212C" stroke="#06B6D4" stroke-width="2.5" stroke-linejoin="miter" />
+          </svg>
+        </div>
+      `;
+    }
+
+    return '';
   }
 
   // ---- Beat 2A: the checks hub -----------------------------------------
@@ -1188,7 +1186,7 @@ export class Act2Screen {
 
     const body = `
       <div class="act2-phone-line line-tech">
-        <span class="act2-phone-line-who">Marcus · Vet Tech</span>
+        <span class="act2-phone-line-who">Dana · Vet Tech</span>
         <p class="act2-phone-line-text">"${remaining.length
           ? "Whichever one you can get to. I'll take them in any order."
           : "That's all four. Stay on the line."}"</p>
@@ -1207,7 +1205,7 @@ export class Act2Screen {
       </ul>
       <p class="act2-phone-hint">${remaining.length
         ? 'Click on Tay to take an observation.'
-        : 'Tell him you have everything.'}</p>
+        : 'Tell her you have everything.'}</p>
       <p class="sr-only">${nextPrompt}</p>
     `;
 
@@ -1251,7 +1249,7 @@ export class Act2Screen {
     if (step.type === 'prompt' || step.type === 'response') {
       bodyHtml = `
         <div class="act2-check-tech-line" data-editor-id="act2-check-tech-line">
-          <span class="act2-phone-line-who">Marcus · Vet Tech</span>
+          <span class="act2-phone-line-who">Dana · Vet Tech</span>
           <p class="act2-phone-line-text">"${step.text}"</p>
         </div>
         ${step.type === 'response' ? artByCheck[this.activeCheckId]() : ''}
@@ -1365,7 +1363,7 @@ export class Act2Screen {
 
     const body = `
       <div class="act2-phone-line line-tech">
-        <span class="act2-phone-line-who">Marcus · Vet Tech</span>
+        <span class="act2-phone-line-who">Dana · Vet Tech</span>
         <p class="act2-phone-line-text">"Not yet. I still need ${missing.length === 1
           ? 'one more thing'
           : `${missing.length} more`} before I can tell you anything useful."</p>
@@ -1395,7 +1393,7 @@ export class Act2Screen {
     if (step === 0) {
       const body = `
         <div class="act2-phone-line line-tech">
-          <span class="act2-phone-line-who">Marcus · Vet Tech</span>
+          <span class="act2-phone-line-who">Dana · Vet Tech</span>
           <p class="act2-phone-line-text">"One more question, and it's the one that matters. How long has this been going on?"</p>
         </div>
       `;
@@ -1425,7 +1423,7 @@ export class Act2Screen {
           `).join('')}
         </ol>
         <p class="act2-payoff-tech">
-          <span class="act2-phone-line-who">Marcus · Vet Tech</span>
+          <span class="act2-phone-line-who">Dana · Vet Tech</span>
           "Ninety-five minutes of build-up, and everything you just described to me. I'm not
           going to make you wait for a number. Bring her in — and start cooling her before you drive."
         </p>
@@ -1445,7 +1443,7 @@ export class Act2Screen {
         <span class="act2-decision-badge">Beat 2B · Your call</span>
         <h2 class="act2-decision-title">She's flat on the grass and she isn't answering you.</h2>
         <p class="act2-decision-sub">
-          The lake is twenty feet away. The car is forty. Marcus is still on the line.
+          The lake is twenty feet away. The car is forty. Dana is still on the line.
         </p>
         <div class="act2-decision-options">
           <button id="act2-choice-act-now" class="act2-decision-option is-act"
@@ -1512,7 +1510,7 @@ export class Act2Screen {
       <div class="act2-call-panel" data-editor-id="act2-call-panel">
         ${this.renderPhoneUi(`
           <div class="act2-phone-line line-tech">
-            <span class="act2-phone-line-who">Marcus · Vet Tech</span>
+            <span class="act2-phone-line-who">Dana · Vet Tech</span>
             <p class="act2-phone-line-text">"Callie. Are you cooling her? Start now, and keep me on speaker."</p>
           </div>
         `)}
@@ -1579,7 +1577,7 @@ export class Act2Screen {
         </div>
 
         <p class="act2-cool-prompt">
-          <span class="act2-phone-line-who">Marcus · Vet Tech</span>
+          <span class="act2-phone-line-who">Dana · Vet Tech</span>
           "${step.techPrompt}"
         </p>
 
@@ -1675,7 +1673,7 @@ export class Act2Screen {
               <span class="act2-toggle-icon" aria-hidden="true">📞</span>
               <span class="act2-toggle-copy">
                 <strong>Clinic called ahead</strong>
-                <span>Already done — Marcus has been on the line since the lake.</span>
+                <span>Already done — Dana has been on the line since the lake.</span>
               </span>
               <span class="act2-toggle-state is-done">✓ DONE</span>
             </div>
@@ -1926,13 +1924,13 @@ export class Act2Screen {
     }
   }
 
-  openCheck(checkId) {
+  openCheck(checkId, stepIndex = 0) {
     if (!this.checksData[checkId]) return;
     // Remember which hotspot opened the modal so focus can be returned to it on close
     // (no keyboard trap — design-language.md §7.5).
     this.returnFocusCheckId = checkId;
     this.activeCheckId = checkId;
-    this.checkStepIndex = 0;
+    this.checkStepIndex = stepIndex;
     this.currentBeat = 'check_active';
     this.render();
     this.focusInModal();
