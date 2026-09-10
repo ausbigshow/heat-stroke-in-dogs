@@ -26,19 +26,6 @@
     "createdAt": "2026-09-03T20:08:37.362Z"
   },
   {
-    "id": "note_1789011732008",
-    "screenId": "act2",
-    "x": 120,
-    "y": 120,
-    "width": 260,
-    "height": 160,
-    "color": "yellow",
-    "status": "open",
-    "text": "The picture does not match the art style of the rest of the art in the module. Additionally, the animated thumb is detached and free floating.\n\nredo the art to be a close-up of the gum and snout area, and maintain visual consistency with the rest of the module. also make sure the background matches the environment tay is currently in, not some abstract design.",
-    "targetElementId": "act2-art-gums",
-    "createdAt": "2026-09-10T03:42:12.008Z"
-  },
-  {
     "id": "note_1789011951554",
     "screenId": "act2",
     "x": 196,
@@ -46,7 +33,7 @@
     "width": 260,
     "height": 160,
     "color": "yellow",
-    "status": "open",
+    "status": "implemented",
     "text": "Remove \"Last one\" from the dialogue. if the learner can complete these in any order, it does not make sense. ",
     "targetElementId": "act2-check-tech-line",
     "createdAt": "2026-09-10T03:45:51.554Z"
@@ -59,7 +46,7 @@
     "width": 260,
     "height": 160,
     "color": "yellow",
-    "status": "open",
+    "status": "implemented",
     "text": "update the art with new on-brand assets, not a placeholder.",
     "targetElementId": "act2-art-name",
     "createdAt": "2026-09-10T03:47:15.585Z"
@@ -72,7 +59,7 @@
     "width": 260,
     "height": 160,
     "color": "yellow",
-    "status": "open",
+    "status": "implemented",
     "text": "the art style does not match the visual identity of the rest of the module, and the background of the image does not depict a lake area. callie should not be smiling in the photo either.",
     "targetElementId": "act2-art-ears",
     "createdAt": "2026-09-10T03:48:05.123Z"
@@ -85,7 +72,7 @@
     "width": 260,
     "height": 160,
     "color": "yellow",
-    "status": "open",
+    "status": "implemented",
     "text": "callie's pant catches some of her front leg, please adjust. ",
     "targetElementId": "act2-art-tay",
     "createdAt": "2026-09-10T03:49:37.833Z"
