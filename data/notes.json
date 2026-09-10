@@ -34,7 +34,7 @@
     "height": 160,
     "color": "yellow",
     "status": "open",
-    "text": "The picture does not match the art style of the rest of the art in the module. Additionally, the animated thumb is detached and free floating.\n\nredo the art to be a close-up of the gum and snout area, and maintain visual consistency with the rest of the module. also make sure the background matches the environment tay is currently in",
+    "text": "The picture does not match the art style of the rest of the art in the module. Additionally, the animated thumb is detached and free floating.\n\nredo the art to be a close-up of the gum and snout area, and maintain visual consistency with the rest of the module. also make sure the background matches the environment tay is currently in, not some abstract design.",
     "targetElementId": "act2-art-gums",
     "createdAt": "2026-09-10T03:42:12.008Z"
   }
