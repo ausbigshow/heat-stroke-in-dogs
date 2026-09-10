@@ -47,7 +47,7 @@
     "height": 160,
     "color": "yellow",
     "status": "open",
-    "text": "Remove \"Last one\" from the dialogue. if the ",
+    "text": "Remove \"Last one\" from the dialogue. if the learner can complete these in any order, it does not make sense. ",
     "targetElementId": "act2-check-tech-line",
     "createdAt": "2026-09-10T03:45:51.554Z"
   }
