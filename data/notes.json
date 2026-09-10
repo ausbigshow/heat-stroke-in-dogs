@@ -24,18 +24,5 @@
     "text": "Unnecessary interaction. Please remove and have the doctor appear on a delay instead. ",
     "targetElementId": "act3-wait-panel",
     "createdAt": "2026-09-03T20:08:37.362Z"
-  },
-  {
-    "id": "note_1789011523270",
-    "screenId": "act2",
-    "x": 120,
-    "y": 120,
-    "width": 260,
-    "height": 160,
-    "color": "yellow",
-    "status": "open",
-    "text": "",
-    "targetElementId": "act2-check-body",
-    "createdAt": "2026-09-10T03:38:43.270Z"
   }
 ]
