@@ -37,5 +37,18 @@
     "text": "There is what appears to be a stray finger that should be attached to a hand. please edit the photo to depict callie's left hand lifting the lip.. Also, animate callie's right hand to press on tay's gum, and have the gum react.",
     "targetElementId": "act2-art-gums",
     "createdAt": "2026-09-10T04:11:49.968Z"
+  },
+  {
+    "id": "note_1789013651098",
+    "screenId": "act2",
+    "x": 120,
+    "y": 120,
+    "width": 260,
+    "height": 160,
+    "color": "yellow",
+    "status": "open",
+    "text": "",
+    "targetElementId": null,
+    "createdAt": "2026-09-10T04:14:11.098Z"
   }
 ]
