@@ -24,18 +24,5 @@
     "text": "Unnecessary interaction. Please remove and have the doctor appear on a delay instead. ",
     "targetElementId": "act3-wait-panel",
     "createdAt": "2026-09-03T20:08:37.362Z"
-  },
-  {
-    "id": "note_1789011538377",
-    "screenId": "act2",
-    "x": 120,
-    "y": 120,
-    "width": 260,
-    "height": 160,
-    "color": "yellow",
-    "status": "open",
-    "text": "The art does not match the style. also, the animated thumb is detached from the hand and floating.\n\nredo the art to be more of a close-up of the snout/mouth area, and maintain consistency in art style from the rest of the assets. ",
-    "targetElementId": "act2-art-gums",
-    "createdAt": "2026-09-10T03:38:58.377Z"
   }
 ]
