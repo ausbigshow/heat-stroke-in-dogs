@@ -150,7 +150,7 @@
     "height": 160,
     "color": "yellow",
     "status": "open",
-    "text": "replace with true character art, not placeholder.",
+    "text": "replace with true character art, not placeholder. generate ",
     "targetElementId": "act2-art-ears",
     "createdAt": "2026-09-10T03:05:02.437Z"
   },
