@@ -88,5 +88,18 @@
     "text": "I would prefer this dialogue to be two seperate speech bubbles: one coming from callie's phone, the other from callie herself. the one coming from callie's phone should have that sharp, electric, angular look you see in comic books.",
     "targetElementId": "act2-art-phone-bezel",
     "createdAt": "2026-09-10T02:54:21.970Z"
+  },
+  {
+    "id": "note_1789009023806",
+    "screenId": "act2",
+    "x": 120,
+    "y": 120,
+    "width": 260,
+    "height": 160,
+    "color": "yellow",
+    "status": "open",
+    "text": "",
+    "targetElementId": null,
+    "createdAt": "2026-09-10T02:57:03.806Z"
   }
 ]
