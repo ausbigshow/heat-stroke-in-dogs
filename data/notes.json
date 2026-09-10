@@ -50,18 +50,5 @@
     "text": "better, but make the photo more of a close up on the upper half of the head/ full ears. ",
     "targetElementId": "act2-art-ears",
     "createdAt": "2026-09-10T04:14:11.098Z"
-  },
-  {
-    "id": "note_1789013819755",
-    "screenId": "act2",
-    "x": 208,
-    "y": 635,
-    "width": 260,
-    "height": 160,
-    "color": "yellow",
-    "status": "open",
-    "text": "",
-    "targetElementId": "act2-transport-panel",
-    "createdAt": "2026-09-10T04:16:59.755Z"
   }
 ]
