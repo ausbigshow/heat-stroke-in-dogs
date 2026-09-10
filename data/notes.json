@@ -26,19 +26,6 @@
     "createdAt": "2026-09-03T20:08:37.362Z"
   },
   {
-    "id": "note_1789009023806",
-    "screenId": "act2",
-    "x": 542,
-    "y": 794,
-    "width": 260,
-    "height": 160,
-    "color": "yellow",
-    "status": "implemented",
-    "text": "this is positioned in such a way that makes clicking on tay's various spots impossible.",
-    "targetElementId": "act2-art-phone-bezel",
-    "createdAt": "2026-09-10T02:57:03.806Z"
-  },
-  {
     "id": "note_1789009082193",
     "screenId": "act2",
     "x": 904,
