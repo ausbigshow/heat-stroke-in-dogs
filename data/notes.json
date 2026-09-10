@@ -24,18 +24,5 @@
     "text": "Unnecessary interaction. Please remove and have the doctor appear on a delay instead. ",
     "targetElementId": "act3-wait-panel",
     "createdAt": "2026-09-03T20:08:37.362Z"
-  },
-  {
-    "id": "note_1789012177833",
-    "screenId": "act2",
-    "x": 504,
-    "y": 741,
-    "width": 260,
-    "height": 160,
-    "color": "yellow",
-    "status": "implemented",
-    "text": "callie's pant catches some of her front leg, please adjust. ",
-    "targetElementId": "act2-art-tay",
-    "createdAt": "2026-09-10T03:49:37.833Z"
   }
 ]
