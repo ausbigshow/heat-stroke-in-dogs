@@ -26,19 +26,6 @@
     "createdAt": "2026-09-03T20:08:37.362Z"
   },
   {
-    "id": "note_1789008806067",
-    "screenId": "act2",
-    "x": 451,
-    "y": 632,
-    "width": 260,
-    "height": 160,
-    "color": "yellow",
-    "status": "implemented",
-    "text": "bubble is not oriented towards callie's mouth,  please fix. ",
-    "targetElementId": "act2-arrival-callie-bubble",
-    "createdAt": "2026-09-10T02:53:26.067Z"
-  },
-  {
     "id": "note_1789009023806",
     "screenId": "act2",
     "x": 542,
