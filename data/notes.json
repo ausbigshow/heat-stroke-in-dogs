@@ -140,5 +140,18 @@
     "text": "replace the gum art with art in line with tay's character design. if you could make it a side profile with an animation of callie's hands, one holding the lip up, the other pressing the gum, that would be great. ",
     "targetElementId": "act2-art-gums",
     "createdAt": "2026-09-10T03:02:38.996Z"
+  },
+  {
+    "id": "note_1789009502437",
+    "screenId": "act2",
+    "x": 120,
+    "y": 120,
+    "width": 260,
+    "height": 160,
+    "color": "yellow",
+    "status": "open",
+    "text": "",
+    "targetElementId": null,
+    "createdAt": "2026-09-10T03:05:02.437Z"
   }
 ]
