@@ -127,18 +127,5 @@
     "text": "replace with true character art, not placeholder. generate new assets if needed.",
     "targetElementId": "act2-art-ears",
     "createdAt": "2026-09-10T03:05:02.437Z"
-  },
-  {
-    "id": "note_1789009556750",
-    "screenId": "act2",
-    "x": 286,
-    "y": 280,
-    "width": 260,
-    "height": 160,
-    "color": "yellow",
-    "status": "implemented",
-    "text": "replace with actual character art of tay, generate new assets if needed.",
-    "targetElementId": "act2-art-panting",
-    "createdAt": "2026-09-10T03:05:56.750Z"
   }
 ]
