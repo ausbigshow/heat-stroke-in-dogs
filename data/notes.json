@@ -151,7 +151,7 @@
     "color": "yellow",
     "status": "open",
     "text": "",
-    "targetElementId": null,
+    "targetElementId": "act2-art-ears",
     "createdAt": "2026-09-10T03:05:02.437Z"
   }
 ]
