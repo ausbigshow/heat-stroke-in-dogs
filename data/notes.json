@@ -164,7 +164,7 @@
     "color": "yellow",
     "status": "open",
     "text": "",
-    "targetElementId": null,
+    "targetElementId": "act2-art-panting",
     "createdAt": "2026-09-10T03:05:56.750Z"
   }
 ]
