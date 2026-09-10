@@ -35,7 +35,7 @@
     "color": "yellow",
     "status": "open",
     "text": "",
-    "targetElementId": null,
+    "targetElementId": "act2-check-body",
     "createdAt": "2026-09-10T03:38:43.270Z"
   }
 ]
