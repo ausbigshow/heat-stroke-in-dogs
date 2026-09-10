@@ -76,5 +76,18 @@
     "text": "the art style does not match the visual identity of the rest of the module, and the background of the image does not depict a lake area. callie should not be smiling in the photo either.",
     "targetElementId": "act2-art-ears",
     "createdAt": "2026-09-10T03:48:05.123Z"
+  },
+  {
+    "id": "note_1789012177833",
+    "screenId": "act2",
+    "x": 120,
+    "y": 120,
+    "width": 260,
+    "height": 160,
+    "color": "yellow",
+    "status": "open",
+    "text": "",
+    "targetElementId": null,
+    "createdAt": "2026-09-10T03:49:37.833Z"
   }
 ]
