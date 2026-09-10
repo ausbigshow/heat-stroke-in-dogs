@@ -26,18 +26,6 @@
     "createdAt": "2026-09-03T20:08:37.362Z"
   },
   {
-    "id": "note_1789008371069",
-    "screenId": "act2",
-    "x": 120,
-    "y": 120,
-    "width": 260,
-    "height": 160,
-    "color": "yellow",
-    "status": "implemented",
-    "text": "resize Tay to be correctly proportioned in relation to callie. ",
-    "createdAt": "2026-09-10T02:46:11.069Z"
-  },
-  {
     "id": "note_1789008806067",
     "screenId": "act2",
     "x": 451,
