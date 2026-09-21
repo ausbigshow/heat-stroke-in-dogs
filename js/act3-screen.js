@@ -48,7 +48,7 @@ export class Act3Screen {
     this.container = null;
 
     // ---- Core beat state -------------------------------------------------
-    // 'wait' | 'verdict' | 'report' | 'tayReturn' | 'nextTime' | 'recheck' | 'home' | 'end'
+    // 'wait' | 'verdict' | 'report' | 'tayReturn' | 'nextTime' | 'recheck' | 'home' | 'recap' | 'end'
     this.currentBeat = 'wait';
     this.stepIndex = 0;
 
@@ -56,9 +56,6 @@ export class Act3Screen {
     // Twelve seconds of nothing, which is what makes the vet's entrance land. It is a real
     // wait, not a loading bar — but it is never a trap: `#act3-btn-skip-wait` is present and
     // focusable from the first frame (H3, user control and freedom).
-    this.WAIT_SECONDS = 12;
-    this.waitSeconds = 0;
-    this.waitTimer = null;
     this.waitOver = false;
     this.castState = { callie: 'waiting', reyes: 'absent', tay: 'absent' };
 
@@ -74,8 +71,7 @@ export class Act3Screen {
     this.handoff = {};
 
     // ---- Beat 3C: the report card ---------------------------------------
-    this.reportStep = 0;
-    this.reportTableExpanded = false;
+        this.reportTableExpanded = false;
 
     // ---- Beat 3E: prevention ---------------------------------------------
     this.preventionChosen = new Set();
@@ -111,7 +107,7 @@ export class Act3Screen {
       { speaker: 'callie', text: "They told me to on the phone." },
       {
         speaker: 'reyes',
-        business: 'washing her hands at the lobby sink',
+        business: 'washing her hands at the clinic sink',
         text: "Good. That's the difference. Dogs whose owners cool them before they get in the car are about two and a half times more likely to make it than the ones who don't. You didn't drive her here. You started treating her and then you drove her here.",
         cast: { reyes: 'warm' },
         stamp: {
@@ -310,7 +306,7 @@ export class Act3Screen {
       { speaker: 'callie', text: "Nobody leaves a dog in a car." },
       {
         speaker: 'reyes',
-        business: 'hanging up the towel',
+        business: 'washing her hands',
         cast: { reyes: 'serious' },
         text: "You'd think. Twenty degrees inside in the first ten minutes. And cracking the windows takes it from about three and a half degrees every five minutes down to about three. It buys you nothing. You don't need that. Somebody you know does.",
         stamp: {
@@ -382,8 +378,7 @@ export class Act3Screen {
     ];
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
-    this.tickWait = this.tickWait.bind(this);
-  }
+      }
 
   // =======================================================================
   // LIFECYCLE
@@ -394,15 +389,13 @@ export class Act3Screen {
     if (!this.container) return;
 
     this.render();
-    if (this.currentBeat === 'wait' && !this.waitOver) this.startWaitTimer();
-    window.addEventListener('keydown', this.handleKeyDown);
+        window.addEventListener('keydown', this.handleKeyDown);
   }
 
   unmount() {
     if (this._autoAdvanceTimer) clearTimeout(this._autoAdvanceTimer);
     window.removeEventListener('keydown', this.handleKeyDown);
-    this.stopWaitTimer();
-    releaseFocusContainment(this.container || document);
+        releaseFocusContainment(this.container || document);
   }
 
   /**
@@ -473,6 +466,7 @@ export class Act3Screen {
       nextTime: 1.0,
       recheck: 1.0,
       home: 1.0,
+      recap: 1.0,
       end: 1.0
     };
     const r = byBeat[this.currentBeat] ?? 1;
@@ -480,13 +474,13 @@ export class Act3Screen {
       recovery: r.toFixed(3),
       // 46% drained at the door, fully saturated by the time she is climbing Callie.
       saturation: (54 + r * 46).toFixed(1),
-      // The clinical cool wash over the lobby, gone by the time the room warms up.
+      // The clinical cool wash over the clinic, gone by the time the room warms up.
       coolOpacity: (0.42 * (1 - r)).toFixed(3)
     };
   }
 
   /**
-   * Tay's status, as the lobby knows it. Text carries the state; colour only reinforces (§6.1).
+   * Tay's status, as the clinic knows it. Text carries the state; colour only reinforces (§6.1).
    *
    * It must not resolve one frame early. The pill flips on the step where Reyes actually says
    * "She's stable" — not when the beat changes, which is while she is still coming through the
@@ -511,51 +505,7 @@ export class Act3Screen {
   // BEAT 3A — THE WAIT
   // =======================================================================
 
-  startWaitTimer() {
-    if (this.waitTimer) return;
-    this.waitTimer = window.setInterval(this.tickWait, 1000);
-  }
-
-  stopWaitTimer() {
-    if (this.waitTimer) {
-      window.clearInterval(this.waitTimer);
-      this.waitTimer = null;
-    }
-  }
-
-  /**
-   * Ticks touch one text node and one custom property. A full re-render on a 1s interval would
-   * fight Edit Mode's selection and drag state — same reasoning as Act 2's tickElapsed(). The
-   * timer is not suppressed while editing (§8.4), it just does not advance.
-   */
-  tickWait() {
-    if (this.isEditModeActive()) return;
-    this.waitSeconds += 1;
-
-    const remaining = Math.max(0, this.WAIT_SECONDS - this.waitSeconds);
-    const bar = this.container?.querySelector('#act3-wait-bar');
-    if (bar) {
-      bar.style.setProperty('--act3-wait-progress', `${Math.min(100, (this.waitSeconds / this.WAIT_SECONDS) * 100)}%`);
-      bar.setAttribute('aria-valuenow', String(this.waitSeconds));
-      bar.setAttribute('aria-label', `Waiting for clinic staff: approximately ${remaining} seconds remaining`);
-    }
-
-    const srStatus = this.container?.querySelector('#act3-wait-sr-status');
-    if (srStatus) {
-      if (remaining === 6) {
-        srStatus.textContent = 'Waiting for clinic staff: approximately 6 seconds remaining.';
-      } else if (remaining === 0) {
-        srStatus.textContent = 'The door to the back opens.';
-      }
-    }
-
-    if (this.waitSeconds >= this.WAIT_SECONDS) {
-      this.endWait();
-    }
-  }
-
   endWait() {
-    this.stopWaitTimer();
     this.waitOver = true;
     this.currentBeat = 'verdict';
     this.stepIndex = 0;
@@ -621,7 +571,7 @@ export class Act3Screen {
         >
           ${scene.html}
 
-          <!-- Light wash. Cool and clinical in the lobby, warm and low in the evening. -->
+          <!-- Light wash. Cool and clinical in the clinic, warm and low in the evening. -->
           <div class="act3-wash ${scene.wash}" data-editor-id="act3-wash" aria-hidden="true"></div>
 
           ${this.renderHudBar()}
@@ -655,18 +605,18 @@ export class Act3Screen {
    * dialog state honest rather than a row of buttons that look live and are not.
    */
   beatHasModal() {
-    return this.currentBeat === 'report' || this.currentBeat === 'end';
+    return this.currentBeat === 'recap' || this.currentBeat === 'end';
   }
 
   renderSrStatusText() {
     const status = this.getTayStatus();
     switch (this.currentBeat) {
       case 'wait':
-        return `Clinic lobby. ${status.aria} Callie is waiting.`;
+        return `The treatment room. ${status.aria} Callie is waiting.`;
       case 'verdict':
         return `${status.aria} Dr. Reyes is explaining what made the difference.`;
       case 'report':
-        return `${status.aria} Dr. Reyes is walking through the four signs you reported and the timeline they came from.`;
+        return `${status.aria} Dr. Reyes is discussing the signs.`;
       case 'tayReturn':
         return 'Tay is back on her feet, wearing a cone, and talking again for the first time since the lake.';
       case 'nextTime':
@@ -675,22 +625,14 @@ export class Act3Screen {
         return 'Dr. Reyes is giving discharge instructions: recheck in 24 to 48 hours, and watch her tonight.';
       case 'home':
         return 'That evening, at home. Tay is asleep on the couch and Callie is sitting with her.';
+      case 'recap':
+        return 'A summary of what happened to Tay this afternoon.';
       default:
         return 'The story is over. You can replay an act or return to the title screen.';
     }
   }
 
   getSrDialogueText() {
-    if (this.currentBeat === 'report') {
-      const step = this.reportSteps[this.reportStep];
-      if (!step) return '';
-      let lines = [...step.lines];
-      if (step.variants) {
-        lines = lines.concat(step.variants[this.decisionChoice || 'unknown'] || step.variants.unknown);
-      }
-      return lines.map(line => `${line.speaker === 'reyes' ? 'Dr. Reyes' : 'Callie'}: ${line.text}`).join(' ');
-    }
-
     const steps = this.stepsForBeat();
     if (!steps || !steps[this.stepIndex]) return '';
     const step = steps[this.stepIndex];
@@ -704,7 +646,7 @@ export class Act3Screen {
     return `${speaker}: ${step.text}`;
   }
 
-  /** Which room we are in. Lobby is drawn; the exam room and the living room are painted. */
+  /** Which room we are in. Clinic is drawn; the exam room and the living room are painted. */
 
   /**
    * Who is on stage and with what face. Derived, never accumulated: the beat's default is
@@ -717,12 +659,12 @@ export class Act3Screen {
       verdict:   { callie: 'waiting', reyes: 'chart',   tay: 'absent' },
       report:    { callie: 'relief',  reyes: 'chart',   tay: 'absent' },
       tayReturn: { callie: 'relief',  reyes: 'warm',    tay: 'happy' },
-      nextTime:  { callie: 'relief',  reyes: 'warm',    tay: 'chewing' },
-      recheck:   { callie: 'relief',  reyes: 'serious', tay: 'chewing' }
+      nextTime:  { callie: 'relief',  reyes: 'warm',    tay: 'sniffing' },
+      recheck:   { callie: 'relief',  reyes: 'serious', tay: 'sniffing' }
     };
     let state = { ...(defaults[this.currentBeat] || defaults.recheck) };
-    const steps = this.currentBeat === 'report' ? this.reportSteps : this.stepsForBeat();
-    const upTo = this.currentBeat === 'report' ? this.reportStep : this.stepIndex;
+    const steps = this.stepsForBeat();
+    const upTo = this.stepIndex;
     if (Array.isArray(steps)) {
       for (let i = 0; i <= upTo && i < steps.length; i++) {
         if (steps[i] && steps[i].cast) state = { ...state, ...steps[i].cast };
@@ -738,27 +680,27 @@ export class Act3Screen {
     const getCastImg = (char, activeState) => {
       const srcMap = {
         'callie': {
-          'waiting': 'Callie-Lobby-Waiting.png',
-          'relief': 'Callie-Lobby-Relief.png',
-          'floor': 'Callie-Lobby-FloorLaughing.png'
+          'waiting': 'Callie-Clinic-Waiting.png',
+          'relief': 'Callie-Clinic-Relief.png',
+          'floor': 'Callie-Clinic-FloorLaughing.png'
         },
         'reyes': {
-          'chart': 'Reyes-Chart-Neutral.png',
+          'chart': 'Reyes-Chart.png',
           'warm': 'Reyes-Warm.png',
           'serious': 'Reyes-Serious.png',
           'sheet': 'Reyes-HandingSheet.png'
         },
         'tay': {
-          'happy': 'Tay-Cone-Happy.png',
-          'chewing': 'Tay-Cone-Chewing.png'
+          'happy': 'Tay-StandingStage2-Warm.png',
+          'sniffing': 'Tay-SniffingGround.png'
         }
       };
       
       const altMap = {
         callie: {
-          waiting: 'Callie in a lobby chair, drained, the damp towel in her lap',
+          waiting: 'Callie in a clinic chair, drained, hands empty',
           relief: 'Callie standing, hands to her chest, relief breaking through',
-          floor: 'Callie on the lobby floor, laughing, eyes shut'
+          floor: 'Callie on the treatment room floor, laughing, eyes shut'
         },
         reyes: {
           chart: 'Dr. Reyes reading the chart',
@@ -767,8 +709,8 @@ export class Act3Screen {
           sheet: 'Dr. Reyes holding out the discharge sheet'
         },
         tay: {
-          happy: 'Tay in a cone, tail up, panting happily',
-          chewing: 'Tay trying to eat her own cone'
+          happy: 'Tay, tail up, tongue out, obviously herself',
+          sniffing: 'Tay nosing around the treatment room floor'
         }
       };
 
@@ -793,10 +735,10 @@ export class Act3Screen {
 
     if (['wait', 'verdict', 'report', 'tayReturn', 'nextTime', 'recheck'].includes(this.currentBeat)) {
       return { 
-        key: 'lobby', 
+        key: 'clinic', 
         wash: 'wash-clinical', 
         html: `
-          <img class="act3-scene-img" src="Assets/Image/Clinic-Lobby-BG.jpg" data-editor-id="act3-art-lobby" alt="Clinic Lobby">
+          <img class="act3-scene-img" src="Assets/Image/Clinic-TreatmentRoom-BG.jpg" data-editor-id="act3-art-clinic" alt="The treatment room">
           ${castHtml}
         `
       };
@@ -819,7 +761,7 @@ export class Act3Screen {
 
   renderHudBar() {
     const status = this.getTayStatus();
-    const order = ['wait', 'verdict', 'report', 'tayReturn', 'nextTime', 'recheck', 'home', 'end'];
+    const order = ['wait', 'verdict', 'report', 'tayReturn', 'nextTime', 'recheck', 'home', 'recap', 'end'];
     const currentBeatNum = Math.max(1, order.indexOf(this.currentBeat) + 1);
     const totalBeats = order.length;
 
@@ -952,7 +894,16 @@ export class Act3Screen {
     switch (this.currentBeat) {
       case 'wait': return this.renderWait();
       case 'verdict': return this.renderVerdict();
-      case 'report': return this.renderReport();
+      case 'report':
+        const rSteps = this.stepsForBeat();
+        const rStep = rSteps[this.stepIndex];
+        if (!rStep) return '';
+        const rStamp = this.activeStamp(rSteps, this.stepIndex);
+        return `
+          ${this.renderDialogueStep(rStep, `act3-report-${this.stepIndex}`)}
+          ${rStamp ? this.renderTruthStamp(rStamp, 'act3-stamp-report') : ''}
+        `;
+      case 'recap': return this.renderRecap();
       case 'tayReturn': return this.renderTayReturn();
       case 'nextTime': return this.renderNextTime();
       case 'recheck': return this.renderRecheck();
@@ -963,33 +914,7 @@ export class Act3Screen {
   }
 
   // ---- Beat 3A — the wait -----------------------------------------------
-  renderWait() {
-    const pct = Math.min(100, (this.waitSeconds / this.WAIT_SECONDS) * 100);
-    const remaining = Math.max(0, this.WAIT_SECONDS - this.waitSeconds);
-
-    return `
-      <div class="act3-wait-panel" data-editor-id="act3-wait-panel">
-        <span class="act3-wait-badge">4:02 PM · Lakeside Veterinary</span>
-        <p class="act3-wait-line" id="act3-wait-line">You keep holding the towel. It is still damp and it is still cold.</p>
-        <p class="act3-wait-sub">Nobody has told you anything.</p>
-
-        <!-- A finite wait with accessible progress. The skip control in the nav bar is present from the first frame. -->
-        <div id="act3-wait-bar" class="act3-wait-bar" style="--act3-wait-progress: ${pct}%;"
-             data-editor-id="act3-wait-bar"
-             role="progressbar"
-             aria-valuemin="0"
-             aria-valuemax="${this.WAIT_SECONDS}"
-             aria-valuenow="${this.waitSeconds}"
-             aria-label="Waiting for clinic staff: approximately ${remaining} seconds remaining">
-          <span class="act3-wait-bar-fill"></span>
-        </div>
-
-        <div id="act3-wait-sr-status" class="sr-only" aria-live="polite">
-          ${this.waitSeconds === 0 ? 'Waiting for clinic staff. The doctor will appear in approximately 12 seconds, or you can skip the wait.' : ''}
-        </div>
-      </div>
-    `;
-  }
+  renderWait() { return ''; }
 
   /**
    * The last stamp revealed at or before `index` in `steps`. A truth stamp is not a flash — it
@@ -1019,90 +944,55 @@ export class Act3Screen {
   // A dark case-file modal (§6.4). It is the only screen in the module where Act 1's counter
   // and Act 2's four checks appear together, and it builds one panel at a time so the beat
   // keeps moving instead of dumping a table.
-  renderReport() {
-    const step = this.reportSteps[this.reportStep];
-    const revealed = new Set(this.reportSteps.slice(0, this.reportStep + 1).map(s => s.reveals));
-
+  renderRecap() {
     return `
-      <div class="act3-report-modal" data-editor-id="act3-report-modal" role="dialog"
-           aria-modal="true" aria-labelledby="act3-report-title">
-        <div class="act3-report-card" data-editor-id="act3-report-card">
-
-          <header class="act3-report-header">
-            <span class="act3-report-badge" aria-hidden="true">CASE FILE</span>
-            <h2 class="act3-report-title" id="act3-report-title">
-              Tay · French Bulldog · 4 yr
-              <span class="act3-report-subtitle">Presented 3:41 PM · 105.8°F on arrival</span>
-            </h2>
-            <span class="act3-report-hints" data-editor-id="act3-report-hints">
-              <span aria-hidden="true">⚠️</span>
-              <span>Warning signs at the lake: ${this.hintsDropped} · all ${this.hintsDropped} reported</span>
-            </span>
+      <div class="act3-recap-modal" data-editor-id="act3-recap-modal" role="dialog" aria-modal="true" aria-labelledby="act3-recap-title">
+        <div class="act3-recap-card" data-editor-id="act3-recap-card">
+          <header class="act3-recap-header">
+            <h2 class="act3-recap-title" id="act3-recap-title">What happened to Tay</h2>
+            <p class="act3-recap-subtitle">The afternoon, in one place.</p>
           </header>
-
-          <div class="act3-report-content">
-            <div class="act3-report-body act3-report-left" data-editor-id="act3-report-body">
-              ${revealed.has('table') ? this.renderReportTable() : ''}
-              ${revealed.has('prevalence') ? this.renderPrevalence() : ''}
-              ${revealed.has('timeline') ? this.renderReportTimeline() : ''}
+          <div class="act3-recap-content">
+            <div class="act3-recap-body act3-recap-left">
+              ${this.renderReportTable()}
+              ${this.renderPrevalence()}
+              ${this.renderReportTimeline()}
             </div>
-
-            <div class="act3-report-right">
-              <div class="act3-report-dialogue">
-                ${this.renderReportDialogue(step)}
-              </div>
-              ${revealed.has('survival') ? this.renderTruthStamp(
+            <div class="act3-recap-right">
+              ${this.renderTruthStamp(
                 this.reportSteps.find(s => s.reveals === 'survival').lines[0].stamp,
                 'act3-stamp-survival-range'
-              ) : ''}
-              ${revealed.has('breed') ? this.renderTruthStamp(
+              )}
+              ${this.renderTruthStamp(
                 this.reportSteps.find(s => s.reveals === 'breed').lines[0].stamp,
                 'act3-stamp-breed'
-              ) : ''}
-              <footer class="act3-report-footer" data-editor-id="act3-report-footer">
-                <div class="act3-report-nav">
-                  <div class="act3-report-nav-left">
-                    ${this.reportStep > 0 ? `
-                      <button id="act3-btn-report-prev" class="act3-hud-btn act3-btn-quiet"
-                              data-editor-id="act3-btn-report-prev"
-                              aria-label="Go back one step in the case file">◀ Back</button>
-                    ` : ''}
-                    <div class="act3-beat-dots" aria-hidden="true">
-                      ${this.reportSteps.map((_, i) => `
-                        <span class="act3-beat-dot ${i === this.reportStep ? 'current' : ''} ${i < this.reportStep ? 'seen' : ''}"></span>
-                      `).join('')}
-                    </div>
-                  </div>
-                  ${this.reportStep < this.reportSteps.length - 1 ? `
-                    <button id="act3-btn-report-next" class="act3-hud-btn btn-action-primary"
-                            data-editor-id="act3-btn-report-next">Next ▶</button>
-                  ` : `
-                    <button id="act3-btn-report-done" class="act3-hud-btn btn-action-primary"
-                            data-editor-id="act3-btn-report-done">Close the file ➔</button>
-                  `}
-                </div>
-              </footer>
+              )}
+              ${this.renderDischargeSheet()}
             </div>
           </div>
-
+          <footer class="act3-recap-footer">
+            <div class="act3-recap-nav">
+              <button id="act3-btn-prev-step" class="act3-hud-btn act3-btn-quiet" data-editor-id="act3-btn-prev-step">◀ Back</button>
+              <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary" data-editor-id="act3-btn-beat-advance">Finish ➔</button>
+            </div>
+          </footer>
         </div>
       </div>
     `;
   }
 
   renderReportTable() {
-    const collapseTable = this.reportStep >= 2 && !this.reportTableExpanded;
-
+    const collapseTable = !this.reportTableExpanded;
     if (collapseTable) {
       return `
-        <div class="act3-report-panel collapsed-table" id="act3-report-table-container" data-editor-id="act3-report-panel-table">
-          <div class="act3-report-panel-head">
+        <div class="act3-recap-panel collapsed-table" id="act3-recap-table-container">
+          <div class="act3-recap-panel-head">
             <h3 class="act3-panel-title">What you reported</h3>
-            <button id="act3-btn-report-table" class="act3-hud-btn act3-btn-quiet act3-btn-table-toggle" aria-expanded="false" aria-controls="act3-report-table-container">
+            <button id="act3-btn-report-table" class="act3-hud-btn act3-btn-quiet act3-btn-table-toggle" aria-expanded="false" aria-controls="act3-recap-table-container">
               Show table
             </button>
           </div>
-          <div class="act3-report-chips">
+          <div class="act3-recap-chips">
             ${this.reportRows.map(row => `
               <span class="act3-stage-chip stage-${row.stageNo}">
                 <span aria-hidden="true">${row.icon}</span> ${row.short || row.sign} &middot; <span class="act3-stage-no">${row.stageNo}</span>
@@ -1113,18 +1003,15 @@ export class Act3Screen {
         </div>
       `;
     }
-
     return `
-      <div class="act3-report-panel" id="act3-report-table-container" data-editor-id="act3-report-panel-table">
-        <div class="act3-report-panel-head">
+      <div class="act3-recap-panel" id="act3-recap-table-container">
+        <div class="act3-recap-panel-head">
           <h3 class="act3-panel-title">What you reported, and when it started</h3>
-          ${this.reportStep >= 2 ? `
-            <button id="act3-btn-report-table" class="act3-hud-btn act3-btn-quiet act3-btn-table-toggle" aria-expanded="true" aria-controls="act3-report-table-container">
-              Hide table
-            </button>
-          ` : ''}
+          <button id="act3-btn-report-table" class="act3-hud-btn act3-btn-quiet act3-btn-table-toggle" aria-expanded="true" aria-controls="act3-recap-table-container">
+            Hide table
+          </button>
         </div>
-        <table class="act3-report-table">
+        <table class="act3-recap-table">
           <caption class="sr-only">The four signs reported to the clinic, and the stage of heat illness each belongs to</caption>
           <thead>
             <tr>
@@ -1160,11 +1047,11 @@ export class Act3Screen {
 
   renderPrevalence() {
     return `
-      <div class="act3-report-panel" data-editor-id="act3-report-panel-prevalence">
+      <div class="act3-recap-panel">
         <h3 class="act3-panel-title">The two signs that get logged the most</h3>
         <ul class="act3-prevalence-list">
           ${this.prevalence.map(p => `
-            <li class="act3-prevalence-row" data-editor-id="act3-prevalence-${p.id}">
+            <li class="act3-prevalence-row">
               <span class="act3-prevalence-label">${p.label}</span>
               <span class="act3-prevalence-track" aria-hidden="true">
                 <span class="act3-prevalence-fill" style="width: ${p.pct}%;"></span>
@@ -1181,9 +1068,9 @@ export class Act3Screen {
 
   renderReportTimeline() {
     return `
-      <div class="act3-report-panel" data-editor-id="act3-report-panel-timeline">
+      <div class="act3-recap-panel">
         <h3 class="act3-panel-title">Her afternoon, from Act 1</h3>
-        <ol class="act3-report-timeline">
+        <ol class="act3-recap-timeline">
           ${this.hintsTimeline.map(item => `
             <li class="act3-timeline-item ${item.widest ? 'is-widest' : ''}">
               <span class="act3-timeline-time">${item.time}</span>
@@ -1200,29 +1087,6 @@ export class Act3Screen {
     `;
   }
 
-  /**
-   * The dialogue under the chart. On the survival step the variant is chosen from Act 2's
-   * decision — and when we were not handed one, the neutral variant runs. Reyes never scolds
-   * in any branch.
-   */
-  renderReportDialogue(step) {
-    if (!step) return '';
-    let lines = [...step.lines];
-    if (step.variants) {
-      lines = lines.concat(step.variants[this.decisionChoice || 'unknown'] || step.variants.unknown);
-    }
-    return lines.map((line, i) => `
-      <div class="act3-report-line line-${line.speaker}" data-editor-id="act3-report-line-${this.reportStep}-${i}">
-        <span class="act3-report-who">
-          ${line.speaker === 'reyes' ? 'Dr. Reyes' : 'Callie'}
-          
-        </span>
-        <p class="act3-report-text">“${line.text}”</p>
-      </div>
-    `).join('');
-  }
-
-  // ---- Beat 3D — Tay's return -------------------------------------------
   renderTayReturn() {
     const step = this.tayReturnSteps[this.stepIndex];
     if (!step) return '';
@@ -1421,13 +1285,7 @@ export class Act3Screen {
   // =======================================================================
 
   renderBottomLeftControls() {
-    if (this.currentBeat === 'wait') {
-      return `
-        <button id="act3-btn-skip-wait" class="act3-hud-btn act3-btn-quiet"
-                data-editor-id="act3-btn-skip-wait"
-                aria-label="Skip the wait and go straight to the verdict (or wait approximately 12 seconds for the doctor to appear)">Skip the wait ▶</button>
-      `;
-    }
+    if (this.currentBeat === 'wait') { return ''; }
     const back = this.canStepBack() ? `
       <button id="act3-btn-prev-step" class="act3-hud-btn act3-btn-quiet"
                 data-editor-id="act3-btn-prev-step"
@@ -1454,7 +1312,10 @@ export class Act3Screen {
     }
     switch (this.currentBeat) {
       case 'wait':
-        return '';
+        return `
+          <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
+                  data-editor-id="act3-btn-beat-advance">Wait for the doctor ➔</button>
+        `;
 
       case 'verdict':
         return this.stepIndex < this.verdictSteps.length - 1 ? `
@@ -1465,7 +1326,12 @@ export class Act3Screen {
         `;
 
       case 'report':
-        return ''; // The modal owns its own navigation.
+        return this.stepIndex < this.stepsForBeat().length - 1 ? `
+          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
+        ` : `
+          <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
+                  data-editor-id="act3-btn-beat-advance">Where's Tay? ➔</button>
+        `;
 
       case 'tayReturn':
         return this.stepIndex < this.tayReturnSteps.length - 1 ? `
@@ -1510,6 +1376,9 @@ export class Act3Screen {
                   data-editor-id="act3-btn-beat-advance">Fade ➔</button>
         `;
 
+      case 'recap':
+        return '';
+
       default:
         return '';
     }
@@ -1546,13 +1415,10 @@ export class Act3Screen {
     on('#act3-btn-beat-advance', () => this.nextBeat());
 
     // --- Beat 3A ---
-    on('#act3-btn-skip-wait', () => this.endWait());
+    
 
     // --- Beat 3C ---
-    on('#act3-btn-report-next', () => this.nextReportStep());
-    on('#act3-btn-report-prev', () => this.prevSubStep());
-    on('#act3-btn-report-done', () => this.nextBeat());
-    on('#act3-btn-report-table', () => { this.reportTableExpanded = !this.reportTableExpanded; this.render(); });
+                on('#act3-btn-report-table', () => { this.reportTableExpanded = !this.reportTableExpanded; this.render(); });
 
     // --- Beat 3E ---
     this.container.querySelectorAll('.act3-prevention-option').forEach(el => {
@@ -1590,19 +1456,6 @@ export class Act3Screen {
    * below the fold and leaving the learner looking at the previous one is the failure mode of
    * a progressive reveal.
    */
-  nextReportStep() {
-    if (this.reportStep >= this.reportSteps.length - 1) return;
-    this.reportStep++;
-    this.render();
-    const body = this.container?.querySelector('.act3-report-body');
-    if (!body) return;
-    const revealed = body.lastElementChild;
-    revealed?.scrollIntoView({
-      block: 'end',
-      behavior: this.prefersReducedMotion() ? 'auto' : 'smooth'
-    });
-  }
-
   togglePrevention(id) {
     if (!id) return;
     if (this.preventionChosen.has(id)) {
@@ -1620,9 +1473,26 @@ export class Act3Screen {
   // =======================================================================
 
   /** The step arrays each beat advances through, so nextSubStep has one shape to reason about. */
+  get reportDialogueSteps() {
+    const steps = [];
+    for (const entry of this.reportSteps) {
+      for (const line of entry.lines) {
+        const step = { ...line };
+        step.cast = line.stamp ? { reyes: 'serious' } : { reyes: 'chart' };
+        steps.push(step);
+      }
+      if (entry.reveals === 'survival' && entry.variants) {
+        const variants = entry.variants[this.decisionChoice || 'unknown'] || entry.variants.unknown;
+        for (const line of variants) { const step = { ...line }; step.cast = line.stamp ? { reyes: 'serious' } : { reyes: 'chart' }; steps.push(step); }
+      }
+    }
+    return steps;
+  }
+
   stepsForBeat() {
     switch (this.currentBeat) {
       case 'verdict': return this.verdictSteps;
+      case 'report': return this.reportDialogueSteps;
       case 'tayReturn': return this.tayReturnSteps;
       case 'recheck': return this.recheckSteps;
       case 'home': return this.homeSteps;
@@ -1642,16 +1512,15 @@ export class Act3Screen {
   }
 
   nextBeat() {
-    const order = ['wait', 'verdict', 'report', 'tayReturn', 'nextTime', 'recheck', 'home', 'end'];
+    const order = ['wait', 'verdict', 'report', 'tayReturn', 'nextTime', 'recheck', 'home', 'recap', 'end'];
     const i = order.indexOf(this.currentBeat);
     if (i === -1 || i === order.length - 1) return;
 
     this.currentBeat = order[i + 1];
     this.stepIndex = 0;
-    this.stopWaitTimer();
 
     // Time passes between beats, not only inside them.
-    const jump = { verdict: 0, report: 3, tayReturn: 6, nextTime: 4, recheck: 3, home: 214, end: 0 };
+    const jump = { verdict: 0, report: 3, tayReturn: 6, nextTime: 4, recheck: 3, home: 214, recap: 0, end: 0 };
     this.clockMinutes += jump[this.currentBeat] ?? 0;
 
     this.render();
@@ -1676,9 +1545,9 @@ export class Act3Screen {
    * an act you want to leave.
    */
   prevSubStep() {
-    if (this.currentBeat === 'report') {
-      if (this.reportStep === 0) return false;
-      this.reportStep--;
+    if (this.currentBeat === 'recap') {
+      this.currentBeat = 'home';
+      this.stepIndex = this.homeSteps.length - 1;
     } else {
       if (this.stepIndex === 0 || !this.stepsForBeat()) return false;
       const steps = this.stepsForBeat();
@@ -1693,8 +1562,7 @@ export class Act3Screen {
 
   /** Back is only offered where there is something to go back to — never a dead control. */
   canStepBack() {
-    if (this.currentBeat === 'report') return this.reportStep > 0;
-    if (this.currentBeat === 'end') return false;
+        if (this.currentBeat === 'end') return false;
     return this.stepIndex > 0 && !!this.stepsForBeat();
   }
 
@@ -1709,9 +1577,9 @@ export class Act3Screen {
 
     // Escape closes the case file, per docs/design-language.md §7.4. It closes it FORWARD —
     // the file is a beat the story passes through, not an optional overlay, and dropping the
-    // learner back into an empty lobby would be a dead end rather than an exit.
+    // learner back into an empty clinic would be a dead end rather than an exit.
     if (e.key === 'Escape') {
-      if (this.currentBeat === 'report') {
+      if (this.currentBeat === 'recap') {
         e.preventDefault();
         this.nextBeat();
       }
@@ -1730,10 +1598,9 @@ export class Act3Screen {
     // Space on a focused button is the button's own job — do not double-fire it.
     if (e.key !== 'ArrowRight' && e.target.tagName === 'BUTTON') return;
 
-    if (this.currentBeat === 'report') {
+    if (this.currentBeat === 'recap') {
       e.preventDefault();
-      if (this.reportStep < this.reportSteps.length - 1) this.nextReportStep();
-      else this.nextBeat();
+      this.nextBeat();
       return;
     }
 
