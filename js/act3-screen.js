@@ -331,7 +331,7 @@ export class Act3Screen {
     // ---- Beat 3F — The recheck --------------------------------------------
     this.recheckSteps = [
       { type: 'stage', text: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.', sceneCue: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.', cast: { callie: 'leaving', tay: 'leading', reyes: 'aside' } },
-      { speaker: 'reyes', business: 'not moving out of the doorway', text: "One more thing.", cast: { callie: 'turned' } },
+      { speaker: 'reyes', business: 'not moving out of the doorway', text: "One more thing.", cast: { callie: 'turned', tay: 'turned' } },
       { speaker: 'callie', text: "She's fine, though. You said she's fine." },
       { speaker: 'reyes', business: 'chart back out', text: "She is, today. Her bloodwork's normal — that's good, and it's not the whole story. Kidneys and clotting can go sideways 12–48 hours after something like this. It doesn't show up while you're standing here." },
       {
@@ -686,7 +686,7 @@ export class Act3Screen {
           'relief': 'Callie-Clinic-Relief.png',
           'floor': 'Callie-Clinic-FloorLaughing.png',
           'leaving': 'Callie-Clinic-Leaving.png',
-          'turned': 'Callie-Clinic-TurnedBack.png',
+          'turned': 'Callie-Clinic-Leaving.png',   // same still, mirrored in CSS: she has turned to face Reyes
           'handover': 'Callie-Reyes-Handover.png'
         },
         'reyes': {
@@ -699,7 +699,8 @@ export class Act3Screen {
         'tay': {
           'happy': 'Tay-StandingStage2-Warm.png',
           'sniffing': 'Tay-SniffingGround.png',
-          'leading': 'Tay-StandingSideProfile.png'
+          'leading': 'Tay-StandingSideProfile.png',
+          'turned': 'Tay-StandingStage1-Alert.png'
         }
       };
       
@@ -722,7 +723,8 @@ export class Act3Screen {
         tay: {
           happy: 'Tay, tail up, tongue out, obviously herself',
           sniffing: 'Tay nosing around the treatment room floor',
-          leading: 'Tay pulling on the leash, ready to go'
+          leading: 'Tay pulling on the leash, ready to go',
+          turned: 'Tay stopped at the door, looking back at Dr. Reyes'
         }
       };
 

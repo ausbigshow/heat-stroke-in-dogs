@@ -95,6 +95,8 @@
 .act3-cast-callie.is-state-relief { height: 50%; }
 .act3-cast-callie.is-state-waiting { height: 31%; left: 3%; bottom: 17%; }
 .act3-cast-callie.is-state-leaving, .act3-cast-callie.is-state-turned { right: 20%; left: auto; height: 50%; }
+/* "One more thing." — she has turned around to face Reyes. */
+.act3-cast-callie.is-state-turned { transform: scaleX(-1); }
 .act3-cast-callie.is-state-handover { right: 4%; left: auto; height: 52%; } /* her own chair, clear of the one against the wall */
 .act3-cast-callie.is-state-floor { height: 34%; }
 
@@ -106,20 +108,25 @@
   transform: scaleX(-1);
 }
 .act3-cast-tay.is-state-leading { right: 6%; left: auto; transform: none; }
+.act3-cast-tay.is-state-turned { right: 6%; left: auto; }
 
 .act3-cast-reyes {
   right: 14%;
   bottom: 4.4%;
   height: 52%;
+  /* Reyes's art faces left. Whenever she stands to Callie's LEFT she is flipped so she is
+     still facing the person she is talking to. */
+  --act3-reyes-flip: 1;
+  transform: scaleX(var(--act3-reyes-flip));
 }
-.act3-cast-reyes.is-state-aside { right: 40%; }
+.act3-cast-reyes.is-state-aside { right: 40%; --act3-reyes-flip: -1; }
 .act3-cast-reyes.is-active {
   animation: act3ReyesSlide 0.35s var(--ease-out-expo) forwards;
 }
 
 @keyframes act3ReyesSlide {
-  from { transform: translateX(20px); }
-  to { transform: translateX(0); }
+  from { transform: translateX(20px) scaleX(var(--act3-reyes-flip, 1)); }
+  to { transform: translateX(0) scaleX(var(--act3-reyes-flip, 1)); }
 }
 
 /* ==========================================================
