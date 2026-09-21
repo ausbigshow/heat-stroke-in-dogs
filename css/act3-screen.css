@@ -46,8 +46,7 @@
   user-select: none;
 }
 
-.act3-scene-img,
-.act3-lobby-svg {
+.act3-scene-img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -59,6 +58,67 @@
   /* Recovery ramp. 54% at the lobby door, 100% by the time she is climbing Callie. */
   filter: saturate(var(--act3-saturation, 100%));
   transition: filter var(--dur-escalation) ease;
+}
+
+
+/* ==========================================================
+   CAST LAYER
+   ========================================================== */
+.act3-cast {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 11; /* Above scene image, below wash */
+}
+
+
+.act3-cast-img {
+  opacity: 0;
+}
+.act3-cast-img.is-active {
+  opacity: 1;
+}
+.act3-cast-img {
+  position: absolute;
+  height: auto;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 14px 28px rgba(24, 20, 18, 0.35));
+  transition: opacity 0.18s ease;
+}
+
+.act3-cast-callie {
+  left: 20%;
+  bottom: 4.4%;
+  height: 48%;
+}
+
+.act3-cast-tay {
+  left: 46%;
+  bottom: 2%;
+  height: 24%;
+}
+
+.act3-cast-reyes {
+  right: 15%;
+  bottom: 4.4%;
+  height: 52%;
+}
+/* While the discharge sheet owns the right-hand column, Reyes steps in toward Callie to hand
+   it over — otherwise the sheet would draw straight over her. */
+.act3-viewport-card:has(.has-sheet) .act3-cast-reyes {
+  right: 36%;
+}
+.act3-cast-reyes.is-active {
+  animation: act3ReyesSlide 0.35s var(--ease-out-expo) forwards;
+}
+  
+}
+
+@keyframes act3ReyesSlide {
+  from { transform: translateX(20px); }
+  to { transform: translateX(0); }
 }
 
 /* ==========================================================
@@ -142,7 +202,7 @@
 .act3-hud-group {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
   flex-wrap: wrap;
   pointer-events: auto;
 }
@@ -161,7 +221,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
   box-shadow: var(--elev-3);
   box-sizing: border-box;
 }
@@ -230,13 +290,13 @@
   font-size: 0.92rem;
   font-weight: 700;
   height: 40px;
-  padding: 0 1.25rem;
+  padding: 0 1.2rem;
   border-radius: var(--radius-pill);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
   box-sizing: border-box;
   box-shadow: var(--elev-2);
   pointer-events: auto;
@@ -261,10 +321,10 @@
 /* The way out of Beat 3A. Present and focusable from the first frame — a deliberate wait
    is fine, a trap is not (design-language.md §7.5, and Nielsen's user control heuristic). */
 .act3-hud-btn.act3-btn-quiet {
-  height: 34px;
+  height: 36px;
   font-size: 0.82rem;
   font-weight: 600;
-  border-color: var(--hairline-light-soft);
+  border: 1px solid var(--hairline-light-soft);
   box-shadow: var(--elev-1);
 }
 
@@ -280,7 +340,7 @@
 .act3-hud-btn.btn-action-primary:hover:not(:disabled),
 .act3-hud-btn.btn-action-primary:focus-visible:not(:disabled) {
   background: var(--color-heat-hover);
-  border-color: var(--palette-warm-white);
+  border-color: #FFFFFF;
   transform: translateY(-2px);
 }
 
@@ -429,40 +489,27 @@
   --stem-left: 58%;
 }
 
-.scene-exam .act3-callie-bubble {
-  top: 22%;
-  right: 60%;
-  max-width: min(320px, 28%);
-  --stem-right: 8%;
+/* Lobby cast: Callie sits left of centre, Tay in front of her, Reyes by the door on the right.
+   Tay's bubble hangs above her without covering Reyes; when the discharge sheet owns the
+   right-hand column the bubbles pull in and the stems still land on their speakers. */
+.scene-lobby .act3-tay-bubble {
+  top: 14%;
+  left: 30%;
+  max-width: min(380px, 32%);
+  --stem-left: 60%;
 }
 
-.scene-exam .act3-reyes-bubble {
-  top: 7%;
-  left: 56%;
-  max-width: min(400px, 34%);
-  --stem-left: 30%;
-}
-
-/* While the discharge sheet is out it owns the right-hand column, so the bubbles pull in and
-   stop fighting it for the same space. The stem moves with them and still lands on Reyes. */
-.scene-exam .has-sheet .act3-reyes-bubble {
+.scene-lobby .has-sheet .act3-reyes-bubble {
   top: 8%;
-  left: 42%;
+  left: 40%;
   max-width: min(300px, 28%);
-  --stem-left: 78%;
+  --stem-left: 82%;
 }
 
-.scene-exam .has-sheet .act3-callie-bubble {
+.scene-lobby .has-sheet .act3-callie-bubble {
   top: 8%;
   right: 62%;
   max-width: min(280px, 26%);
-}
-
-.scene-exam .act3-tay-bubble {
-  top: 17%;
-  left: 34%;
-  max-width: min(380px, 32%);
-  --stem-left: 72%;
 }
 
 .scene-home .act3-callie-bubble {
@@ -803,6 +850,49 @@
   padding: 0.25rem 0.75rem;
 }
 
+
+.act3-report-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.act3-report-right {
+  width: 36%;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--hairline-light-soft);
+}
+
+.act3-report-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.act3-report-panel-head .act3-panel-title {
+  margin: 0;
+}
+
+.act3-btn-table-toggle {
+  height: 30px;
+  font-size: 0.75rem;
+  padding: 0 0.8rem;
+}
+
+.act3-report-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.act3-stage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
 .act3-report-body {
   flex: 1;
   min-height: 0;
@@ -1066,7 +1156,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  background: var(--surface-card-darkest);
 }
 
 /* Capped so the chart above it always keeps the majority of the card — the panels are the
@@ -1075,8 +1164,9 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-height: 17vh;
+  flex: 1;
   overflow-y: auto;
+  padding: 1.5rem;
 }
 
 .act3-report-line {
@@ -1591,8 +1681,7 @@
   }
 
   #screen-act3 .act3-scene-img,
-  #screen-act3 .act3-lobby-svg,
-  #screen-act3 .act3-wash,
+    #screen-act3 .act3-wash,
   #screen-act3 .act3-wait-bar-fill {
     transition: none;
   }
@@ -1653,6 +1742,16 @@
     overflow-y: auto;
   }
 
+  .act3-report-content {
+    display: block;
+  }
+  .act3-report-right {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--hairline-light-soft);
+  }
+
+
   .act3-report-header {
     position: sticky;
     top: 0;
@@ -1673,7 +1772,50 @@
   .act3-report-subtitle { font-size: 0.7rem; }
   .act3-report-hints { font-size: 0.66rem; padding: 0.25rem 0.5rem; }
 
-  .act3-report-body {
+  
+.act3-report-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.act3-report-right {
+  width: 36%;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--hairline-light-soft);
+}
+
+.act3-report-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.act3-report-panel-head .act3-panel-title {
+  margin: 0;
+}
+
+.act3-btn-table-toggle {
+  height: 30px;
+  font-size: 0.75rem;
+  padding: 0 0.8rem;
+}
+
+.act3-report-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.act3-stage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.act3-report-body {
     overflow: visible;
     padding: 0.5rem 0.75rem;
   }
@@ -1730,8 +1872,60 @@
   }
 
   .act3-report-header { padding: 0.75rem 1rem 0.5rem; }
-  .act3-report-body { padding: 0.75rem 1rem; gap: 0.75rem; }
+  
+.act3-report-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.act3-report-right {
+  width: 36%;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--hairline-light-soft);
+}
+
+.act3-report-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.act3-report-panel-head .act3-panel-title {
+  margin: 0;
+}
+
+.act3-btn-table-toggle {
+  height: 30px;
+  font-size: 0.75rem;
+  padding: 0 0.8rem;
+}
+
+.act3-report-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.act3-stage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.act3-report-body { padding: 0.75rem 1rem; gap: 0.75rem; }
   .act3-report-footer { padding: 0.75rem 1rem; }
-  .act3-report-dialogue { max-height: 22vh; }
+  .act3-report-dialogue { max-height: none; }
   .act3-end-recap li { padding: 0.5rem 0.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .act3-cast-img {
+    transition-duration: 0.01s !important;
+  }
+  .act3-cast-reyes {
+    animation-duration: 0.01s !important;
+  }
 }
