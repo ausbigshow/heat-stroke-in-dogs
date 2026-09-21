@@ -1009,6 +1009,12 @@ export class Act3Screen {
               ${revealed.has('table') ? this.renderReportTable() : ''}
               ${revealed.has('prevalence') ? this.renderPrevalence() : ''}
               ${revealed.has('timeline') ? this.renderReportTimeline() : ''}
+            </div>
+
+            <div class="act3-report-right">
+              <div class="act3-report-dialogue">
+                ${this.renderReportDialogue(step)}
+              </div>
               ${revealed.has('survival') ? this.renderTruthStamp(
                 this.reportSteps.find(s => s.reveals === 'survival').lines[0].stamp,
                 'act3-stamp-survival-range'
@@ -1017,12 +1023,6 @@ export class Act3Screen {
                 this.reportSteps.find(s => s.reveals === 'breed').lines[0].stamp,
                 'act3-stamp-breed'
               ) : ''}
-            </div>
-
-            <div class="act3-report-right">
-              <div class="act3-report-dialogue">
-                ${this.renderReportDialogue(step)}
-              </div>
               <footer class="act3-report-footer" data-editor-id="act3-report-footer">
                 <div class="act3-report-nav">
                   <div class="act3-report-nav-left">
