@@ -103,12 +103,12 @@ export class Act3Screen {
         type: 'hold',
         sceneCue: 'Two seconds. Nobody says anything.'
       },
-      { speaker: 'reyes', business: 'clipping the chart under her arm', text: "You cooled her before you drove.", cast: { reyes: 'chart' } },
+      { speaker: 'reyes', business: 'clipping the chart under her arm', text: "You cooled her <em>before</em> you drove.", cast: { reyes: 'chart' } },
       { speaker: 'callie', text: "They told me to on the phone." },
       {
         speaker: 'reyes',
         business: 'washing her hands at the clinic sink',
-        text: "Good. That's the difference. Dogs whose owners cool them before they get in the car are about two and a half times more likely to make it than the ones who don't. You didn't drive her here. You started treating her and then you drove her here.",
+        text: "Good. That's the difference right there. Dogs cooled before they get in the car are about <strong>two and a half times</strong> more likely to make it. You didn't just drive her here. You started treating her — and <em>then</em> you drove.",
         cast: { reyes: 'warm' },
         stamp: {
           metric: '2.5× more likely',
@@ -171,10 +171,10 @@ export class Act3Screen {
     // The Act 1 timeline, restated one last time. Times match Act 2's `hintsTimeline` exactly —
     // if one changes, change both.
     this.hintsTimeline = [
-      { time: '1:30 PM', icon: '🥪', title: 'The cooler, in open sun', line: 'Ninety minutes against a cold box with no shade.' },
-      { time: '1:48 PM', icon: '☀️', title: 'The dock', line: '137°F boards, patrolled twice.', widest: true },
-      { time: '2:03 PM', icon: '🥣', title: 'The water bowl', line: 'Sun-warm, half empty, untouched.' },
-      { time: '2:38 PM', icon: '🌳', title: 'The shade that moved', line: 'Twenty-seven minutes asleep in full sun.' }
+      { time: '1:30 PM', icon: '🥪', title: 'The cooler, in open sun', line: 'Ninety minutes against a cold box.', nextTime: 'Put the cooler in the shade and keep her with it. Cold on the outside is still an oven on the inside.' },
+      { time: '1:48 PM', icon: '☀️', title: 'The dock', line: '137°F boards, patrolled twice.', widest: true, nextTime: "Press your palm on the boards for five seconds before she walks them. If you can't hold it there, she can't stand on it." },
+      { time: '2:03 PM', icon: '🥣', title: 'The water bowl', line: 'Sun-warm, half empty, untouched.', nextTime: "Bowl in the shade, refilled every time you refill your own. Warm water in the sun doesn't get drunk." },
+      { time: '2:38 PM', icon: '🌳', title: 'The shade that moved', line: 'Twenty-seven minutes asleep in full sun.', nextTime: "Look at where the shadow is every half hour. It moves. A sleeping dog doesn't." }
     ];
 
     // Reyes walks the timeline while she works. Each step reveals one panel of the report,
@@ -183,15 +183,15 @@ export class Act3Screen {
       {
         reveals: 'table',
         lines: [
-          { speaker: 'reyes', business: 'writing', text: "What you described on the phone — the panting, the gums, her not answering to her name. Those aren't four separate problems. That's one thing at three different stages." }
+          { speaker: 'reyes', business: 'writing', text: "What you described on the phone — the panting, the gums, her not answering to her name. Those aren't separate problems. That's <em>one</em> thing, at three different stages." }
         ]
       },
       {
         reveals: 'prevalence',
         lines: [
-          { speaker: 'reyes', business: 'still writing', text: "Panting and lethargy are what we log most. Panting in about two-thirds of cases, lethargy in about half. They're the earliest signs and they're the easiest ones to explain away as a hot day." },
+          { speaker: 'reyes', business: 'still writing', text: "Panting and lethargy are what we log most. Panting in about two-thirds of cases, lethargy in about half. They're the earliest signs, and they're the easiest ones to explain away as a hot day." },
           { speaker: 'callie', text: "I thought she was just tired." },
-          { speaker: 'reyes', business: 'not unkindly', text: "Everyone does. That's the whole problem with the early stage — it looks like a normal afternoon." }
+          { speaker: 'reyes', business: 'not unkindly', text: "Everyone does. That's the trap of the early stage — it just looks like a normal afternoon." }
         ]
       },
       {
@@ -202,28 +202,25 @@ export class Act3Screen {
       },
       {
         reveals: 'survival',
-        // The act-or-wait payoff. Variants are selected in renderReportDialogue().
         lines: [
           {
             speaker: 'reyes',
             business: 'flat, not warning',
-            text: "Caught while it's still mild, dogs come through about ninety-five percent of the time. Once it's severe before anyone treats it, that drops to about forty-three.",
+            text: "Caught while it's still mild, dogs come through about ninety-five percent of the time. Once it's severe before anyone treats it, that drops to about <em>forty-three</em>.",
             stamp: {
               metric: '95% → 43%',
               line: 'Treated while it is still mild against treated once it is already severe. The gap is not the illness. The gap is the delay.'
             }
           }
         ],
-        // No fail state, no scolding. Reyes states the range and lets the learner locate
-        // themselves in it.
         variants: {
           act_now: [
-            { speaker: 'reyes', business: 'glancing at the chart', text: "She was on the good side of that when she got here. Barely, but she was." }
+            { speaker: 'reyes', business: 'glancing at the chart', text: "She was on the good side of that when she came through the door. Barely, but she was." }
           ],
           wait: [
             { speaker: 'reyes', business: 'glancing at the chart', text: "You waited a few minutes out there." },
-            { speaker: 'callie', text: "I thought she'd settle." },
-            { speaker: 'reyes', business: 'no edge in it at all', text: "I know. That gap between ninety-five and forty-three — that's where those minutes live." }
+            { speaker: 'callie', text: "I thought she'd settle…" },
+            { speaker: 'reyes', business: 'no edge in it at all', text: "I know. But that gap between ninety-five and forty-three? That's where those minutes live." }
           ],
           unknown: [
             { speaker: 'reyes', business: 'letting it sit', text: "Where a dog lands in that range is mostly about how long anybody took to start." }
@@ -236,14 +233,14 @@ export class Act3Screen {
           {
             speaker: 'reyes',
             business: 'assuming Callie already knew this',
-            text: "And she was never running the same odds as other dogs. Flat-faced breeds — Frenchies, bulldogs, pugs — get heat illness about four times as often.",
+            text: "And she was never running the same odds as other dogs. Flat-faced breeds — Frenchies, bulldogs, pugs — get heat illness about <strong>four times</strong> as often.",
             stamp: {
               metric: '4× the risk',
               line: 'Brachycephalic breeds are diagnosed with heat illness roughly four times as often. Tay has been playing this hand her whole life.'
             }
           },
           { speaker: 'callie', text: "Four times." },
-          { speaker: 'reyes', business: 'gentler now', text: "That face is adorable and it's a compromise. She's working with a shorter airway than the dog next to her, and panting is the only cooling she's got." }
+          { speaker: 'reyes', business: 'gentler now', text: "That face is adorable, and it's a compromise. She's breathing through a shorter airway than the dog next to her, and panting is the <em>only</em> cooling she's got." }
         ]
       }
     ];
@@ -255,10 +252,10 @@ export class Act3Screen {
     this.tayReturnSteps = [
       { type: 'stage', text: 'A tech walks her out on a leash. Cone. Tail going like nothing happened.', sceneCue: 'A tech walks her out on a leash. Cone. Tail going like nothing happened.' },
       { speaker: 'tay', onomatopoeia: 'YIP YIP YIP.', text: 'CALLIE. CALLIE. CALLIE.' },
-      { speaker: 'tay', text: 'They took my temperature. Wrong end. WRONG END.' },
+      { speaker: 'tay', text: 'They took my temperature! Wrong end! WRONG END!' },
       { type: 'stage', text: 'Callie is on the floor. Tay is climbing her.', sceneCue: 'Callie is on the floor. Tay is climbing her.', cast: { callie: 'floor' } },
-      { speaker: 'tay', text: "This collar is an insult. I'd like to file something." },
-      { speaker: 'callie', business: 'laughing, wrecked', text: "Okay. Okay." },
+      { speaker: 'tay', text: "This collar is an insult! I'D LIKE TO FILE SOMETHING!" },
+      { speaker: 'callie', business: 'laughing, wrecked', text: "Okay… okay." },
       {
         speaker: 'tay',
         onomatopoeia: 'HUFF.',
@@ -266,7 +263,7 @@ export class Act3Screen {
         callback: 'She said this in the living room, before any of it.'
       },
       { type: 'stage', text: 'Callie looks up at Dr. Reyes.', sceneCue: 'Callie looks up at Dr. Reyes.' },
-      { speaker: 'reyes', business: 'watching the dog, not the owner', text: "Yeah. That's the part that'll get you.", cast: { reyes: 'serious' } }
+      { speaker: 'reyes', business: 'watching the dog, not the owner', text: "Yeah. <em>That's</em> the part that'll get you.", cast: { reyes: 'serious' } }
     ];
 
     // ---- Beat 3E — Next time ----------------------------------------------
@@ -277,38 +274,38 @@ export class Act3Screen {
         id: 'setup_first',
         icon: '⛱️',
         label: 'Shade and water set up before anything else',
-        reply: "Before you unpack the cooler, not after. Shade she can actually reach, water in the shade with it."
+        reply: "Set it up before you even touch the cooler. Real shade she can reach, and the water stays in the shade with her."
       },
       {
         id: 'timing',
         icon: '🌅',
         label: 'Go early or late, not one in the afternoon',
-        reply: "Morning or evening. One o'clock in July is the worst hour of the day and it's the hour everybody picks."
+        reply: "Stick to mornings or evenings. One o'clock in July is the absolute worst hour of the day, and it's the one everybody picks."
       },
       {
         id: 'temp_humidity',
         icon: '🌡️',
         label: 'Watch the temperature, not just the sun',
-        reply: "Past eighty I'd think hard about it. And check the humidity — that's the part people miss. Panting doesn't work as well when the air's already wet."
+        reply: "Once it's past eighty, I'd think twice. And check the humidity — that's what gets them. Panting just doesn't work when the air's already wet."
       },
       {
         id: 'stay_in',
         icon: '🏠',
         label: 'Some days she just stays inside',
-        reply: "Puzzle toy and the AC. She'll act betrayed. She'll live."
+        reply: "AC and a puzzle toy. She'll act completely betrayed, but she'll live."
       }
     ];
 
     // Ten seconds, then move on. Handed to Callie as ammunition for somebody else — Texas
     // learners already know this and being taught it insults them.
     this.hotCarSteps = [
-      { speaker: 'reyes', business: 'drying her hands', text: "And you already know about cars.", cast: { reyes: 'warm' } },
+      { speaker: 'reyes', business: 'drying her hands', text: "And I know you already know about cars.", cast: { reyes: 'warm' } },
       { speaker: 'callie', text: "Nobody leaves a dog in a car." },
       {
         speaker: 'reyes',
         business: 'washing her hands',
         cast: { reyes: 'serious' },
-        text: "You'd think. Twenty degrees inside in the first ten minutes. And cracking the windows takes it from about three and a half degrees every five minutes down to about three. It buys you nothing. You don't need that. Somebody you know does.",
+        text: "You'd think. It jumps twenty degrees inside in the first ten minutes. Cracking the windows takes it from about three and a half degrees every five minutes down to about three. It buys you nothing. <em>You</em> don't need to hear that, but somebody you know does.",
         stamp: {
           metric: '+20°F in 10 min',
           line: 'Cracked windows move it from about 3.4°F every five minutes to about 3.1°F. That is the entire benefit.'
@@ -318,9 +315,9 @@ export class Act3Screen {
         speaker: 'reyes',
         business: 'on her way to the door',
         smePending: true,
-        text: "And if you're out in it anyway — fifteen, twenty minutes of cooling off between anything active. That's what A&M recommends for heat like ours. Same number I'd give you.",
+        text: "If you're out in it anyway? fifteen, twenty minutes of cooling off between anything active. That's what A&M recommends for heat like ours. Same number I'd give you.",
         cast: { reyes: 'serious' },
-        textUnattributed: "And if you're out in it anyway — fifteen, twenty minutes of cooling off between anything active. That's the number I'd give you.",
+        textUnattributed: "If you're out in it anyway? fifteen, twenty minutes of cooling off between anything active. That's the number I'd give you.",
         stamp: {
           metric: '15–20 min',
           line: 'Cooling off between bouts of anything active, once it is past eighty. Shade, water, and stillness — not a shorter walk.'
@@ -333,11 +330,11 @@ export class Act3Screen {
       { type: 'stage', text: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.', sceneCue: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.' },
       { speaker: 'reyes', business: 'not moving out of the doorway', text: "One more thing." },
       { speaker: 'callie', text: "She's fine, though." },
-      { speaker: 'reyes', business: 'chart back out', text: "Her bloodwork today is normal. That's good and it's not the whole story. Kidneys and clotting can go sideways twelve to forty-eight hours after something like this. It doesn't show up while you're standing here." },
+      { speaker: 'reyes', business: 'chart back out', text: "Her bloodwork today is normal. That's good, but it's not the whole story. Kidneys and clotting can go sideways twelve to forty-eight hours after something like this. It doesn't show up while you're standing here." },
       {
         speaker: 'reyes',
         business: 'nodding at Tay, who is currently trying to eat the cone',
-        text: "She looks great right now. That's exactly why people skip this part."
+        text: "She looks great right now. Which is <em>exactly</em> why people skip this part."
       },
       { speaker: 'callie', text: "…Okay." },
       {
@@ -374,7 +371,7 @@ export class Act3Screen {
       { speaker: 'callie', business: 'quiet', text: "You're okay." },
       { type: 'stage', text: 'Tay’s ear moves. She doesn’t wake up. One sleepy exhale.', sceneCue: 'Tay’s ear moves. She doesn’t wake up. One sleepy exhale.' },
       { speaker: 'tay', onomatopoeia: 'Hhhff…', text: '…good day.' },
-      { speaker: 'callie', business: 'a beat', text: "Next one'll be better." }
+      { speaker: 'callie', business: 'a beat', text: "Yeah. Next one'll be better." }
     ];
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -719,8 +716,9 @@ export class Act3Screen {
       for (const [stateName, src] of Object.entries(srcMap[char])) {
         const isActive = activeState === stateName;
         const activeClass = isActive ? 'is-active' : '';
+        const stateClass = `is-state-${stateName}`;
         const ariaHidden = isActive ? '' : ' aria-hidden="true"';
-        html += `<img id="act3-cast-${char}-${stateName}" src="Assets/Image/${src}" data-editor-id="act3-art-${char}-${stateName}" alt="${altMap[char][stateName]}" class="act3-cast-img act3-cast-${char} ${activeClass}"${ariaHidden}>\n`;
+        html += `<img id="act3-cast-${char}-${stateName}" src="Assets/Image/${src}" data-editor-id="act3-art-${char}-${stateName}" alt="${altMap[char][stateName]}" class="act3-cast-img act3-cast-${char} ${activeClass} ${stateClass}"${ariaHidden}>\n`;
       }
       return html;
     };
@@ -1078,8 +1076,11 @@ export class Act3Screen {
               <span class="act3-timeline-copy">
                 <strong>${item.title}</strong>
                 <span>${item.line}</span>
+                <span class="act3-timeline-next-time-row">
+                  <span class="act3-timeline-flag">NEXT TIME</span>
+                  ${item.nextTime}
+                </span>
               </span>
-              ${item.widest ? '<span class="act3-timeline-flag">Window was widest here</span>' : ''}
             </li>
           `).join('')}
         </ol>
@@ -1314,7 +1315,7 @@ export class Act3Screen {
       case 'wait':
         return `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">Wait for the doctor ➔</button>
+                  data-editor-id="act3-btn-beat-advance">Next ▶</button>
         `;
 
       case 'verdict':
