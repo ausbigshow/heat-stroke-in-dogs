@@ -411,11 +411,17 @@ entrance bubblePop 0.3s --ease-back
 **Anatomy:** `.speech-bubble-speaker` (display, 0.8rem/800, uppercase, +0.06em, uppercase name)
 then `.speech-bubble-text`.
 
+### 6.3.1 Bubble typography (standard)
+
+Speaker identity is carried by colour, border and stem, never by type size or family.
+Bubble text (`.speech-bubble-text`, `.speech-bubble-text span`): `font-family: var(--font-family-display)`, `font-size: clamp(1rem, 1.25vw, 1.2rem)`, `font-weight: 600`, `line-height: 1.4`.
+Speaker label (`.speech-bubble-speaker`): `0.7rem`, `font-weight: 700`, uppercase, `letter-spacing: 0.08em`.
+
 **Callie** — `.callie-bubble`: white ground, `3px solid --palette-brown-dark`, brown-dark text,
-`--palette-teal-dark` speaker label, display family at weight 600.
+`--palette-teal-dark` speaker label.
 
 **Tay** — `.tay-bubble`: `--color-heat-tint` (`#FFF8F3`) ground, `3px solid --color-heat`,
-`--color-heat-deep` text, `--color-heat` speaker label, **body family at weight 700**.
+`--color-heat-deep` text, `--color-heat` speaker label.
 
 **The stem.** Two stacked CSS triangles — a `::before` in the border colour at `bottom:-22px`, and
 a `::after` inset 2px in the fill colour at `bottom:-18px`, giving a seamless bordered tail.

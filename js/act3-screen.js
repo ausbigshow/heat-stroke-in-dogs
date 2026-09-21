@@ -95,20 +95,20 @@ export class Act3Screen {
     this.verdictSteps = [
       { speaker: 'reyes', business: 'chart in hand, already talking', text: "She's stable." },
       { type: 'stage', text: 'Callie stands up too fast.', sceneCue: 'Callie stands up too fast.', cast: { callie: 'relief' } },
-      { speaker: 'callie', text: "She's okay?" },
-      { speaker: 'reyes', business: 'reading the chart', text: "She's going to be. She came in at 105.8. She was higher than that out at the lake." },
+      { speaker: 'callie', text: "She's — okay? She's okay?" },
+      { speaker: 'reyes', business: 'reading the chart', text: "She's going to be. She came in at 105.8, and she was hotter than that out at the lake. So yes — she's earned the word <em>stable</em>." },
       { speaker: 'callie', text: "But she's okay." },
       { speaker: 'reyes', business: 'finally looking up from the chart', text: "Yeah. She's okay.", cast: { reyes: 'warm' } },
       {
         type: 'hold',
         sceneCue: 'Two seconds. Nobody says anything.'
       },
-      { speaker: 'reyes', business: 'clipping the chart under her arm', text: "You cooled her <em>before</em> you drove.", cast: { reyes: 'chart' } },
-      { speaker: 'callie', text: "They told me to on the phone." },
+      { speaker: 'reyes', business: 'clipping the chart under her arm', text: "You cooled her before you drove.", cast: { reyes: 'chart' } },
+      { speaker: 'callie', text: "They told me to on the phone. I wasn't sure it was — I just did what they said." },
       {
         speaker: 'reyes',
         business: 'washing her hands at the clinic sink',
-        text: "Good. That's the difference right there. Dogs cooled before they get in the car are about <strong>two and a half times</strong> more likely to make it. You didn't just drive her here. You started treating her — and <em>then</em> you drove.",
+        text: "Good. That's the whole difference. Dogs that get cooled before the car are about <strong>2.5 times</strong> more likely to make it than dogs that don't. You didn't just drive her here, Callie. You started treating her — and <em>then</em> you drove.",
         cast: { reyes: 'warm' },
         stamp: {
           metric: '2.5× more likely',
@@ -164,17 +164,17 @@ export class Act3Screen {
     // How often each early sign actually gets logged. Bar length AND the numeral carry the
     // value — never the colour (§7.3).
     this.prevalence = [
-      { id: 'panting', label: 'Panting', pct: 67, said: 'about two-thirds of cases' },
-      { id: 'lethargy', label: 'Lethargy', pct: 50, said: 'about half' }
+      { id: 'panting', label: 'Panting', pct: 67, said: 'about 67% of cases' },
+      { id: 'lethargy', label: 'Lethargy', pct: 50, said: 'about 50%' }
     ];
 
     // The Act 1 timeline, restated one last time. Times match Act 2's `hintsTimeline` exactly —
     // if one changes, change both.
     this.hintsTimeline = [
-      { time: '1:30 PM', icon: '🥪', title: 'The cooler, in open sun', line: 'Ninety minutes against a cold box.', nextTime: 'Put the cooler in the shade and keep her with it. Cold on the outside is still an oven on the inside.' },
-      { time: '1:48 PM', icon: '☀️', title: 'The dock', line: '137°F boards, patrolled twice.', widest: true, nextTime: "Press your palm on the boards for five seconds before she walks them. If you can't hold it there, she can't stand on it." },
+      { time: '1:30 PM', icon: '🥪', title: 'The cooler, in open sun', line: '90 minutes against a cold box.', nextTime: 'Put the cooler in the shade and keep her with it. Cold on the outside is still an oven on the inside.' },
+      { time: '1:48 PM', icon: '☀️', title: 'The dock', line: '137°F boards, patrolled twice.', widest: true, nextTime: "Press your palm on the boards for 5 seconds before she walks them. If you can't hold it there, she can't stand on it." },
       { time: '2:03 PM', icon: '🥣', title: 'The water bowl', line: 'Sun-warm, half empty, untouched.', nextTime: "Bowl in the shade, refilled every time you refill your own. Warm water in the sun doesn't get drunk." },
-      { time: '2:38 PM', icon: '🌳', title: 'The shade that moved', line: 'Twenty-seven minutes asleep in full sun.', nextTime: "Look at where the shadow is every half hour. It moves. A sleeping dog doesn't." }
+      { time: '2:38 PM', icon: '🌳', title: 'The shade that moved', line: '27 minutes asleep in full sun.', nextTime: "Look at where the shadow is every 30 minutes. It moves. A sleeping dog doesn't." }
     ];
 
     // Reyes walks the timeline while she works. Each step reveals one panel of the report,
@@ -183,21 +183,16 @@ export class Act3Screen {
       {
         reveals: 'table',
         lines: [
-          { speaker: 'reyes', business: 'writing', text: "What you described on the phone — the panting, the gums, her not answering to her name. Those aren't separate problems. That's <em>one</em> thing, at three different stages." }
+          { speaker: 'reyes', business: 'writing', text: "What you told them on the phone — the panting, the gums, her not coming when you called. You said it like 4 separate problems. It's not. It's one thing, at 3 different stages." },
+          { speaker: 'callie', text: "One thing." }
         ]
       },
       {
         reveals: 'prevalence',
         lines: [
-          { speaker: 'reyes', business: 'still writing', text: "Panting and lethargy are what we log most. Panting in about two-thirds of cases, lethargy in about half. They're the earliest signs, and they're the easiest ones to explain away as a hot day." },
-          { speaker: 'callie', text: "I thought she was just tired." },
-          { speaker: 'reyes', business: 'not unkindly', text: "Everyone does. That's the trap of the early stage — it just looks like a normal afternoon." }
-        ]
-      },
-      {
-        reveals: 'timeline',
-        lines: [
-          { speaker: 'reyes', business: 'turning the chart around so Callie can see it', text: "This is her afternoon. Every one of these is a place it was still early." }
+          { speaker: 'reyes', business: 'still writing', text: "Heat. Panting is the early stage — we see it in about 67% of cases. Lethargy in about 50%. They're the first signs, and the easiest ones to wave off, because —" },
+          { speaker: 'callie', text: "— because she just looked tired. I thought she was tired." },
+          { speaker: 'reyes', business: 'not unkindly', text: "Everyone does. That's the trap. The early stage looks like a normal afternoon." }
         ]
       },
       {
@@ -206,7 +201,7 @@ export class Act3Screen {
           {
             speaker: 'reyes',
             business: 'flat, not warning',
-            text: "Caught while it's still mild, dogs come through about ninety-five percent of the time. Once it's severe before anyone treats it, that drops to about <em>forty-three</em>.",
+            text: "Caught while it's still mild, dogs come through about 95% of the time. Once it's severe before anyone starts cooling, that drops to about 43%.",
             stamp: {
               metric: '95% → 43%',
               line: 'Treated while it is still mild against treated once it is already severe. The gap is not the illness. The gap is the delay.'
@@ -215,15 +210,15 @@ export class Act3Screen {
         ],
         variants: {
           act_now: [
-            { speaker: 'reyes', business: 'glancing at the chart', text: "She was on the good side of that when she came through the door. Barely, but she was." }
+            { speaker: 'reyes', business: 'glancing at the chart', text: "She was on the good side of that when she came through the door. Barely — but she was. That's your <em>right away</em> at the lake." }
           ],
           wait: [
-            { speaker: 'reyes', business: 'glancing at the chart', text: "You waited a few minutes out there." },
-            { speaker: 'callie', text: "I thought she'd settle…" },
-            { speaker: 'reyes', business: 'no edge in it at all', text: "I know. But that gap between ninety-five and forty-three? That's where those minutes live." }
+            { speaker: 'reyes', business: 'glancing at the chart', text: "You waited a few minutes out there before you started." },
+            { speaker: 'callie', text: "I thought she'd settle." },
+            { speaker: 'reyes', business: 'no edge in it at all', text: "I know. Everybody thinks that. That gap between 95 and 43 — that's where those few minutes live." }
           ],
           unknown: [
-            { speaker: 'reyes', business: 'letting it sit', text: "Where a dog lands in that range is mostly about how long anybody took to start." }
+            { speaker: 'reyes', business: 'letting it sit', text: "Where a dog lands in that range mostly comes down to one thing: how long it took for somebody to start cooling her." }
           ]
         }
       },
@@ -233,14 +228,16 @@ export class Act3Screen {
           {
             speaker: 'reyes',
             business: 'assuming Callie already knew this',
-            text: "And she was never running the same odds as other dogs. Flat-faced breeds — Frenchies, bulldogs, pugs — get heat illness about <strong>four times</strong> as often.",
+            text: "And she was never running the same odds as other dogs. Brachycephalic breeds — the flat-faced ones, Frenchies, bulldogs, pugs — get heat illness about <strong>4 times</strong> as often.",
             stamp: {
               metric: '4× the risk',
-              line: 'Brachycephalic breeds are diagnosed with heat illness roughly four times as often. Tay has been playing this hand her whole life.'
+              line: 'Brachycephalic (flat-faced) breeds are diagnosed with heat illness roughly 4× as often. Tay has been playing this hand her whole life.'
             }
           },
-          { speaker: 'callie', text: "Four times." },
-          { speaker: 'reyes', business: 'gentler now', text: "That face is adorable, and it's a compromise. She's breathing through a shorter airway than the dog next to her, and panting is the <em>only</em> cooling she's got." }
+          { speaker: 'callie', text: "4 times?" },
+          { speaker: 'reyes', business: 'gentler now', text: "4 times. That face is adorable, and it's a compromise. She's got a shorter airway than the dog next to her, and panting is the only cooling she's got." },
+          { speaker: 'callie', text: "Can I see her?" },
+          { speaker: 'reyes', business: 'gentler now', text: "She's just in the back. Give me one second.", cast: { reyes: 'warm' } }
         ]
       }
     ];
@@ -250,19 +247,21 @@ export class Act3Screen {
     // script. Lines flagged `trimCandidate` are the small-room pair the script names as the
     // first cut if the run drags in review — the thermometer and the cone carry it.
     this.tayReturnSteps = [
-      { type: 'stage', text: 'A tech walks her out on a leash. Cone. Tail going like nothing happened.', sceneCue: 'A tech walks her out on a leash. Cone. Tail going like nothing happened.' },
-      { speaker: 'tay', onomatopoeia: 'YIP YIP YIP.', text: 'CALLIE. CALLIE. CALLIE.' },
-      { speaker: 'tay', text: 'They took my temperature! Wrong end! WRONG END!' },
+      { type: 'stage', text: 'A tech walks her out on a leash. Tail going like nothing happened.', sceneCue: 'A tech walks her out on a leash. Tail going like nothing happened.' },
+      { speaker: 'tay', onomatopoeia: 'YIP YIP YIP!', text: 'CALLIE. CALLIE. CALLIE.' },
+      { speaker: 'tay', onomatopoeia: 'AROOO.', text: 'They took my temperature. From the WRONG END.' },
       { type: 'stage', text: 'Callie is on the floor. Tay is climbing her.', sceneCue: 'Callie is on the floor. Tay is climbing her.', cast: { callie: 'floor' } },
-      { speaker: 'tay', text: "This collar is an insult! I'D LIKE TO FILE SOMETHING!" },
-      { speaker: 'callie', business: 'laughing, wrecked', text: "Okay… okay." },
+      { speaker: 'callie', text: "I know, baby. I know. Come here." },
+      { speaker: 'tay', onomatopoeia: 'HRMPH.', text: "There was a small room. It had no snacks. I'd like to file something." },
+      { speaker: 'callie', business: 'laughing, wrecked', text: "Okay… okay. We'll file something." },
       {
         speaker: 'tay',
         onomatopoeia: 'HUFF.',
-        text: 'But I feel amazing! I always feel amazing!',
-        callback: 'She said this in the living room, before any of it.'
+        // Verbatim Act 0 callback. Recognition is the payoff; nothing on screen points at it.
+        text: 'But I feel amazing! I always feel amazing!'
       },
       { type: 'stage', text: 'Callie looks up at Dr. Reyes.', sceneCue: 'Callie looks up at Dr. Reyes.' },
+      { speaker: 'callie', text: "She says she feels amazing." },
       { speaker: 'reyes', business: 'watching the dog, not the owner', text: "Yeah. <em>That's</em> the part that'll get you.", cast: { reyes: 'serious' } }
     ];
 
@@ -274,25 +273,25 @@ export class Act3Screen {
         id: 'setup_first',
         icon: '⛱️',
         label: 'Shade and water set up before anything else',
-        reply: "Set it up before you even touch the cooler. Real shade she can reach, and the water stays in the shade with her."
+        reply: "Set it up before you even touch the cooler. Real shade she can reach, and her water sitting in it."
       },
       {
         id: 'timing',
         icon: '🌅',
         label: 'Go early or late, not one in the afternoon',
-        reply: "Stick to mornings or evenings. One o'clock in July is the absolute worst hour of the day, and it's the one everybody picks."
+        reply: "Mornings or evenings. 1 PM in July is the worst hour of the day, and it's the one everybody picks."
       },
       {
         id: 'temp_humidity',
         icon: '🌡️',
         label: 'Watch the temperature, not just the sun',
-        reply: "Once it's past eighty, I'd think twice. And check the humidity — that's what gets them. Panting just doesn't work when the air's already wet."
+        reply: "Past 80°F I'd think twice. And check the humidity — that's the part people miss. Panting barely works when the air's already wet."
       },
       {
         id: 'stay_in',
         icon: '🏠',
         label: 'Some days she just stays inside',
-        reply: "AC and a puzzle toy. She'll act completely betrayed, but she'll live."
+        reply: "AC and a puzzle toy. She'll act completely betrayed. She'll live."
       }
     ];
 
@@ -305,44 +304,48 @@ export class Act3Screen {
         speaker: 'reyes',
         business: 'washing her hands',
         cast: { reyes: 'serious' },
-        text: "You'd think. It jumps twenty degrees inside in the first ten minutes. Cracking the windows takes it from about three and a half degrees every five minutes down to about three. It buys you nothing. <em>You</em> don't need to hear that, but somebody you know does.",
+        text: "You'd think. It's 20 degrees hotter inside within the first 10 minutes. And cracking the windows? That takes it from about 3.5 degrees every 5 minutes to about 3. It does <strong>next to nothing</strong>.",
         stamp: {
           metric: '+20°F in 10 min',
-          line: 'Cracked windows move it from about 3.4°F every five minutes to about 3.1°F. That is the entire benefit.'
+          line: 'Cracking the windows barely moves it: about 3.4°F every 5 minutes becomes about 3.1°F. It does next to nothing.'
         }
       },
+      { speaker: 'callie', text: "That's — that's it? Half a degree?" },
+      { speaker: 'reyes', business: 'handing it over, not lecturing', cast: { reyes: 'warm' }, text: "That's it. You don't need this lecture. Somebody you know does — so now you've got the number." },
       {
         speaker: 'reyes',
         business: 'on her way to the door',
+        // SME PENDING — see getSmePendingCopy(). The Texas A&M attribution is not in the Research
+        // Notes. `textUnattributed` is the drop-in if it cannot be sourced before recording.
         smePending: true,
-        text: "If you're out in it anyway? fifteen, twenty minutes of cooling off between anything active. That's what A&M recommends for heat like ours. Same number I'd give you.",
+        text: "And if you're out in the heat anyway — 15–20 minutes of cooling off between anything active. That's what Texas A&M recommends for heat like ours, and it's the number I'd give you.",
         cast: { reyes: 'serious' },
-        textUnattributed: "If you're out in it anyway? fifteen, twenty minutes of cooling off between anything active. That's the number I'd give you.",
+        textUnattributed: "And if you're out in the heat anyway — 15–20 minutes of cooling off between anything active. That's the number I'd give you.",
         stamp: {
           metric: '15–20 min',
-          line: 'Cooling off between bouts of anything active, once it is past eighty. Shade, water, and stillness — not a shorter walk.'
+          line: 'Cooling off between bouts of anything active once it is past 80°F. Shade, water, and stillness — not a shorter walk.'
         }
       }
     ];
 
     // ---- Beat 3F — The recheck --------------------------------------------
     this.recheckSteps = [
-      { type: 'stage', text: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.', sceneCue: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.' },
-      { speaker: 'reyes', business: 'not moving out of the doorway', text: "One more thing." },
-      { speaker: 'callie', text: "She's fine, though." },
-      { speaker: 'reyes', business: 'chart back out', text: "Her bloodwork today is normal. That's good, but it's not the whole story. Kidneys and clotting can go sideways twelve to forty-eight hours after something like this. It doesn't show up while you're standing here." },
+      { type: 'stage', text: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.', sceneCue: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.', cast: { callie: 'leaving', tay: 'leading', reyes: 'aside' } },
+      { speaker: 'reyes', business: 'not moving out of the doorway', text: "One more thing.", cast: { callie: 'turned' } },
+      { speaker: 'callie', text: "She's fine, though. You said she's fine." },
+      { speaker: 'reyes', business: 'chart back out', text: "She is, today. Her bloodwork's normal — that's good, and it's not the whole story. Kidneys and clotting can go sideways 12–48 hours after something like this. It doesn't show up while you're standing here." },
       {
         speaker: 'reyes',
-        business: 'nodding at Tay, who is currently trying to eat the cone',
+        business: 'nodding at Tay',
         text: "She looks great right now. Which is <em>exactly</em> why people skip this part."
       },
-      { speaker: 'callie', text: "…Okay." },
+      { speaker: 'callie', text: "…Okay. Okay, what do I do?" },
       {
         speaker: 'reyes',
         business: 'tearing off the sheet and handing it over',
-        text: "Bring her back in a day or two. Sooner if she throws up, if her urine goes dark, if you see any bleeding, or if she goes flat on you again.",
+        text: "Bring her back in a day or two. Sooner if she throws up, if her urine goes dark, if you see any bleeding, or if she goes flat on you again. It's all on here.",
         revealsSheet: true,
-        cast: { reyes: 'sheet' }
+        cast: { callie: 'handover', reyes: 'absent' }
       },
       { speaker: 'reyes', business: 'already holding the door', text: "And watch her tonight." },
       { speaker: 'callie', text: "I'm gonna watch her tonight." }
@@ -563,6 +566,8 @@ export class Act3Screen {
         <div
           id="act3-card"
           class="act3-viewport-card scene-${scene.key}"
+          data-callie="${this.castState?.callie || ''}"
+          data-reyes="${this.castState?.reyes || ''}"
           data-editor-id="act3-viewport-card"
           style="--act3-saturation: ${saturation}%; --act3-cool-opacity: ${coolOpacity}; --act3-recovery: ${recovery};"
         >
@@ -657,7 +662,7 @@ export class Act3Screen {
       report:    { callie: 'relief',  reyes: 'chart',   tay: 'absent' },
       tayReturn: { callie: 'relief',  reyes: 'warm',    tay: 'happy' },
       nextTime:  { callie: 'relief',  reyes: 'warm',    tay: 'sniffing' },
-      recheck:   { callie: 'relief',  reyes: 'serious', tay: 'sniffing' }
+      recheck:   { callie: 'leaving', reyes: 'aside',   tay: 'leading' }
     };
     let state = { ...(defaults[this.currentBeat] || defaults.recheck) };
     const steps = this.stepsForBeat();
@@ -677,19 +682,24 @@ export class Act3Screen {
     const getCastImg = (char, activeState) => {
       const srcMap = {
         'callie': {
-          'waiting': 'Callie-Clinic-Waiting.png',
+          'waiting': 'Callie-Clinic-Seated.png',
           'relief': 'Callie-Clinic-Relief.png',
-          'floor': 'Callie-Clinic-FloorLaughing.png'
+          'floor': 'Callie-Clinic-FloorLaughing.png',
+          'leaving': 'Callie-Clinic-Leaving.png',
+          'turned': 'Callie-Clinic-TurnedBack.png',
+          'handover': 'Callie-Reyes-Handover.png'
         },
         'reyes': {
           'chart': 'Reyes-Chart.png',
           'warm': 'Reyes-Warm.png',
           'serious': 'Reyes-Serious.png',
-          'sheet': 'Reyes-HandingSheet.png'
+          'sheet': 'Reyes-HandingSheet.png',
+          'aside': 'Reyes-Warm.png'
         },
         'tay': {
           'happy': 'Tay-StandingStage2-Warm.png',
-          'sniffing': 'Tay-SniffingGround.png'
+          'sniffing': 'Tay-SniffingGround.png',
+          'leading': 'Tay-StandingSideProfile.png'
         }
       };
       
@@ -697,17 +707,22 @@ export class Act3Screen {
         callie: {
           waiting: 'Callie in a clinic chair, drained, hands empty',
           relief: 'Callie standing, hands to her chest, relief breaking through',
-          floor: 'Callie on the treatment room floor, laughing, eyes shut'
+          floor: 'Callie on the treatment room floor, laughing, eyes shut',
+          leaving: 'Callie gathering her things to leave',
+          turned: 'Callie pausing halfway out the door',
+          handover: 'Dr. Reyes handing Callie the discharge sheet'
         },
         reyes: {
           chart: 'Dr. Reyes reading the chart',
           warm: 'Dr. Reyes looking up from the chart with a small, kind smile',
           serious: 'Dr. Reyes, level and plain',
-          sheet: 'Dr. Reyes holding out the discharge sheet'
+          sheet: 'Dr. Reyes holding out the discharge sheet',
+          aside: 'Dr. Reyes leaning in the doorway'
         },
         tay: {
           happy: 'Tay, tail up, tongue out, obviously herself',
-          sniffing: 'Tay nosing around the treatment room floor'
+          sniffing: 'Tay nosing around the treatment room floor',
+          leading: 'Tay pulling on the leash, ready to go'
         }
       };
 
@@ -833,9 +848,8 @@ export class Act3Screen {
             <span>Tay</span>
           </div>
           <p class="speech-bubble-text">
-            ${step.onomatopoeia ? `<span class="tay-onomatopoeia">${step.onomatopoeia}</span> ` : ''}<span class="tay-sub-dialogue">${step.text}</span>
+            ${step.onomatopoeia ? `<span class="tay-onomatopoeia">${step.onomatopoeia}</span> ` : ''}<span class="tay-sub-dialogue">(${step.text})</span>
           </p>
-          ${step.callback ? `<span class="act3-callback-tag">${step.callback}</span>` : ''}
         </div>
       `;
     }
@@ -899,7 +913,7 @@ export class Act3Screen {
         const rStamp = this.activeStamp(rSteps, this.stepIndex);
         return `
           ${this.renderDialogueStep(rStep, `act3-report-${this.stepIndex}`)}
-          ${rStamp ? this.renderTruthStamp(rStamp, 'act3-stamp-report') : ''}
+          
         `;
       case 'recap': return this.renderRecap();
       case 'tayReturn': return this.renderTayReturn();
@@ -934,7 +948,7 @@ export class Act3Screen {
 
     return `
       ${this.renderDialogueStep(step, `act3-verdict-${this.stepIndex}`)}
-      ${stamp ? this.renderTruthStamp(stamp, 'act3-stamp-survival-cooled') : ''}
+      
     `;
   }
 
@@ -1092,16 +1106,7 @@ export class Act3Screen {
     const step = this.tayReturnSteps[this.stepIndex];
     if (!step) return '';
 
-    // Her first line gets a marker. Nine minutes of story have gone by without her.
-    const isFirstTayLine = this.stepIndex === 1;
-
     return `
-      ${isFirstTayLine ? `
-        <div class="act3-voice-return-banner" data-editor-id="act3-voice-return-banner" role="note">
-          <span class="act3-voice-return-mark" aria-hidden="true">🔊</span>
-          <span>She has not said a word since the lake.</span>
-        </div>
-      ` : ''}
       ${this.renderDialogueStep(step, `act3-return-${this.stepIndex}`)}
     `;
   }
@@ -1168,7 +1173,6 @@ export class Act3Screen {
 
     return `
       ${this.renderDialogueStep(step, `act3-hotcar-${this.stepIndex}`)}
-      ${stamp ? this.renderTruthStamp(stamp, `act3-stamp-${stamp.metric.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`) : ''}
     `;
   }
 
