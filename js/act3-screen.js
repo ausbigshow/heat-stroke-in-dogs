@@ -147,6 +147,7 @@ export class Act3Screen {
         id: 'gums',
         icon: '👄',
         sign: 'Gums + capillary refill',
+        short: 'Gums',
         reported: 'Brick red · refill over 2 seconds',
         stageNo: 3,
         stage: 'Advanced',
@@ -156,6 +157,7 @@ export class Act3Screen {
         id: 'name',
         icon: '🗣️',
         sign: 'Response to her name',
+        short: 'Her name',
         reported: 'Delayed, then absent',
         stageNo: 3,
         stage: 'Advanced',
@@ -586,9 +588,16 @@ export class Act3Screen {
       if (step.type === 'stage' || step.type === 'hold') {
         let delay = step.type === 'hold' ? 2000 : 1400;
         if (this.prefersReducedMotion()) delay = 0;
-        this._autoAdvanceTimer = setTimeout(() => {
-          this.nextSubStep();
-        }, delay);
+        if (!this.isEditModeActive()) {
+          const active = document.activeElement;
+          const shouldRefocus = active === document.body || (this.container && this.container.contains(active));
+          this._autoAdvanceTimer = setTimeout(() => {
+            this.nextSubStep();
+            if (shouldRefocus) {
+              focusInto(this.container, ['#act3-btn-next-step', '#act3-btn-beat-advance', '#act3-btn-report-next']);
+            }
+          }, delay);
+        }
       }
     }
   }
@@ -630,6 +639,9 @@ export class Act3Screen {
           <p class="sr-only" role="status" aria-live="polite" data-editor-id="act3-sr-status">
             ${this.renderSrStatusText()}
           </p>
+          <p class="sr-only" role="status" aria-live="polite" id="act3-sr-dialogue" data-editor-id="act3-sr-dialogue">
+            ${this.getSrDialogueText()}
+          </p>
         </div>
       </div>
     `;
@@ -666,6 +678,30 @@ export class Act3Screen {
       default:
         return 'The story is over. You can replay an act or return to the title screen.';
     }
+  }
+
+  getSrDialogueText() {
+    if (this.currentBeat === 'report') {
+      const step = this.reportSteps[this.reportStep];
+      if (!step) return '';
+      let lines = [...step.lines];
+      if (step.variants) {
+        lines = lines.concat(step.variants[this.decisionChoice || 'unknown'] || step.variants.unknown);
+      }
+      return lines.map(line => `${line.speaker === 'reyes' ? 'Dr. Reyes' : 'Callie'}: ${line.text}`).join(' ');
+    }
+
+    const steps = this.stepsForBeat();
+    if (!steps || !steps[this.stepIndex]) return '';
+    const step = steps[this.stepIndex];
+    if (step.type === 'stage' || step.type === 'hold') return '';
+    
+    let speaker = step.speaker;
+    if (speaker === 'reyes') speaker = 'Dr. Reyes';
+    if (speaker === 'callie') speaker = 'Callie';
+    if (speaker === 'tay') speaker = 'Tay';
+    
+    return `${speaker}: ${step.text}`;
   }
 
   /** Which room we are in. Lobby is drawn; the exam room and the living room are painted. */
@@ -737,12 +773,12 @@ export class Act3Screen {
       };
 
       let html = '';
+      if (activeState === 'absent') return html;
       for (const [stateName, src] of Object.entries(srcMap[char])) {
-        // If absent, they are completely removed from DOM? No, just keep them at opacity 0
         const isActive = activeState === stateName;
-        // Don't use inline style for opacity, use a class
         const activeClass = isActive ? 'is-active' : '';
-        html += `<img id="act3-cast-${char}-${stateName}" src="Assets/Image/${src}" data-editor-id="act3-art-${char}-${stateName}" alt="${altMap[char][stateName]}" class="act3-cast-img act3-cast-${char} ${activeClass}">\n`;
+        const ariaHidden = isActive ? '' : ' aria-hidden="true"';
+        html += `<img id="act3-cast-${char}-${stateName}" src="Assets/Image/${src}" data-editor-id="act3-art-${char}-${stateName}" alt="${altMap[char][stateName]}" class="act3-cast-img act3-cast-${char} ${activeClass}"${ariaHidden}>\n`;
       }
       return html;
     };
@@ -1059,18 +1095,17 @@ export class Act3Screen {
 
     if (collapseTable) {
       return `
-        <div class="act3-report-panel collapsed-table" data-editor-id="act3-report-panel-table">
+        <div class="act3-report-panel collapsed-table" id="act3-report-table-container" data-editor-id="act3-report-panel-table">
           <div class="act3-report-panel-head">
             <h3 class="act3-panel-title">What you reported</h3>
-            <button id="act3-btn-report-table" class="act3-hud-btn act3-btn-quiet act3-btn-table-toggle" aria-expanded="false">
+            <button id="act3-btn-report-table" class="act3-hud-btn act3-btn-quiet act3-btn-table-toggle" aria-expanded="false" aria-controls="act3-report-table-container">
               Show table
             </button>
           </div>
           <div class="act3-report-chips">
             ${this.reportRows.map(row => `
               <span class="act3-stage-chip stage-${row.stageNo}">
-                <span aria-hidden="true">${row.icon}</span>
-                <span class="act3-stage-no">${row.stageNo}</span>
+                <span aria-hidden="true">${row.icon}</span> ${row.short || row.sign} &middot; <span class="act3-stage-no">${row.stageNo}</span>
                 <span>${row.stage}</span>
               </span>
             `).join('')}
@@ -1080,11 +1115,11 @@ export class Act3Screen {
     }
 
     return `
-      <div class="act3-report-panel" data-editor-id="act3-report-panel-table">
+      <div class="act3-report-panel" id="act3-report-table-container" data-editor-id="act3-report-panel-table">
         <div class="act3-report-panel-head">
           <h3 class="act3-panel-title">What you reported, and when it started</h3>
           ${this.reportStep >= 2 ? `
-            <button id="act3-btn-report-table" class="act3-hud-btn act3-btn-quiet act3-btn-table-toggle" aria-expanded="true">
+            <button id="act3-btn-report-table" class="act3-hud-btn act3-btn-quiet act3-btn-table-toggle" aria-expanded="true" aria-controls="act3-report-table-container">
               Hide table
             </button>
           ` : ''}
@@ -1415,7 +1450,7 @@ export class Act3Screen {
     const steps = this.stepsForBeat();
     if (steps && steps[this.stepIndex]) {
       const step = steps[this.stepIndex];
-      if (step.type === 'stage' || step.type === 'hold') return '';
+      if ((step.type === 'stage' || step.type === 'hold') && !this.isEditModeActive()) return '';
     }
     switch (this.currentBeat) {
       case 'wait':
@@ -1445,7 +1480,7 @@ export class Act3Screen {
           const all = this.preventionChosen.size === this.preventionOptions.length;
           const some = this.preventionChosen.size > 0;
           return `
-            <button id="act3-btn-next-step" class="act3-hud-btn ${all ? 'btn-action-primary pulse-btn' : ''}"
+            <button id="act3-btn-next-step" class="act3-hud-btn ${some ? 'btn-action-primary pulse-btn' : 'act3-btn-quiet'}"
                     data-editor-id="act3-btn-next-step">
               ${all ? "That's all of them ➔" : some ? "That's what changes ▶" : 'Nothing changes ▶'}
             </button>
