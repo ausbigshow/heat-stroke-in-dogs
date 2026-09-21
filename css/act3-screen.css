@@ -93,7 +93,7 @@
   bottom: 4.4%;
 }
 .act3-cast-callie.is-state-relief { height: 50%; }
-.act3-cast-callie.is-state-waiting { height: 36%; }
+.act3-cast-callie.is-state-waiting { height: 36%; left: 26%; } /* her own chair, clear of the one against the wall */
 .act3-cast-callie.is-state-floor { height: 34%; }
 
 .act3-cast-tay {
