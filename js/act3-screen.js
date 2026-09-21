@@ -60,7 +60,6 @@ export class Act3Screen {
     this.waitSeconds = 0;
     this.waitTimer = null;
     this.waitOver = false;
-    this.foldCount = 0; // Callie folds the towel she has no use for. Does nothing. That's the point.
 
     // ---- Handed forward from Act 2 (see applyHandoff) --------------------
     // null means "we were not told" — the act-or-wait payoff falls back to its neutral variant
@@ -75,6 +74,7 @@ export class Act3Screen {
 
     // ---- Beat 3C: the report card ---------------------------------------
     this.reportStep = 0;
+    this.reportTableExpanded = false;
 
     // ---- Beat 3E: prevention ---------------------------------------------
     this.preventionChosen = new Set();
@@ -84,49 +84,39 @@ export class Act3Screen {
     // handover at the door, and the wait puts the verdict at 4:02.
     this.clockMinutes = 242; // minutes past noon = 4:02 PM
 
+    // Silent visual pauses (stage / hold steps) auto-advance on this timer.
+    this._autoAdvanceTimer = null;
+
     // =====================================================================
     // CONTENT DATA
     // Every string a reviewer might want to change lives in these arrays, never inside a
     // template literal in a render method.
     // =====================================================================
 
-    // ---- Beat 3A -----------------------------------------------------------
-    // No dialogue. The towel is the only thing in the scene and the only thing to touch.
-    this.foldLines = [
-      'You fold the towel. It is still damp and it is still cold and there is nothing to do with it.',
-      'You unfold it. Fold it again, smaller. The edge is fraying where you wrung it out at the lake.',
-      'Somewhere behind the desk a phone rings twice and stops. A door opens somewhere that is not this door.',
-      'You put the towel on the chair beside you. Then you pick it back up.'
-    ];
-
     // ---- Beat 3B — The verdict --------------------------------------------
     // `business` is Reyes's stage direction, surfaced as her byline. She never stands still.
     this.verdictSteps = [
       { speaker: 'reyes', business: 'chart in hand, already talking', text: "She's stable." },
-      { type: 'stage', text: 'Callie stands up too fast.' },
+      { type: 'stage', text: 'Callie stands up too fast.', sceneCue: 'Callie stands up too fast.' },
       { speaker: 'callie', text: "She's okay?" },
       { speaker: 'reyes', business: 'reading the chart', text: "She's going to be. She came in at 105.8. She was higher than that out at the lake." },
       { speaker: 'callie', text: "But she's okay." },
       { speaker: 'reyes', business: 'finally looking up from the chart', text: "Yeah. She's okay." },
       {
         type: 'hold',
-        text: 'Two seconds. Nobody says anything.',
-        sub: 'Let the relief be uncomplicated. It is the only uncomplicated thing in this act.'
+        sceneCue: 'Two seconds. Nobody says anything.'
       },
       { speaker: 'reyes', business: 'clipping the chart under her arm', text: "You cooled her before you drove." },
       { speaker: 'callie', text: "They told me to on the phone." },
       {
         speaker: 'reyes',
         business: 'washing her hands at the lobby sink',
-        text: "Good. That's the difference. Dogs whose owners cool them before they get in the car are about two and a half times more likely to make it than the ones who don't.",
-        // The module's central claim, and the first number spoken. It attaches to a choice the
-        // learner made about ninety seconds of screen time ago. Said once, never repeated.
+        text: "Good. That's the difference. Dogs whose owners cool them before they get in the car are about two and a half times more likely to make it than the ones who don't. You didn't drive her here. You started treating her and then you drove her here.",
         stamp: {
           metric: '2.5× more likely',
           line: 'Cooling started before the drive, not after it. That is the single thing on this chart you controlled.'
         }
-      },
-      { speaker: 'reyes', business: 'drying her hands', text: "You didn't drive her here. You started treating her and then you drove her here." }
+      }
     ];
 
     // ---- Beat 3C — The report card ----------------------------------------
@@ -263,25 +253,19 @@ export class Act3Screen {
     // script. Lines flagged `trimCandidate` are the small-room pair the script names as the
     // first cut if the run drags in review — the thermometer and the cone carry it.
     this.tayReturnSteps = [
-      { type: 'stage', text: 'A tech walks her out on a leash. Cone. Tail going like nothing happened.' },
+      { type: 'stage', text: 'A tech walks her out on a leash. Cone. Tail going like nothing happened.', sceneCue: 'A tech walks her out on a leash. Cone. Tail going like nothing happened.' },
       { speaker: 'tay', onomatopoeia: 'YIP YIP YIP.', text: 'CALLIE. CALLIE. CALLIE.' },
-      { speaker: 'tay', text: 'They took my temperature.' },
-      { speaker: 'tay', text: 'Wrong end. WRONG END.' },
-      { type: 'stage', text: 'Callie is on the floor. Tay is climbing her.' },
-      { speaker: 'tay', text: 'Then a small room. Alone.', trimCandidate: true },
-      { speaker: 'tay', text: 'I did not care for it.', trimCandidate: true },
-      { speaker: 'tay', text: 'This collar is an insult.' },
-      { speaker: 'tay', text: "I'd like to file something." },
+      { speaker: 'tay', text: 'They took my temperature. Wrong end. WRONG END.' },
+      { type: 'stage', text: 'Callie is on the floor. Tay is climbing her.', sceneCue: 'Callie is on the floor. Tay is climbing her.' },
+      { speaker: 'tay', text: "This collar is an insult. I'd like to file something." },
       { speaker: 'callie', business: 'laughing, wrecked', text: "Okay. Okay." },
       {
         speaker: 'tay',
         onomatopoeia: 'HUFF.',
         text: 'But I feel amazing! I always feel amazing!',
-        // Verbatim callback to Act 0. The tag is written for the learner, not the author —
-        // recognition is the payoff, so name where they heard it, not the shot number.
         callback: 'She said this in the living room, before any of it.'
       },
-      { type: 'stage', text: 'Callie looks up at Dr. Reyes.' },
+      { type: 'stage', text: 'Callie looks up at Dr. Reyes.', sceneCue: 'Callie looks up at Dr. Reyes.' },
       { speaker: 'reyes', business: 'watching the dog, not the owner', text: "Yeah. That's the part that'll get you." }
     ];
 
@@ -323,18 +307,15 @@ export class Act3Screen {
       {
         speaker: 'reyes',
         business: 'hanging up the towel',
-        text: "You'd think. Twenty degrees inside in the first ten minutes. And cracking the windows takes it from about three and a half degrees every five minutes down to about three. It buys you nothing.",
+        text: "You'd think. Twenty degrees inside in the first ten minutes. And cracking the windows takes it from about three and a half degrees every five minutes down to about three. It buys you nothing. You don't need that. Somebody you know does.",
         stamp: {
           metric: '+20°F in 10 min',
           line: 'Cracked windows move it from about 3.4°F every five minutes to about 3.1°F. That is the entire benefit.'
         }
       },
-      { speaker: 'reyes', business: 'handing it over, not lecturing', text: "You don't need that. Somebody you know does." },
       {
         speaker: 'reyes',
         business: 'on her way to the door',
-        // SME PENDING — see getSmePendingCopy(). The A&M attribution is not in the Research
-        // Notes. `textUnattributed` is the drop-in if it cannot be sourced before recording.
         smePending: true,
         text: "And if you're out in it anyway — fifteen, twenty minutes of cooling off between anything active. That's what A&M recommends for heat like ours. Same number I'd give you.",
         textUnattributed: "And if you're out in it anyway — fifteen, twenty minutes of cooling off between anything active. That's the number I'd give you.",
@@ -347,15 +328,13 @@ export class Act3Screen {
 
     // ---- Beat 3F — The recheck --------------------------------------------
     this.recheckSteps = [
-      { type: 'stage', text: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.' },
+      { type: 'stage', text: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.', sceneCue: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.' },
       { speaker: 'reyes', business: 'not moving out of the doorway', text: "One more thing." },
       { speaker: 'callie', text: "She's fine, though." },
-      { speaker: 'reyes', business: 'chart back out', text: "Her bloodwork today is normal. That's good and it's not the whole story." },
-      { speaker: 'reyes', business: 'writing on the discharge sheet', text: "Kidneys and clotting can go sideways twelve to forty-eight hours after something like this. It doesn't show up while you're standing here." },
+      { speaker: 'reyes', business: 'chart back out', text: "Her bloodwork today is normal. That's good and it's not the whole story. Kidneys and clotting can go sideways twelve to forty-eight hours after something like this. It doesn't show up while you're standing here." },
       {
         speaker: 'reyes',
         business: 'nodding at Tay, who is currently trying to eat the cone',
-        // Reyes says the objection out loud before Callie can. This is the beat.
         text: "She looks great right now. That's exactly why people skip this part."
       },
       { speaker: 'callie', text: "…Okay." },
@@ -387,10 +366,10 @@ export class Act3Screen {
     // The living room from Act 0. Same couch, same lake painting, same photo on the wall.
     // Evening light instead of afternoon. The frame closes itself.
     this.homeSteps = [
-      { type: 'stage', text: 'Tay asleep on the cushion. Callie sitting next to her, not watching TV, watching the dog.' },
-      { type: 'stage', text: 'She puts a hand on Tay’s side. Feels it rise. Leaves it there.' },
+      { type: 'stage', text: 'Tay asleep on the cushion. Callie sitting next to her, not watching TV, watching the dog.', sceneCue: 'Tay asleep on the cushion. Callie sitting next to her, not watching TV, watching the dog.' },
+      { type: 'stage', text: 'She puts a hand on Tay’s side. Feels it rise. Leaves it there.', sceneCue: 'She puts a hand on Tay’s side. Feels it rise. Leaves it there.' },
       { speaker: 'callie', business: 'quiet', text: "You're okay." },
-      { type: 'stage', text: 'Tay’s ear moves. She doesn’t wake up. One sleepy exhale.' },
+      { type: 'stage', text: 'Tay’s ear moves. She doesn’t wake up. One sleepy exhale.', sceneCue: 'Tay’s ear moves. She doesn’t wake up. One sleepy exhale.' },
       { speaker: 'tay', onomatopoeia: 'Hhhff…', text: '…good day.' },
       { speaker: 'callie', business: 'a beat', text: "Next one'll be better." }
     ];
@@ -413,6 +392,7 @@ export class Act3Screen {
   }
 
   unmount() {
+    if (this._autoAdvanceTimer) clearTimeout(this._autoAdvanceTimer);
     window.removeEventListener('keydown', this.handleKeyDown);
     this.stopWaitTimer();
     releaseFocusContainment(this.container || document);
@@ -575,26 +555,37 @@ export class Act3Screen {
     this.render();
   }
 
-  foldTowel() {
-    this.foldCount += 1;
-    const line = this.container?.querySelector('#act3-fold-line');
-    if (line) line.textContent = this.foldLines[this.foldCount % this.foldLines.length];
-  }
-
+  
   // =======================================================================
   // RENDER — SHELL
   // =======================================================================
 
   render() {
     releaseFocusContainment(this.container || document);
+    if (this._autoAdvanceTimer) {
+      clearTimeout(this._autoAdvanceTimer);
+      this._autoAdvanceTimer = null;
+    }
     renderPreservingFocus(
       this.container,
       () => this.renderNow(),
       ['#act3-btn-next-step', '#act3-btn-report-next', '#act3-btn-report-done',
-       '#act3-btn-beat-advance', '#act3-btn-skip-wait']
+       '#act3-btn-beat-advance', '#act3-btn-skip-wait', '#act3-btn-report-table']
     );
     const dialog = this.container?.querySelector('[role="dialog"]');
     if (dialog) containFocusIn(dialog);
+
+    const steps = this.stepsForBeat();
+    if (steps && steps[this.stepIndex]) {
+      const step = steps[this.stepIndex];
+      if (step.type === 'stage' || step.type === 'hold') {
+        let delay = step.type === 'hold' ? 2000 : 1400;
+        if (this.prefersReducedMotion()) delay = 0;
+        this._autoAdvanceTimer = setTimeout(() => {
+          this.nextSubStep();
+        }, delay);
+      }
+    }
   }
 
   renderNow() {
@@ -901,23 +892,7 @@ export class Act3Screen {
   renderDialogueStep(step, editorId) {
     if (!step) return '';
 
-    if (step.type === 'stage') {
-      return `
-        <div class="act3-stage-card" data-editor-id="${editorId}-stage" role="note">
-          <span class="act3-stage-mark" aria-hidden="true">▸</span>
-          <p class="act3-stage-line">${step.text}</p>
-        </div>
-      `;
-    }
-
-    if (step.type === 'hold') {
-      return `
-        <div class="act3-hold-card" data-editor-id="${editorId}-hold" role="note">
-          <p class="act3-hold-line">${step.text}</p>
-          ${step.sub ? `<p class="act3-hold-sub">${step.sub}</p>` : ''}
-        </div>
-      `;
-    }
+    if (step.type === 'stage' || step.type === 'hold') { return ''; }
 
     if (step.speaker === 'tay') {
       return `
@@ -940,7 +915,7 @@ export class Act3Screen {
           <div class="speech-bubble-speaker">
             <span aria-hidden="true">🩺</span>
             <span>Dr. Reyes</span>
-            ${step.business ? `<span class="act3-business">· ${step.business}</span>` : ''}
+            
           </div>
           <p class="speech-bubble-text">
             <span class="act3-reyes-dialogue">“${step.text}”</span>
@@ -954,7 +929,7 @@ export class Act3Screen {
         <div class="speech-bubble-speaker">
           <span aria-hidden="true">👩</span>
           <span>Callie</span>
-          ${step.business ? `<span class="act3-business">· ${step.business}</span>` : ''}
+          
         </div>
         <p class="speech-bubble-text">
           <span class="callie-dialogue">“${step.text}”</span>
@@ -1121,9 +1096,40 @@ export class Act3Screen {
   }
 
   renderReportTable() {
+    const collapseTable = this.reportStep >= 2 && !this.reportTableExpanded;
+
+    if (collapseTable) {
+      return `
+        <div class="act3-report-panel collapsed-table" data-editor-id="act3-report-panel-table">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <h3 class="act3-panel-title" style="margin: 0;">What you reported</h3>
+            <button id="act3-btn-report-table" class="act3-hud-btn act3-btn-quiet" aria-expanded="false" style="height: 30px; font-size: 0.75rem; padding: 0 0.8rem;">
+              Show table
+            </button>
+          </div>
+          <div class="act3-report-chips" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            ${this.reportRows.map(row => `
+              <span class="act3-stage-chip stage-${row.stageNo}" style="display: inline-flex; align-items: center; gap: 0.3rem;">
+                <span aria-hidden="true">${row.icon}</span>
+                <span class="act3-stage-no">${row.stageNo}</span>
+                <span>${row.stage}</span>
+              </span>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
     return `
       <div class="act3-report-panel" data-editor-id="act3-report-panel-table">
-        <h3 class="act3-panel-title">What you reported, and when it started</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <h3 class="act3-panel-title" style="margin: 0;">What you reported, and when it started</h3>
+          ${this.reportStep >= 2 ? `
+            <button id="act3-btn-report-table" class="act3-hud-btn act3-btn-quiet" aria-expanded="true" style="height: 30px; font-size: 0.75rem; padding: 0 0.8rem;">
+              Hide table
+            </button>
+          ` : ''}
+        </div>
         <table class="act3-report-table">
           <caption class="sr-only">The four signs reported to the clinic, and the stage of heat illness each belongs to</caption>
           <thead>
@@ -1144,7 +1150,6 @@ export class Act3Screen {
                   <span class="act3-cell-note">${row.note}</span>
                 </td>
                 <td class="act3-cell-stage">
-                  <!-- Stage is a NUMERAL and a WORD before it is a colour (§7.3). -->
                   <span class="act3-stage-chip stage-${row.stageNo}">
                     <span class="act3-stage-no">${row.stageNo}</span>
                     <span>${row.stage}</span>
@@ -1216,7 +1221,7 @@ export class Act3Screen {
       <div class="act3-report-line line-${line.speaker}" data-editor-id="act3-report-line-${this.reportStep}-${i}">
         <span class="act3-report-who">
           ${line.speaker === 'reyes' ? 'Dr. Reyes' : 'Callie'}
-          ${line.business ? `<span class="act3-business">· ${line.business}</span>` : ''}
+          
         </span>
         <p class="act3-report-text">“${line.text}”</p>
       </div>
@@ -1448,6 +1453,11 @@ export class Act3Screen {
   }
 
   renderBottomRightControls() {
+    const steps = this.stepsForBeat();
+    if (steps && steps[this.stepIndex]) {
+      const step = steps[this.stepIndex];
+      if (step.type === 'stage' || step.type === 'hold') return '';
+    }
     switch (this.currentBeat) {
       case 'wait':
         return '';
@@ -1548,6 +1558,7 @@ export class Act3Screen {
     on('#act3-btn-report-next', () => this.nextReportStep());
     on('#act3-btn-report-prev', () => this.prevSubStep());
     on('#act3-btn-report-done', () => this.nextBeat());
+    on('#act3-btn-report-table', () => { this.reportTableExpanded = !this.reportTableExpanded; this.render(); });
 
     // --- Beat 3E ---
     this.container.querySelectorAll('.act3-prevention-option').forEach(el => {
@@ -1676,7 +1687,11 @@ export class Act3Screen {
       this.reportStep--;
     } else {
       if (this.stepIndex === 0 || !this.stepsForBeat()) return false;
+      const steps = this.stepsForBeat();
       this.stepIndex--;
+      while (this.stepIndex > 0 && steps[this.stepIndex] && (steps[this.stepIndex].type === 'stage' || steps[this.stepIndex].type === 'hold')) {
+        this.stepIndex--;
+      }
     }
     this.render();
     return true;
