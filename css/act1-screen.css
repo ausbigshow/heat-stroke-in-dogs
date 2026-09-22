@@ -826,7 +826,6 @@
   flex-direction: column;
   box-sizing: border-box;
   z-index: 50;
-  animation: stampSlamCentered var(--dur-base) var(--ease-out-expo) forwards;
   pointer-events: auto;
 }
 
@@ -910,7 +909,6 @@
   align-items: center;
   justify-content: center;
   z-index: 45;
-  animation: fadeIn 0.25s ease-out forwards;
   pointer-events: auto;
   padding: 1rem;
   box-sizing: border-box;
@@ -1104,7 +1102,6 @@
   padding: 0.55rem 1rem;
   box-shadow: var(--elev-5);
   box-sizing: border-box;
-  animation: povStampIn 0.4s var(--ease-out-expo) 0.35s both;
   pointer-events: auto;
 }
 
@@ -1307,7 +1304,6 @@
   font-size: 0.95rem;
   max-width: 320px;
   pointer-events: auto;
-  animation: slideInRight var(--dur-base) var(--ease-out-expo) forwards;
   z-index: 35;
 }
 
@@ -1511,7 +1507,6 @@
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
   max-width: 500px;
   z-index: 35;
-  animation: stampSlam 0.3s ease-out;
 }
 
 .foil-crinkle-sound {
@@ -1547,7 +1542,6 @@
   overflow-y: auto;
   pointer-events: auto;
   z-index: 50;
-  animation: stampSlamCentered var(--dur-base) var(--ease-out-expo) forwards;
 }
 
 /* Custom sleek scrollbar for case-file card */
@@ -1688,7 +1682,6 @@
   border: 3px solid var(--palette-teal-dark);
   text-align: center;
   z-index: 60;
-  animation: stampSlam 0.3s ease-out;
 }
 
 .act2-placeholder-title {
@@ -2101,3 +2094,34 @@
     padding-top: 0.35rem;
   }
 }
+
+/* The mission card is the last cold-open step, so it keys on the line, not the beat. */
+.act1-mission-card.is-new-line {
+  animation: stampSlamCentered var(--dur-base) var(--ease-out-expo) forwards;
+}
+
+.is-entering .act1-pov-viewport-modal {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+.act1-truth-stamp.is-new-line {
+  animation: povStampIn 0.4s var(--ease-out-expo) 0.35s both;
+}
+
+.is-entering .callie-offscreen-banner {
+  animation: slideInRight var(--dur-base) var(--ease-out-expo) forwards;
+}
+
+.is-entering .foil-crinkle-banner {
+  animation: stampSlam 0.3s ease-out;
+}
+
+.is-entering .case-file-card {
+  animation: stampSlamCentered var(--dur-base) var(--ease-out-expo) forwards;
+}
+
+.is-entering .act2-placeholder-modal {
+  animation: stampSlam 0.3s ease-out;
+}
+
+#screen-act1 .speech-bubble:not(.is-new-line) { animation: none; }

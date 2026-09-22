@@ -458,7 +458,6 @@
   gap: 0.6rem;
   pointer-events: auto;
   z-index: 35;
-  animation: act2SlideIn 0.3s ease forwards;
 }
 
 /* ==========================================================
@@ -760,7 +759,6 @@
   color: var(--text-on-dark);
   box-shadow: var(--elev-modal);
   pointer-events: auto;
-  animation: act2FadeIn 0.6s ease forwards;
 }
 
 .act2-silence-mark {
@@ -801,7 +799,6 @@
   width: min(380px, 34%);
   pointer-events: auto;
   z-index: 34;
-  animation: act2SlideIn 0.35s var(--ease-out-expo) forwards;
 }
 
 .act2-call-panel.is-docked {
@@ -995,7 +992,6 @@
   padding: 2rem;
   pointer-events: auto;
   z-index: 50;
-  animation: act2FadeIn 0.25s ease forwards;
 }
 
 .act2-check-card {
@@ -1515,7 +1511,6 @@
 .act2-decision-card,
 .act2-waiting-card,
 .act2-cool-card,
-.act2-cool-feedback,
 .act2-transport-panel,
 .act2-handoff-card {
   position: absolute;
@@ -1532,6 +1527,17 @@
   padding: 1.4rem 1.6rem;
   pointer-events: auto;
   z-index: 45;
+}
+
+/* Entrances run once per beat (guideline-persistent-cards.md, Rule 1). The cooling card is
+   keyed on its step instead, so each new cooling step still slides in. Transport/handoff are
+   untouched pending the car-scene revamp. */
+.is-entering .act2-payoff-card,
+.is-entering .act2-decision-card,
+.is-entering .act2-waiting-card,
+.act2-cool-card.is-new-line,
+.act2-transport-panel,
+.act2-handoff-card {
   animation: act2CardIn 0.35s var(--ease-out-expo) forwards;
 }
 
@@ -1831,6 +1837,12 @@
 
 /* ---- Consequence + correction. Never a game over. ---- */
 
+.act2-cool-feedback {
+  background: var(--palette-warm-white);
+  border: 3px solid var(--palette-warm-white);
+  border-radius: var(--radius-lg);
+  padding: 1.1rem 1.3rem;
+}
 .act2-cool-feedback.is-right { border-color: var(--color-success-pale); }
 .act2-cool-feedback.is-wrong { border-color: var(--color-danger-pale); }
 
@@ -2167,7 +2179,6 @@
   .act2-decision-card,
   .act2-waiting-card,
   .act2-cool-card,
-  .act2-cool-feedback,
   .act2-transport-panel,
   .act2-check-card,
   .act2-handoff-card {
@@ -2182,7 +2193,6 @@
   .act2-decision-card,
   .act2-waiting-card,
   .act2-cool-card,
-  .act2-cool-feedback,
   .act2-transport-panel {
     max-height: 84%;
     padding: 1rem 1.1rem;
@@ -2218,7 +2228,6 @@
   .act2-decision-card,
   .act2-waiting-card,
   .act2-cool-card,
-  .act2-cool-feedback,
   .act2-transport-panel,
   .act2-handoff-card {
     animation-duration: 0.01s !important;
@@ -2256,3 +2265,64 @@
 }
 
 
+
+.act2-cool-replies {
+  display: flex;
+  flex-direction: column;
+}
+.act2-cool-item.is-chosen > .act2-cool-reply-wrap > .act2-cool-reply-clip > .act2-cool-feedback {
+  margin-top: 0.9rem;
+}
+.act2-cool-option[aria-disabled="true"] { cursor: default; }
+
+.act2-cool-option.is-chosen {
+  background-color: rgba(56, 36, 24, 0.05);
+  border-color: rgba(56, 36, 24, 0.15);
+  transform: none;
+  box-shadow: none;
+}
+.act2-cool-option.is-chosen:hover {
+  transform: none;
+}
+
+.act2-cool-reply-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-base) var(--ease-out-expo);
+}
+.act2-cool-item.is-chosen > .act2-cool-reply-wrap {
+  grid-template-rows: 1fr;
+}
+.act2-cool-reply-clip {
+  overflow: hidden;
+  min-height: 0;
+  visibility: hidden;
+  transition: visibility 0s linear var(--dur-base);
+}
+.act2-cool-item.is-chosen > .act2-cool-reply-wrap > .act2-cool-reply-clip {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .act2-cool-reply-wrap { transition: none; }
+}
+
+
+.act2-call-calling-pill.is-new-line {
+  animation: act2SlideIn 0.3s ease forwards;
+}
+
+.is-entering .act2-silence-card {
+  animation: act2FadeIn 0.6s ease forwards;
+}
+
+.is-entering .act2-call-panel {
+  animation: act2SlideIn 0.35s var(--ease-out-expo) forwards;
+}
+
+.is-entering .act2-check-modal {
+  animation: act2FadeIn 0.25s ease forwards;
+}
+
+#screen-act2 .speech-bubble:not(.is-new-line) { animation: none; }

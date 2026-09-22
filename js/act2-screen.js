@@ -46,6 +46,8 @@ export class Act2Screen {
     // | 'decision' | 'waiting' | 'cooling' | 'transport' | 'handoff'
     this.currentBeat = 'arrival';
     this.stepIndex = 0;
+    this._enteredBeat = null;
+    this._renderedStep = null;
 
     // Clock continues straight out of Act 1's shade drift (3:05 PM = 185 minutes past noon).
     this.clockMinutes = 185;
@@ -340,6 +342,9 @@ export class Act2Screen {
       this.stepIndex = options.stepIndex;
     }
 
+    this._enteredBeat = null;
+    this._renderedStep = null;
+
     if (options.activeCheckId) {
       this.openCheck(options.activeCheckId, options.checkStepIndex ?? 0);
     } else {
@@ -533,13 +538,17 @@ export class Act2Screen {
     const isCloseCanopy = this.currentBeat === 'arrival' || this.currentBeat === 'call';
     const isFpvInspect = !isTransport && !isCloseCanopy;
 
+    const entering = this._enteredBeat !== this.currentBeat;
+    this._enteredBeat = this.currentBeat;
+
     this.container.innerHTML = `
       <div class="act2-container" data-editor-id="act2-screen-container">
 
         <!-- Main 16:9 Viewport Stage: close canopy framing, FPV downward inspection, or car interior -->
         <div
           id="act2-card"
-          class="act2-viewport-card ${isTransport ? 'in-car' : ''} ${isCloseCanopy ? 'view-close-canopy' : ''} ${isFpvInspect ? 'view-fpv-inspect' : ''}"
+          class="act2-viewport-card ${isTransport ? 'in-car' : ''} ${isCloseCanopy ? 'view-close-canopy' : ''} ${isFpvInspect ? 'view-fpv-inspect' : ''} ${entering ? 'is-entering' : ''}"
+          data-beat="${this.currentBeat}"
           data-editor-id="act2-viewport-card"
           style="--act2-saturation-drop: ${saturationDrop}%; --act2-heat-opacity: ${heatOpacity}; --act2-severity: ${severity};"
         >
@@ -597,6 +606,10 @@ export class Act2Screen {
     } else {
       this.stopTowelTimer();
     }
+    
+    this._renderedStep = this.currentBeat === 'check_active' 
+      ? `${this.currentBeat}-${this.activeCheckId}-${this.checkStepIndex}`
+      : (this.currentBeat === 'cooling' ? `${this.currentBeat}-${this.coolingIndex}` : `${this.currentBeat}-${this.stepIndex}`);
   }
 
   /**
@@ -1012,9 +1025,7 @@ export class Act2Screen {
     const hotspotsLive = this.currentBeat === 'checks';
     const showCooler = ['cooling'].includes(this.currentBeat);
     // The cooler leans into frame on exactly the step where reaching for it is the wrong move.
-    const coolerTempting = this.currentBeat === 'cooling'
-      && this.coolingSteps[this.coolingIndex]?.id === 'water_source'
-      && !this.coolingFeedback;
+    const coolerTempting = this.isCoolerTempting();
 
     return `
       <div class="act2-scene-layer" data-editor-id="act2-scene-layer">
@@ -1092,9 +1103,12 @@ export class Act2Screen {
     const step = this.arrivalSteps[this.stepIndex];
     if (!step) return '';
 
+    const stepKey = `${this.currentBeat}-${this.stepIndex}`;
+    const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
+
     if (step.speaker === 'tay_final') {
       return `
-        <div class="speech-bubble tay-bubble act2-tay-final-bubble"
+        <div class="speech-bubble tay-bubble act2-tay-final-bubble ${isNewLineClass}"
              style="bottom: 22%; top: auto; left: 42%; max-width: min(320px, 26vw);"
              data-editor-id="act2-tay-final-bubble">
           <div class="speech-bubble-speaker">
@@ -1111,7 +1125,7 @@ export class Act2Screen {
     }
 
     return `
-      <div class="speech-bubble callie-bubble act2-callie-bubble"
+      <div class="speech-bubble callie-bubble act2-callie-bubble ${isNewLineClass}"
            style="top: 14%; left: 18%; max-width: min(380px, 32vw);"
            data-editor-id="act2-arrival-callie-bubble">
         <div class="speech-bubble-speaker">
@@ -1130,9 +1144,12 @@ export class Act2Screen {
     const step = this.callSteps[this.stepIndex];
     if (!step) return '';
 
+    const stepKey = `${this.currentBeat}-${this.stepIndex}`;
+    const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
+
     if (step.speaker === 'system') {
       return `
-        <div class="act2-call-calling-pill" data-editor-id="act2-call-status">
+        <div class="act2-call-calling-pill ${isNewLineClass}" data-editor-id="act2-call-status">
           <span class="act2-phone-dot" aria-hidden="true"></span>
           <span>${step.text}</span>
         </div>
@@ -1141,7 +1158,7 @@ export class Act2Screen {
 
     if (step.speaker === 'callie') {
       return `
-        <div class="speech-bubble callie-bubble act2-callie-bubble act2-call-callie-bubble"
+        <div class="speech-bubble callie-bubble act2-callie-bubble act2-call-callie-bubble ${isNewLineClass}"
              style="top: 14%; left: 18%; max-width: min(380px, 32vw);"
              data-editor-id="act2-call-callie-bubble">
           <div class="speech-bubble-speaker">
@@ -1157,7 +1174,7 @@ export class Act2Screen {
 
     if (step.speaker === 'tech') {
       return `
-        <div class="speech-bubble phone-radio-bubble"
+        <div class="speech-bubble phone-radio-bubble ${isNewLineClass}"
              style="top: 12%; left: 26%; max-width: min(440px, 36vw);"
              data-editor-id="act2-art-phone-bezel">
           <div class="speech-bubble-speaker comic-radio-speaker">
@@ -1523,53 +1540,12 @@ export class Act2Screen {
     const step = this.coolingSteps[this.coolingIndex];
     if (!step) return '';
 
-    // Feedback panel: consequence + correction for a wrong pick, confirmation for a right one.
-    if (this.coolingFeedback) {
-      const opt = step.options.find(o => o.id === this.coolingFeedback.optionId);
-      if (!opt) return '';
-      const correct = !!opt.correct;
-      const isLastStep = this.coolingIndex === this.coolingSteps.length - 1;
-
-      return `
-        <div class="act2-cool-feedback ${correct ? 'is-right' : 'is-wrong'}"
-             data-editor-id="act2-cool-feedback" role="status">
-          <div class="act2-cool-feedback-head">
-            <span class="act2-cool-feedback-tag">${correct ? '✓ That works' : '✕ That costs her'}</span>
-            <span class="act2-cool-step-label">${step.stepLabel}</span>
-          </div>
-
-          <p class="act2-cool-feedback-body">${correct ? opt.result : opt.consequence}</p>
-
-          ${correct ? `
-            <div class="act2-truth-stamp" data-editor-id="act2-cool-stamp">
-              <span class="act2-truth-stamp-metric">${opt.stamp.metric}</span>
-              <span class="act2-truth-stamp-line">${opt.stamp.line}</span>
-            </div>
-          ` : `
-            <div class="act2-cool-correction" data-editor-id="act2-cool-correction">
-              <span class="act2-cool-correction-tag">What to do instead</span>
-              <p>${opt.correction}</p>
-            </div>
-            <p class="act2-cool-nofail">She is still here. Fix it and keep going.</p>
-          `}
-
-          <div class="act2-cool-feedback-footer">
-            ${correct ? `
-              <button id="act2-btn-cool-next" class="act2-hud-btn btn-action-primary pulse-btn"
-                      data-editor-id="act2-btn-cool-next">
-                ${isLastStep ? 'Get her in the car ➔' : 'Next ▶'}
-              </button>
-            ` : `
-              <button id="act2-btn-cool-retry" class="act2-hud-btn btn-action-primary"
-                      data-editor-id="act2-btn-cool-retry">Try that again ◀</button>
-            `}
-          </div>
-        </div>
-      `;
-    }
+    const isLastStep = this.coolingIndex === this.coolingSteps.length - 1;
+    const stepKey = `${this.currentBeat}-${this.coolingIndex}`;
+    const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
 
     return `
-      <div class="act2-cool-card" data-editor-id="act2-cool-card" role="group"
+      <div class="act2-cool-card ${isNewLineClass}" data-editor-id="act2-cool-card" role="group"
            aria-label="Cooling step ${this.coolingIndex + 1} of ${this.coolingSteps.length}: ${step.stepLabel}">
         <div class="act2-cool-head">
           <span class="act2-cool-badge">Cooling · ${this.coolingIndex + 1} of ${this.coolingSteps.length}</span>
@@ -1588,13 +1564,18 @@ export class Act2Screen {
         ` : ''}
 
         <div class="act2-cool-options">
-          ${step.options.map(opt => `
-            <button class="act2-cool-option" data-cool-option="${opt.id}"
-                    data-editor-id="act2-cool-option-${opt.id}"
-                    aria-label="${opt.label}">
-              <span class="act2-cool-option-label">${opt.label}</span>
-            </button>
-          `).join('')}
+          ${step.options.map(opt => this.getCoolOptionButtonHtml(opt)).join('')}
+        </div>
+
+        <div class="act2-cool-replies">
+          ${step.options.map(opt => {
+            const isChosen = this.isCoolChosen(opt.id);
+            return `
+            <div class="act2-cool-item ${isChosen ? 'is-chosen' : ''} ${isChosen ? (opt.correct ? 'is-correct' : 'is-wrong') : ''}"
+                 data-cool-item="${opt.id}">
+              ${this.getCoolOptionStateHtml(opt, isChosen, step, isLastStep)}
+            </div>
+          `;}).join('')}
         </div>
       </div>
     `;
@@ -1880,10 +1861,22 @@ export class Act2Screen {
         this.chooseCooling(el.getAttribute('data-cool-option'));
       });
     });
-    on('#act2-btn-cool-next', () => this.advanceCooling());
-    on('#act2-btn-cool-retry', () => {
-      this.coolingFeedback = null;
-      this.render();
+    // Next / Retry live inside every option's (always-rendered) reply panel, so bind by class.
+    this.container.querySelectorAll('.act2-btn-cool-next').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.isEditModeActive()) return;
+        this.advanceCooling();
+      });
+    });
+    this.container.querySelectorAll('.act2-btn-cool-retry').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.isEditModeActive()) return;
+        if (this.coolingFeedback && !this.coolingFeedback.correct) {
+          this.retryCooling(this.coolingFeedback.optionId);
+        }
+      });
     });
 
     // --- Beat 2D: transport ---
@@ -2000,7 +1993,94 @@ export class Act2Screen {
     this.render();
   }
 
+
+  // ---- Cooling card helpers -------------------------------------------------
+  // Shared by renderCooling() and the in-place patches (chooseCooling / retryCooling) so
+  // the two paths cannot drift — docs/guideline-persistent-cards.md, Rule 2.
+
+  isCoolChosen(optionId) {
+    return !!this.coolingFeedback && this.coolingFeedback.optionId === optionId;
+  }
+
+  // The cooler leans into frame on exactly the step where reaching for it is the wrong move.
+  isCoolerTempting() {
+    return this.currentBeat === 'cooling'
+      && this.coolingSteps[this.coolingIndex]?.id === 'water_source'
+      && !this.coolingFeedback;
+  }
+
+  getCoolOptionButtonHtml(opt) {
+    const isChosen = this.isCoolChosen(opt.id);
+    const locked = !!this.coolingFeedback; // a choice is on the table: every option is inert
+    return `
+      <button class="act2-cool-option ${isChosen ? 'is-chosen' : ''}" data-cool-option="${opt.id}"
+              data-editor-id="act2-cool-option-${opt.id}"
+              aria-label="${opt.label}"
+              aria-pressed="${isChosen ? 'true' : 'false'}"
+              ${locked ? 'aria-disabled="true"' : ''}>
+        <span class="act2-cool-option-label">${opt.label}</span>
+      </button>
+    `;
+  }
+
+  getCoolOptionStateHtml(opt, isChosen, step, isLastStep) {
+    const correct = !!opt.correct;
+
+    return `
+      <div class="act2-cool-reply-wrap">
+        <div class="act2-cool-reply-clip">
+          <div class="act2-cool-feedback ${correct ? 'is-right' : 'is-wrong'}"
+               data-editor-id="act2-cool-feedback-${opt.id}" role="status" aria-live="polite" aria-hidden="${!isChosen}">
+            <div class="act2-cool-feedback-head">
+              <span class="act2-cool-feedback-tag">${correct ? '✓ That works' : '✕ That costs her'}</span>
+              <span class="act2-cool-step-label">${step.stepLabel}</span>
+            </div>
+
+            <p class="act2-cool-feedback-body">${correct ? opt.result : opt.consequence}</p>
+
+            ${correct ? `
+              <div class="act2-truth-stamp" data-editor-id="act2-cool-stamp-${opt.id}">
+                <span class="act2-truth-stamp-metric">${opt.stamp.metric}</span>
+                <span class="act2-truth-stamp-line">${opt.stamp.line}</span>
+              </div>
+            ` : `
+              <div class="act2-cool-correction" data-editor-id="act2-cool-correction-${opt.id}">
+                <span class="act2-cool-correction-tag">What to do instead</span>
+                <p>${opt.correction}</p>
+              </div>
+              <p class="act2-cool-nofail">She is still here. Fix it and keep going.</p>
+            `}
+
+            <div class="act2-cool-feedback-footer">
+              ${correct ? `
+                <button class="act2-hud-btn btn-action-primary pulse-btn act2-btn-cool-next"
+                        data-editor-id="act2-btn-cool-next-${opt.id}">
+                  ${isLastStep ? 'Get her in the car ➔' : 'Next ▶'}
+                </button>
+              ` : `
+                <button class="act2-hud-btn btn-action-primary act2-btn-cool-retry"
+                        data-editor-id="act2-btn-cool-retry-${opt.id}">Try that again ◀</button>
+              `}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Everything outside the card that depends on coolingFeedback: the nudge pill, the
+  // tempting cooler, the elapsed clock. Patched in place, never re-rendered.
+  patchCoolingChrome() {
+    const pill = this.container.querySelector('.act2-nudge-pill');
+    if (pill) pill.style.display = this.coolingFeedback ? 'none' : ''; // [hidden] loses to the pill's display:flex
+    const cooler = this.container.querySelector('.act2-cooler-group');
+    if (cooler) cooler.classList.toggle('is-tempting', this.isCoolerTempting());
+    const elapsedEl = this.container.querySelector('#act2-elapsed-text');
+    if (elapsedEl) elapsedEl.textContent = this.getFormattedElapsed();
+  }
+
   chooseCooling(optionId) {
+    if (this.coolingFeedback) return; // a choice is already on the table (Next / Retry first)
     const step = this.coolingSteps[this.coolingIndex];
     if (!step) return;
     const opt = step.options.find(o => o.id === optionId);
@@ -2014,7 +2094,37 @@ export class Act2Screen {
     }
 
     this.coolingFeedback = { optionId, correct: !!opt.correct };
-    this.render();
+
+    // DOM patch instead of this.render() — the card, the cast and focus all stay put.
+    this.container.querySelectorAll('.act2-cool-option').forEach(btn => {
+      const chosen = btn.getAttribute('data-cool-option') === optionId;
+      btn.classList.toggle('is-chosen', chosen);
+      btn.setAttribute('aria-pressed', chosen ? 'true' : 'false');
+      btn.setAttribute('aria-disabled', 'true');
+    });
+    const item = this.container.querySelector(`.act2-cool-item[data-cool-item="${optionId}"]`);
+    if (item) {
+      item.classList.add('is-chosen', opt.correct ? 'is-correct' : 'is-wrong');
+      item.querySelector('.act2-cool-feedback')?.setAttribute('aria-hidden', 'false');
+    }
+    this.patchCoolingChrome();
+  }
+
+  retryCooling(optionId) {
+    this.coolingFeedback = null;
+
+    this.container.querySelectorAll('.act2-cool-option').forEach(btn => {
+      btn.classList.remove('is-chosen');
+      btn.setAttribute('aria-pressed', 'false');
+      btn.removeAttribute('aria-disabled');
+    });
+    const item = this.container.querySelector(`.act2-cool-item[data-cool-item="${optionId}"]`);
+    if (item) {
+      item.classList.remove('is-chosen', 'is-correct', 'is-wrong');
+      item.querySelector('.act2-cool-feedback')?.setAttribute('aria-hidden', 'true');
+    }
+    this.patchCoolingChrome();
+    this.container.querySelector(`.act2-cool-option[data-cool-option="${optionId}"]`)?.focus();
   }
 
   advanceCooling() {
