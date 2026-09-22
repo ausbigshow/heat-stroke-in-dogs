@@ -34,10 +34,8 @@
  * restores it "at recovery in Act 3". `--act3-saturation` carries that as one continuous ramp
  * (see `getRecovery()`), not a state swap.
  *
- * SME PENDING: the Texas A&M cool-down attribution is flagged in the dialogue script as not
- * present in the Research Notes. It carries `smePending: true` and ships with its own
- * unattributed fallback string, so sourcing it (or cutting the attribution) is a one-field
- * swap. See `getSmePendingCopy()` — same pattern as Act 2's ice-chest copy.
+ * SME PENDING: No items are currently pending SME review in this act.
+ * (The pattern remains in getSmePendingCopy() for future use).
  */
 
 import { renderPreservingFocus, focusInto, containFocusIn, releaseFocusContainment } from './a11y-focus.js';
@@ -48,19 +46,18 @@ export class Act3Screen {
     this.container = null;
 
     // ---- Core beat state -------------------------------------------------
-    // 'wait' | 'verdict' | 'report' | 'tayReturn' | 'nextTime' | 'recheck' | 'home' | 'end'
+    // 'wait' | 'verdict' | 'report' | 'tayReturn' | 'nextTime' | 'recheck' | 'home' | 'recap' | 'end'
     this.currentBeat = 'wait';
     this.stepIndex = 0;
+    this._enteredBeat = null;
+    this._renderedStep = null;
 
     // ---- Beat 3A: the wait ----------------------------------------------
     // Twelve seconds of nothing, which is what makes the vet's entrance land. It is a real
     // wait, not a loading bar — but it is never a trap: `#act3-btn-skip-wait` is present and
     // focusable from the first frame (H3, user control and freedom).
-    this.WAIT_SECONDS = 12;
-    this.waitSeconds = 0;
-    this.waitTimer = null;
     this.waitOver = false;
-    this.foldCount = 0; // Callie folds the towel she has no use for. Does nothing. That's the point.
+    this.castState = { callie: 'waiting', reyes: 'absent', tay: 'absent' };
 
     // ---- Handed forward from Act 2 (see applyHandoff) --------------------
     // null means "we were not told" — the act-or-wait payoff falls back to its neutral variant
@@ -74,7 +71,7 @@ export class Act3Screen {
     this.handoff = {};
 
     // ---- Beat 3C: the report card ---------------------------------------
-    this.reportStep = 0;
+        this.reportTableExpanded = false;
 
     // ---- Beat 3E: prevention ---------------------------------------------
     this.preventionChosen = new Set();
@@ -84,49 +81,52 @@ export class Act3Screen {
     // handover at the door, and the wait puts the verdict at 4:02.
     this.clockMinutes = 242; // minutes past noon = 4:02 PM
 
+    // Silent visual pauses (stage / hold steps) auto-advance on this timer.
+    this._autoAdvanceTimer = null;
+
     // =====================================================================
     // CONTENT DATA
     // Every string a reviewer might want to change lives in these arrays, never inside a
     // template literal in a render method.
     // =====================================================================
 
-    // ---- Beat 3A -----------------------------------------------------------
-    // No dialogue. The towel is the only thing in the scene and the only thing to touch.
-    this.foldLines = [
-      'You fold the towel. It is still damp and it is still cold and there is nothing to do with it.',
-      'You unfold it. Fold it again, smaller. The edge is fraying where you wrung it out at the lake.',
-      'Somewhere behind the desk a phone rings twice and stops. A door opens somewhere that is not this door.',
-      'You put the towel on the chair beside you. Then you pick it back up.'
+    this.sources = [
+      'Beard, Sian, et al. "Epidemiology of Heat-Related Illness in Dogs under UK Emergency Veterinary Care in 2022." <i>Veterinary Record</i>, vol. 194, no. 11, 2024, article e4153, https://doi.org/10.1002/vetr.4153.',
+      'Hall, Emily J., et al. "Incidence and Risk Factors for Heat-Related Illness (Heatstroke) in UK Dogs under Primary Veterinary Care in 2016." <i>Scientific Reports</i>, vol. 10, no. 1, 2020, article 9128, https://doi.org/10.1038/s41598-020-66015-8.',
+      '"Heat Stroke in Dogs." <i>Vets Now</i>, www.vets-now.com/pet-care-advice/heat-stroke-in-dogs/. Accessed 21 Sept. 2026.',
+      '"Heatstroke: A Medical Emergency." <i>Riney Canine Health Center</i>, Cornell University College of Veterinary Medicine, www.vet.cornell.edu/departments-centers-and-institutes/riney-canine-health-center/canine-health-information/heatstroke-medical-emergency. Accessed 21 Sept. 2026.',
+      '"Hot Dogs." <i>VetCompass</i>, Royal Veterinary College, www.rvc.ac.uk/vetcompass/research-projects-and-facilities/hot-dogs. Accessed 21 Sept. 2026.',
+      'Hunter, Tammy, and Ernest Ward. "Heat Stroke in Dogs." <i>VCA Animal Hospitals</i>, vcahospitals.com/know-your-pet/heat-stroke-in-dogs. Accessed 21 Sept. 2026.',
+      '"Keep Pets Cool in the Summer Heat." <i>Pet Talk</i>, Texas A&amp;M College of Veterinary Medicine &amp; Biomedical Sciences, 6 June 2019, vetmed.tamu.edu/news/pet-talk/keep-pets-cool-in-the-summer-heat/.',
+      'McLaren, Catherine, et al. "Heat Stress from Enclosed Vehicles: Moderate Ambient Temperatures Cause Significant Temperature Rise in Enclosed Vehicles." <i>Pediatrics</i>, vol. 116, no. 1, 2005, pp. e109–12, https://doi.org/10.1542/peds.2004-2368.',
+      'Null, Jan. "Heatstroke Deaths of Children in Vehicles." <i>No Heat Stroke</i>, San Francisco State University, www.noheatstroke.org. Accessed 21 Sept. 2026.'
     ];
 
     // ---- Beat 3B — The verdict --------------------------------------------
     // `business` is Reyes's stage direction, surfaced as her byline. She never stands still.
     this.verdictSteps = [
       { speaker: 'reyes', business: 'chart in hand, already talking', text: "She's stable." },
-      { type: 'stage', text: 'Callie stands up too fast.' },
-      { speaker: 'callie', text: "She's okay?" },
-      { speaker: 'reyes', business: 'reading the chart', text: "She's going to be. She came in at 105.8. She was higher than that out at the lake." },
+      { type: 'stage', text: 'Callie stands up too fast.', sceneCue: 'Callie stands up too fast.', cast: { callie: 'relief' } },
+      { speaker: 'callie', text: "She's — okay? She's okay?" },
+      { speaker: 'reyes', business: 'reading the chart', text: "She's going to be. She came in at 105.8, and she was hotter than that out at the lake. So yes — she's earned the word <em>stable</em>." },
       { speaker: 'callie', text: "But she's okay." },
-      { speaker: 'reyes', business: 'finally looking up from the chart', text: "Yeah. She's okay." },
+      { speaker: 'reyes', business: 'finally looking up from the chart', text: "Yeah. She's okay.", cast: { reyes: 'warm' } },
       {
         type: 'hold',
-        text: 'Two seconds. Nobody says anything.',
-        sub: 'Let the relief be uncomplicated. It is the only uncomplicated thing in this act.'
+        sceneCue: 'Two seconds. Nobody says anything.'
       },
-      { speaker: 'reyes', business: 'clipping the chart under her arm', text: "You cooled her before you drove." },
-      { speaker: 'callie', text: "They told me to on the phone." },
+      { speaker: 'reyes', business: 'clipping the chart under her arm', text: "You cooled her before you drove.", cast: { reyes: 'chart' } },
+      { speaker: 'callie', text: "The tech on the phone talked me through it. I just did exactly what she said." },
       {
         speaker: 'reyes',
-        business: 'washing her hands at the lobby sink',
-        text: "Good. That's the difference. Dogs whose owners cool them before they get in the car are about two and a half times more likely to make it than the ones who don't.",
-        // The module's central claim, and the first number spoken. It attaches to a choice the
-        // learner made about ninety seconds of screen time ago. Said once, never repeated.
+        business: 'washing her hands at the clinic sink',
+        text: "Good. That's the whole difference. Dogs that get cooled before the car are about <strong>2.5 times</strong> more likely to make it than dogs that don't. You didn't just drive her here, Callie. You started treating her — and <em>then</em> you drove.",
+        cast: { reyes: 'warm' },
         stamp: {
           metric: '2.5× more likely',
           line: 'Cooling started before the drive, not after it. That is the single thing on this chart you controlled.'
         }
-      },
-      { speaker: 'reyes', business: 'drying her hands', text: "You didn't drive her here. You started treating her and then you drove her here." }
+      }
     ];
 
     // ---- Beat 3C — The report card ----------------------------------------
@@ -155,6 +155,7 @@ export class Act3Screen {
         id: 'gums',
         icon: '👄',
         sign: 'Gums + capillary refill',
+        short: 'Gums',
         reported: 'Brick red · refill over 2 seconds',
         stageNo: 3,
         stage: 'Advanced',
@@ -164,6 +165,7 @@ export class Act3Screen {
         id: 'name',
         icon: '🗣️',
         sign: 'Response to her name',
+        short: 'Her name',
         reported: 'Delayed, then absent',
         stageNo: 3,
         stage: 'Advanced',
@@ -174,17 +176,17 @@ export class Act3Screen {
     // How often each early sign actually gets logged. Bar length AND the numeral carry the
     // value — never the colour (§7.3).
     this.prevalence = [
-      { id: 'panting', label: 'Panting', pct: 67, said: 'about two-thirds of cases' },
-      { id: 'lethargy', label: 'Lethargy', pct: 50, said: 'about half' }
+      { id: 'panting', label: 'Panting', pct: 69, said: 'about 69% of cases' },
+      { id: 'lethargy', label: 'Lethargy', pct: 48, said: 'about 48%' }
     ];
 
     // The Act 1 timeline, restated one last time. Times match Act 2's `hintsTimeline` exactly —
     // if one changes, change both.
     this.hintsTimeline = [
-      { time: '1:30 PM', icon: '🥪', title: 'The cooler, in open sun', line: 'Ninety minutes against a cold box with no shade.' },
-      { time: '1:48 PM', icon: '☀️', title: 'The dock', line: '137°F boards, patrolled twice.', widest: true },
-      { time: '2:03 PM', icon: '🥣', title: 'The water bowl', line: 'Sun-warm, half empty, untouched.' },
-      { time: '2:38 PM', icon: '🌳', title: 'The shade that moved', line: 'Twenty-seven minutes asleep in full sun.' }
+      { time: '1:30 PM', icon: '🥪', title: 'The cooler, in open sun', line: '90 minutes against a cold box.', nextTime: 'Put the cooler in the shade and keep her with it. Cold on the outside is still an oven on the inside.' },
+      { time: '1:48 PM', icon: '☀️', title: 'The dock', line: '137°F boards, patrolled twice.', widest: true, nextTime: "Press your palm on the boards for 5 seconds before she walks them. If you can't hold it there, she can't stand on it." },
+      { time: '2:03 PM', icon: '🥣', title: 'The water bowl', line: 'Sun-warm, half empty, untouched.', nextTime: "Bowl in the shade, refilled every time you refill your own. Warm water in the sun doesn't get drunk." },
+      { time: '2:38 PM', icon: '🌳', title: 'The shade that moved', line: '27 minutes asleep in full sun.', nextTime: "Look at where the shadow is every 30 minutes. It moves. A sleeping dog doesn't." }
     ];
 
     // Reyes walks the timeline while she works. Each step reveals one panel of the report,
@@ -193,50 +195,42 @@ export class Act3Screen {
       {
         reveals: 'table',
         lines: [
-          { speaker: 'reyes', business: 'writing', text: "What you described on the phone — the panting, the gums, her not answering to her name. Those aren't four separate problems. That's one thing at three different stages." }
+          { speaker: 'reyes', business: 'writing', text: "What you told them on the phone — the panting, the gums, her not coming when you called. You said it like 4 separate problems. It's not. It's one thing, at 3 different stages." },
+          { speaker: 'callie', text: "One thing." }
         ]
       },
       {
         reveals: 'prevalence',
         lines: [
-          { speaker: 'reyes', business: 'still writing', text: "Panting and lethargy are what we log most. Panting in about two-thirds of cases, lethargy in about half. They're the earliest signs and they're the easiest ones to explain away as a hot day." },
-          { speaker: 'callie', text: "I thought she was just tired." },
-          { speaker: 'reyes', business: 'not unkindly', text: "Everyone does. That's the whole problem with the early stage — it looks like a normal afternoon." }
-        ]
-      },
-      {
-        reveals: 'timeline',
-        lines: [
-          { speaker: 'reyes', business: 'turning the chart around so Callie can see it', text: "This is her afternoon. Every one of these is a place it was still early." }
+          { speaker: 'reyes', business: 'still writing', text: "Heat. Panting is the early stage — we see it in about 69% of cases. Lethargy in about 48%. They're the first signs, and the easiest ones to wave off, because —" },
+          { speaker: 'callie', text: "— because she just looked tired. I thought she was tired." },
+          { speaker: 'reyes', business: 'not unkindly', text: "Everyone does. That's the trap. The early stage looks like a normal afternoon." }
         ]
       },
       {
         reveals: 'survival',
-        // The act-or-wait payoff. Variants are selected in renderReportDialogue().
         lines: [
           {
             speaker: 'reyes',
             business: 'flat, not warning',
-            text: "Caught while it's still mild, dogs come through about ninety-five percent of the time. Once it's severe before anyone treats it, that drops to about forty-three.",
+            text: "Caught while it's still mild, dogs come through about 95% of the time. Once it's severe before anyone starts cooling, that drops to about 43%.",
             stamp: {
               metric: '95% → 43%',
               line: 'Treated while it is still mild against treated once it is already severe. The gap is not the illness. The gap is the delay.'
             }
           }
         ],
-        // No fail state, no scolding. Reyes states the range and lets the learner locate
-        // themselves in it.
         variants: {
           act_now: [
-            { speaker: 'reyes', business: 'glancing at the chart', text: "She was on the good side of that when she got here. Barely, but she was." }
+            { speaker: 'reyes', business: 'glancing at the chart', text: "She was on the good side of that when she came through the door. Barely — but she was. That's your <em>right away</em> at the lake." }
           ],
           wait: [
-            { speaker: 'reyes', business: 'glancing at the chart', text: "You waited a few minutes out there." },
+            { speaker: 'reyes', business: 'glancing at the chart', text: "You waited a few minutes out there before you started." },
             { speaker: 'callie', text: "I thought she'd settle." },
-            { speaker: 'reyes', business: 'no edge in it at all', text: "I know. That gap between ninety-five and forty-three — that's where those minutes live." }
+            { speaker: 'reyes', business: 'no edge in it at all', text: "I know. Everybody thinks that. That gap between 95 and 43 — that's where those few minutes live." }
           ],
           unknown: [
-            { speaker: 'reyes', business: 'letting it sit', text: "Where a dog lands in that range is mostly about how long anybody took to start." }
+            { speaker: 'reyes', business: 'letting it sit', text: "Where a dog lands in that range mostly comes down to one thing: how long it took for somebody to start cooling her." }
           ]
         }
       },
@@ -246,14 +240,16 @@ export class Act3Screen {
           {
             speaker: 'reyes',
             business: 'assuming Callie already knew this',
-            text: "And she was never running the same odds as other dogs. Flat-faced breeds — Frenchies, bulldogs, pugs — get heat illness about four times as often.",
+            text: "And she was never running the same odds as other dogs. Brachycephalic breeds — the flat-faced ones, Frenchies, bulldogs, pugs — get heat illness about <strong>4 times</strong> as often.",
             stamp: {
               metric: '4× the risk',
-              line: 'Brachycephalic breeds are diagnosed with heat illness roughly four times as often. Tay has been playing this hand her whole life.'
+              line: 'Brachycephalic (flat-faced) breeds are diagnosed with heat illness roughly 4× as often. Tay has been playing this hand her whole life.'
             }
           },
-          { speaker: 'callie', text: "Four times." },
-          { speaker: 'reyes', business: 'gentler now', text: "That face is adorable and it's a compromise. She's working with a shorter airway than the dog next to her, and panting is the only cooling she's got." }
+          { speaker: 'callie', text: "4 times?" },
+          { speaker: 'reyes', business: 'gentler now', text: "4 times. That face is adorable, and it's a compromise. She's got a shorter airway than the dog next to her, and panting is the only cooling she's got." },
+          { speaker: 'callie', text: "Can I see her?" },
+          { speaker: 'reyes', business: 'gentler now', text: "She's just in the back. Give me one second.", cast: { reyes: 'warm' } }
         ]
       }
     ];
@@ -263,26 +259,22 @@ export class Act3Screen {
     // script. Lines flagged `trimCandidate` are the small-room pair the script names as the
     // first cut if the run drags in review — the thermometer and the cone carry it.
     this.tayReturnSteps = [
-      { type: 'stage', text: 'A tech walks her out on a leash. Cone. Tail going like nothing happened.' },
-      { speaker: 'tay', onomatopoeia: 'YIP YIP YIP.', text: 'CALLIE. CALLIE. CALLIE.' },
-      { speaker: 'tay', text: 'They took my temperature.' },
-      { speaker: 'tay', text: 'Wrong end. WRONG END.' },
-      { type: 'stage', text: 'Callie is on the floor. Tay is climbing her.' },
-      { speaker: 'tay', text: 'Then a small room. Alone.', trimCandidate: true },
-      { speaker: 'tay', text: 'I did not care for it.', trimCandidate: true },
-      { speaker: 'tay', text: 'This collar is an insult.' },
-      { speaker: 'tay', text: "I'd like to file something." },
-      { speaker: 'callie', business: 'laughing, wrecked', text: "Okay. Okay." },
+      { type: 'stage', text: 'A tech walks her out on a leash. Tail going like nothing happened.', sceneCue: 'A tech walks her out on a leash. Tail going like nothing happened.' },
+      { speaker: 'tay', onomatopoeia: 'YIP YIP YIP!', text: 'CALLIE. CALLIE. CALLIE.' },
+      { speaker: 'tay', onomatopoeia: 'AROOO.', text: 'They took my temperature. From the WRONG END.' },
+      { type: 'stage', text: 'Callie is on the floor. Tay is climbing her.', sceneCue: 'Callie is on the floor. Tay is climbing her.', cast: { callie: 'floor' } },
+      { speaker: 'callie', text: "I know, baby. I know. Come here." },
+      { speaker: 'tay', onomatopoeia: 'HRMPH.', text: "There was a small room. It had no snacks. I'd like to file something." },
+      { speaker: 'callie', business: 'laughing, wrecked', text: "Okay… okay. We'll file something." },
       {
         speaker: 'tay',
         onomatopoeia: 'HUFF.',
-        text: 'But I feel amazing! I always feel amazing!',
-        // Verbatim callback to Act 0. The tag is written for the learner, not the author —
-        // recognition is the payoff, so name where they heard it, not the shot number.
-        callback: 'She said this in the living room, before any of it.'
+        // Verbatim Act 0 callback. Recognition is the payoff; nothing on screen points at it.
+        text: 'But I feel amazing! I always feel amazing!'
       },
-      { type: 'stage', text: 'Callie looks up at Dr. Reyes.' },
-      { speaker: 'reyes', business: 'watching the dog, not the owner', text: "Yeah. That's the part that'll get you." }
+      { type: 'stage', text: 'Callie looks up at Dr. Reyes.', sceneCue: 'Callie looks up at Dr. Reyes.' },
+      { speaker: 'callie', text: "She says she feels amazing." },
+      { speaker: 'reyes', business: 'watching the dog, not the owner', text: "Yeah. <em>That's</em> the part that'll get you.", cast: { reyes: 'serious' } }
     ];
 
     // ---- Beat 3E — Next time ----------------------------------------------
@@ -293,77 +285,75 @@ export class Act3Screen {
         id: 'setup_first',
         icon: '⛱️',
         label: 'Shade and water set up before anything else',
-        reply: "Before you unpack the cooler, not after. Shade she can actually reach, water in the shade with it."
+        reply: "Set it up before you even touch the cooler. Real shade she can reach, and her water sitting in it."
       },
       {
         id: 'timing',
         icon: '🌅',
         label: 'Go early or late, not one in the afternoon',
-        reply: "Morning or evening. One o'clock in July is the worst hour of the day and it's the hour everybody picks."
+        reply: "Mornings or evenings. 1 PM in July is the worst hour of the day, and it's the one everybody picks."
       },
       {
         id: 'temp_humidity',
         icon: '🌡️',
         label: 'Watch the temperature, not just the sun',
-        reply: "Past eighty I'd think hard about it. And check the humidity — that's the part people miss. Panting doesn't work as well when the air's already wet."
+        reply: "Past 80°F I'd think twice. And check the humidity — that's the part people miss. Panting barely works when the air's already wet."
       },
       {
         id: 'stay_in',
         icon: '🏠',
         label: 'Some days she just stays inside',
-        reply: "Puzzle toy and the AC. She'll act betrayed. She'll live."
+        reply: "AC and a puzzle toy. She'll act completely betrayed. She'll live."
       }
     ];
 
     // Ten seconds, then move on. Handed to Callie as ammunition for somebody else — Texas
     // learners already know this and being taught it insults them.
     this.hotCarSteps = [
-      { speaker: 'reyes', business: 'drying her hands', text: "And you already know about cars." },
+      { speaker: 'reyes', business: 'drying her hands', text: "And I know you already know about cars.", cast: { reyes: 'warm' } },
       { speaker: 'callie', text: "Nobody leaves a dog in a car." },
       {
         speaker: 'reyes',
-        business: 'hanging up the towel',
-        text: "You'd think. Twenty degrees inside in the first ten minutes. And cracking the windows takes it from about three and a half degrees every five minutes down to about three. It buys you nothing.",
+        business: 'washing her hands',
+        cast: { reyes: 'serious' },
+        text: "You'd think. It's 20 degrees hotter inside within the first 10 minutes. And cracking the windows? That takes it from about 3.5 degrees every 5 minutes to about 3. It does <strong>next to nothing</strong>.",
         stamp: {
           metric: '+20°F in 10 min',
-          line: 'Cracked windows move it from about 3.4°F every five minutes to about 3.1°F. That is the entire benefit.'
+          line: 'Cracking the windows barely moves it: about 3.4°F every 5 minutes becomes about 3.1°F. It does next to nothing.'
         }
       },
-      { speaker: 'reyes', business: 'handing it over, not lecturing', text: "You don't need that. Somebody you know does." },
-      {
+      { speaker: 'callie', text: "That's — that's it? Half a degree?" },
+      { speaker: 'reyes', business: 'handing it over, not lecturing', cast: { reyes: 'warm' }, text: "That's it. You don't need this lecture. Somebody you know does — so now you've got the number." },
+            {
         speaker: 'reyes',
         business: 'on her way to the door',
-        // SME PENDING — see getSmePendingCopy(). The A&M attribution is not in the Research
-        // Notes. `textUnattributed` is the drop-in if it cannot be sourced before recording.
-        smePending: true,
-        text: "And if you're out in it anyway — fifteen, twenty minutes of cooling off between anything active. That's what A&M recommends for heat like ours. Same number I'd give you.",
-        textUnattributed: "And if you're out in it anyway — fifteen, twenty minutes of cooling off between anything active. That's the number I'd give you.",
+        text: "And if you're out in it anyway — every 15 or 20 minutes of anything active, stop for 10 or 15 in the shade. That's Texas A&M's number for heat like ours, and it's the one I'd give you.",
+        cast: { reyes: 'serious' },
         stamp: {
-          metric: '15–20 min',
-          line: 'Cooling off between bouts of anything active, once it is past eighty. Shade, water, and stillness — not a shorter walk.'
+          metric: '10–15 min break every 15–20',
+          line: 'Past 80°F: every 15–20 minutes of activity, 10–15 minutes of shade, water and stillness. Not a shorter walk — more stops.'
         }
       }
     ];
 
     // ---- Beat 3F — The recheck --------------------------------------------
     this.recheckSteps = [
-      { type: 'stage', text: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.' },
-      { speaker: 'reyes', business: 'not moving out of the doorway', text: "One more thing." },
-      { speaker: 'callie', text: "She's fine, though." },
-      { speaker: 'reyes', business: 'chart back out', text: "Her bloodwork today is normal. That's good and it's not the whole story." },
-      { speaker: 'reyes', business: 'writing on the discharge sheet', text: "Kidneys and clotting can go sideways twelve to forty-eight hours after something like this. It doesn't show up while you're standing here." },
+      { type: 'stage', text: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.', sceneCue: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.', cast: { callie: 'leaving', tay: 'leading', reyes: 'aside' } },
+      { speaker: 'reyes', business: 'not moving out of the doorway', text: "One more thing.", cast: { callie: 'turned', tay: 'turned' } },
+      { speaker: 'callie', text: "She's fine, though. You said she's fine." },
+      { speaker: 'reyes', business: 'chart back out', text: "She is, today. Her bloodwork's normal — that's good, and it's not the whole story. Kidneys and clotting can go sideways 12–48 hours after something like this. It doesn't show up while you're standing here." },
       {
         speaker: 'reyes',
-        business: 'nodding at Tay, who is currently trying to eat the cone',
-        // Reyes says the objection out loud before Callie can. This is the beat.
-        text: "She looks great right now. That's exactly why people skip this part."
+        business: 'nodding at Tay',
+        text: "She looks great right now. Which is <em>exactly</em> why people skip this part."
       },
-      { speaker: 'callie', text: "…Okay." },
+      { speaker: 'callie', text: "…Okay. Okay, what do I do?" },
       {
         speaker: 'reyes',
         business: 'tearing off the sheet and handing it over',
-        text: "Bring her back in a day or two. Sooner if she throws up, if her urine goes dark, if you see any bleeding, or if she goes flat on you again.",
-        revealsSheet: true
+        text: "Bring her back in a day or two. Sooner if she throws up, if her urine goes dark, if you see any bleeding, or if she goes flat on you again. It's all on here.",
+        revealsSheet: true,
+        cast: { callie: 'handover', reyes: 'absent' }
       },
       { speaker: 'reyes', business: 'already holding the door', text: "And watch her tonight." },
       { speaker: 'callie', text: "I'm gonna watch her tonight." }
@@ -387,16 +377,29 @@ export class Act3Screen {
     // The living room from Act 0. Same couch, same lake painting, same photo on the wall.
     // Evening light instead of afternoon. The frame closes itself.
     this.homeSteps = [
-      { type: 'stage', text: 'Tay asleep on the cushion. Callie sitting next to her, not watching TV, watching the dog.' },
-      { type: 'stage', text: 'She puts a hand on Tay’s side. Feels it rise. Leaves it there.' },
+      { type: 'stage', text: 'Tay asleep on the cushion. Callie sitting next to her, not watching TV, watching the dog.', sceneCue: 'Tay asleep on the cushion. Callie sitting next to her, not watching TV, watching the dog.' },
+      { type: 'stage', text: 'She puts a hand on Tay’s side. Feels it rise. Leaves it there.', sceneCue: 'She puts a hand on Tay’s side. Feels it rise. Leaves it there.' },
       { speaker: 'callie', business: 'quiet', text: "You're okay." },
-      { type: 'stage', text: 'Tay’s ear moves. She doesn’t wake up. One sleepy exhale.' },
+      { type: 'stage', text: 'Tay’s ear moves. She doesn’t wake up. One sleepy exhale.', sceneCue: 'Tay’s ear moves. She doesn’t wake up. One sleepy exhale.' },
       { speaker: 'tay', onomatopoeia: 'Hhhff…', text: '…good day.' },
-      { speaker: 'callie', business: 'a beat', text: "Next one'll be better." }
+      { speaker: 'callie', business: 'a beat', text: "Yeah. Next one'll be better." }
     ];
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
-    this.tickWait = this.tickWait.bind(this);
+      }
+
+
+  getPreventionButtonState() {
+    const all = this.preventionChosen.size === this.preventionOptions.length;
+    const some = this.preventionChosen.size > 0;
+    return {
+      className: `act3-hud-btn ${some ? 'btn-action-primary pulse-btn' : 'act3-btn-quiet'}`,
+      html: all ? "That's all of them ➔" : some ? "That's what changes ▶" : 'Nothing changes ▶'
+    };
+  }
+
+  getPreventionStateHtml(isChosen) {
+    return isChosen ? '<span aria-hidden="true">✓</span> Chosen' : 'Choose';
   }
 
   // =======================================================================
@@ -407,15 +410,16 @@ export class Act3Screen {
     this.container = document.getElementById('screen-act3');
     if (!this.container) return;
 
+    this._enteredBeat = null;
+    this._renderedStep = null;
     this.render();
-    if (this.currentBeat === 'wait' && !this.waitOver) this.startWaitTimer();
-    window.addEventListener('keydown', this.handleKeyDown);
+        window.addEventListener('keydown', this.handleKeyDown);
   }
 
   unmount() {
+    if (this._autoAdvanceTimer) clearTimeout(this._autoAdvanceTimer);
     window.removeEventListener('keydown', this.handleKeyDown);
-    this.stopWaitTimer();
-    releaseFocusContainment(this.container || document);
+        releaseFocusContainment(this.container || document);
   }
 
   /**
@@ -427,6 +431,8 @@ export class Act3Screen {
     // Kept verbatim as well as unpacked, so anything Act 2 tracks that this screen does not
     // read still survives the round trip back to it (see getHandoff()).
     this.handoff = { ...handoff };
+    this._enteredBeat = null;
+    this._renderedStep = null;
     if (handoff.decisionChoice === 'act_now' || handoff.decisionChoice === 'wait') {
       this.decisionChoice = handoff.decisionChoice;
     }
@@ -448,7 +454,7 @@ export class Act3Screen {
   /**
    * Every string still waiting on a subject-matter expert, reachable from one place so the
    * confirmation lands as a targeted swap rather than a hunt. Same contract as Act 2's
-   * getSmePendingCopy(). Currently: the Texas A&M cool-down attribution (dialogue-script flag).
+   * getSmePendingCopy(). Currently: no items pending.
    */
   getSmePendingCopy() {
     return this.hotCarSteps
@@ -486,6 +492,7 @@ export class Act3Screen {
       nextTime: 1.0,
       recheck: 1.0,
       home: 1.0,
+      recap: 1.0,
       end: 1.0
     };
     const r = byBeat[this.currentBeat] ?? 1;
@@ -493,13 +500,13 @@ export class Act3Screen {
       recovery: r.toFixed(3),
       // 46% drained at the door, fully saturated by the time she is climbing Callie.
       saturation: (54 + r * 46).toFixed(1),
-      // The clinical cool wash over the lobby, gone by the time the room warms up.
+      // The clinical cool wash over the clinic, gone by the time the room warms up.
       coolOpacity: (0.42 * (1 - r)).toFixed(3)
     };
   }
 
   /**
-   * Tay's status, as the lobby knows it. Text carries the state; colour only reinforces (§6.1).
+   * Tay's status, as the clinic knows it. Text carries the state; colour only reinforces (§6.1).
    *
    * It must not resolve one frame early. The pill flips on the step where Reyes actually says
    * "She's stable" — not when the beat changes, which is while she is still coming through the
@@ -524,77 +531,51 @@ export class Act3Screen {
   // BEAT 3A — THE WAIT
   // =======================================================================
 
-  startWaitTimer() {
-    if (this.waitTimer) return;
-    this.waitTimer = window.setInterval(this.tickWait, 1000);
-  }
-
-  stopWaitTimer() {
-    if (this.waitTimer) {
-      window.clearInterval(this.waitTimer);
-      this.waitTimer = null;
-    }
-  }
-
-  /**
-   * Ticks touch one text node and one custom property. A full re-render on a 1s interval would
-   * fight Edit Mode's selection and drag state — same reasoning as Act 2's tickElapsed(). The
-   * timer is not suppressed while editing (§8.4), it just does not advance.
-   */
-  tickWait() {
-    if (this.isEditModeActive()) return;
-    this.waitSeconds += 1;
-
-    const remaining = Math.max(0, this.WAIT_SECONDS - this.waitSeconds);
-    const bar = this.container?.querySelector('#act3-wait-bar');
-    if (bar) {
-      bar.style.setProperty('--act3-wait-progress', `${Math.min(100, (this.waitSeconds / this.WAIT_SECONDS) * 100)}%`);
-      bar.setAttribute('aria-valuenow', String(this.waitSeconds));
-      bar.setAttribute('aria-label', `Waiting for clinic staff: approximately ${remaining} seconds remaining`);
-    }
-
-    const srStatus = this.container?.querySelector('#act3-wait-sr-status');
-    if (srStatus) {
-      if (remaining === 6) {
-        srStatus.textContent = 'Waiting for clinic staff: approximately 6 seconds remaining.';
-      } else if (remaining === 0) {
-        srStatus.textContent = 'The door to the back opens.';
-      }
-    }
-
-    if (this.waitSeconds >= this.WAIT_SECONDS) {
-      this.endWait();
-    }
-  }
-
   endWait() {
-    this.stopWaitTimer();
     this.waitOver = true;
     this.currentBeat = 'verdict';
     this.stepIndex = 0;
     this.render();
   }
 
-  foldTowel() {
-    this.foldCount += 1;
-    const line = this.container?.querySelector('#act3-fold-line');
-    if (line) line.textContent = this.foldLines[this.foldCount % this.foldLines.length];
-  }
-
+  
   // =======================================================================
   // RENDER — SHELL
   // =======================================================================
 
   render() {
     releaseFocusContainment(this.container || document);
+    if (this._autoAdvanceTimer) {
+      clearTimeout(this._autoAdvanceTimer);
+      this._autoAdvanceTimer = null;
+    }
     renderPreservingFocus(
       this.container,
       () => this.renderNow(),
       ['#act3-btn-next-step', '#act3-btn-report-next', '#act3-btn-report-done',
-       '#act3-btn-beat-advance', '#act3-btn-skip-wait']
+       '#act3-btn-beat-advance', '#act3-btn-skip-wait', '#act3-btn-report-table']
     );
     const dialog = this.container?.querySelector('[role="dialog"]');
     if (dialog) containFocusIn(dialog);
+
+    const steps = this.stepsForBeat();
+    if (steps && steps[this.stepIndex]) {
+      const step = steps[this.stepIndex];
+      if (step.type === 'stage' || step.type === 'hold') {
+        let delay = step.type === 'hold' ? 2000 : 1400;
+        if (this.prefersReducedMotion()) delay = 0;
+        if (!this.isEditModeActive()) {
+          const active = document.activeElement;
+          const shouldRefocus = active === document.body || (this.container && this.container.contains(active));
+          this._autoAdvanceTimer = setTimeout(() => {
+            this.nextSubStep();
+            if (shouldRefocus) {
+              focusInto(this.container, ['#act3-btn-next-step', '#act3-btn-beat-advance', '#act3-btn-report-next']);
+            }
+          }, delay);
+        }
+      }
+    }
   }
 
   renderNow() {
@@ -603,6 +584,9 @@ export class Act3Screen {
     const { recovery, saturation, coolOpacity } = this.getRecovery();
     const scene = this.getScene();
 
+    const entering = this._enteredBeat !== this.currentBeat;
+    this._enteredBeat = this.currentBeat;
+
     this.container.innerHTML = `
       <div class="act3-container" data-editor-id="act3-screen-container">
 
@@ -610,13 +594,16 @@ export class Act3Screen {
              as one piece. §9 of docs/design-language.md. -->
         <div
           id="act3-card"
-          class="act3-viewport-card scene-${scene.key}"
+          class="act3-viewport-card scene-${scene.key} ${entering ? 'is-entering' : ''}"
+          data-callie="${this.castState?.callie || ''}"
+          data-reyes="${this.castState?.reyes || ''}"
+          data-beat="${this.currentBeat}"
           data-editor-id="act3-viewport-card"
           style="--act3-saturation: ${saturation}%; --act3-cool-opacity: ${coolOpacity}; --act3-recovery: ${recovery};"
         >
           ${scene.html}
 
-          <!-- Light wash. Cool and clinical in the lobby, warm and low in the evening. -->
+          <!-- Light wash. Cool and clinical in the clinic, warm and low in the evening. -->
           <div class="act3-wash ${scene.wash}" data-editor-id="act3-wash" aria-hidden="true"></div>
 
           ${this.renderHudBar()}
@@ -631,14 +618,20 @@ export class Act3Screen {
             <div class="act3-hud-group">${this.renderBottomRightControls()}</div>
           </nav>
 
+
+
           <p class="sr-only" role="status" aria-live="polite" data-editor-id="act3-sr-status">
             ${this.renderSrStatusText()}
+          </p>
+          <p class="sr-only" role="status" aria-live="polite" id="act3-sr-dialogue" data-editor-id="act3-sr-dialogue">
+            ${this.getSrDialogueText()}
           </p>
         </div>
       </div>
     `;
 
     this.bindEvents();
+    this._renderedStep = `${this.currentBeat}-${this.stepIndex}`;
   }
 
   /**
@@ -647,18 +640,19 @@ export class Act3Screen {
    * dialog state honest rather than a row of buttons that look live and are not.
    */
   beatHasModal() {
-    return this.currentBeat === 'report' || this.currentBeat === 'end';
+    return this.currentBeat === 'recap' || this.currentBeat === 'end';
   }
+
 
   renderSrStatusText() {
     const status = this.getTayStatus();
     switch (this.currentBeat) {
       case 'wait':
-        return `Clinic lobby. ${status.aria} Callie is waiting.`;
+        return `The treatment room. ${status.aria} Callie is waiting.`;
       case 'verdict':
         return `${status.aria} Dr. Reyes is explaining what made the difference.`;
       case 'report':
-        return `${status.aria} Dr. Reyes is walking through the four signs you reported and the timeline they came from.`;
+        return `${status.aria} Dr. Reyes is discussing the signs.`;
       case 'tayReturn':
         return 'Tay is back on her feet, wearing a cone, and talking again for the first time since the lake.';
       case 'nextTime':
@@ -667,30 +661,138 @@ export class Act3Screen {
         return 'Dr. Reyes is giving discharge instructions: recheck in 24 to 48 hours, and watch her tonight.';
       case 'home':
         return 'That evening, at home. Tay is asleep on the couch and Callie is sitting with her.';
+      case 'recap':
+        return 'A summary of what happened to Tay this afternoon.';
       default:
         return 'The story is over. You can replay an act or return to the title screen.';
     }
   }
 
-  /** Which room we are in. Lobby is drawn; the exam room and the living room are painted. */
-  getScene() {
-    if (['wait', 'verdict', 'report'].includes(this.currentBeat)) {
-      return { key: 'lobby', wash: 'wash-clinical', html: this.renderLobbyArt() };
+  getSrDialogueText() {
+    const steps = this.stepsForBeat();
+    if (!steps || !steps[this.stepIndex]) return '';
+    const step = steps[this.stepIndex];
+    if (step.type === 'stage' || step.type === 'hold') return '';
+    
+    let speaker = step.speaker;
+    if (speaker === 'reyes') speaker = 'Dr. Reyes';
+    if (speaker === 'callie') speaker = 'Callie';
+    if (speaker === 'tay') speaker = 'Tay';
+    
+    return `${speaker}: ${step.text}`;
+  }
+
+  /** Which room we are in. Clinic is drawn; the exam room and the living room are painted. */
+
+  /**
+   * Who is on stage and with what face. Derived, never accumulated: the beat's default is
+   * folded with every `cast` change on the steps up to and including the current one, so
+   * Back, deep links and replays all land on the same picture the story would have shown.
+   */
+  getCastState() {
+    const defaults = {
+      wait:      { callie: 'waiting', reyes: 'absent',  tay: 'absent' },
+      verdict:   { callie: 'waiting', reyes: 'chart',   tay: 'absent' },
+      report:    { callie: 'relief',  reyes: 'chart',   tay: 'absent' },
+      tayReturn: { callie: 'relief',  reyes: 'warm',    tay: 'happy' },
+      nextTime:  { callie: 'relief',  reyes: 'warm',    tay: 'sniffing' },
+      recheck:   { callie: 'leaving', reyes: 'aside',   tay: 'leading' }
+    };
+    let state = { ...(defaults[this.currentBeat] || defaults.recheck) };
+    const steps = this.stepsForBeat();
+    const upTo = this.stepIndex;
+    if (Array.isArray(steps)) {
+      for (let i = 0; i <= upTo && i < steps.length; i++) {
+        if (steps[i] && steps[i].cast) state = { ...state, ...steps[i].cast };
+      }
     }
-    if (['tayReturn', 'nextTime', 'recheck'].includes(this.currentBeat)) {
-      return {
-        key: 'exam',
-        wash: 'wash-clear',
+    return state;
+  }
+
+  getScene() {
+    this.castState = this.getCastState();
+
+    // Generate cast HTML
+    const getCastImg = (char, activeState) => {
+      const srcMap = {
+        'callie': {
+          'waiting': 'Callie-Clinic-Seated.png',
+          'relief': 'Callie-Clinic-Relief.png',
+          'floor': 'Callie-Clinic-FloorLaughing.png',
+          'leaving': 'Callie-Clinic-Leaving.png',
+          'turned': 'Callie-Clinic-Leaving.png',   // same still, mirrored in CSS: she has turned to face Reyes
+          'handover': 'Callie-Reyes-Handover.png'
+        },
+        'reyes': {
+          'chart': 'Reyes-Chart.png',
+          'warm': 'Reyes-Warm.png',
+          'serious': 'Reyes-Serious.png',
+          'sheet': 'Reyes-HandingSheet.png',
+          'aside': 'Reyes-Warm.png'
+        },
+        'tay': {
+          'happy': 'Tay-StandingStage2-Warm.png',
+          'sniffing': 'Tay-SniffingGround.png',
+          'leading': 'Tay-StandingSideProfile.png',
+          'turned': 'Tay-StandingStage1-Alert.png'
+        }
+      };
+      
+      const altMap = {
+        callie: {
+          waiting: 'Callie in a clinic chair, drained, hands empty',
+          relief: 'Callie standing, hands to her chest, relief breaking through',
+          floor: 'Callie on the treatment room floor, laughing, eyes shut',
+          leaving: 'Callie gathering her things to leave',
+          turned: 'Callie pausing halfway out the door',
+          handover: 'Dr. Reyes handing Callie the discharge sheet'
+        },
+        reyes: {
+          chart: 'Dr. Reyes reading the chart',
+          warm: 'Dr. Reyes looking up from the chart with a small, kind smile',
+          serious: 'Dr. Reyes, level and plain',
+          sheet: 'Dr. Reyes holding out the discharge sheet',
+          aside: 'Dr. Reyes leaning in the doorway'
+        },
+        tay: {
+          happy: 'Tay, tail up, tongue out, obviously herself',
+          sniffing: 'Tay nosing around the treatment room floor',
+          leading: 'Tay pulling on the leash, ready to go',
+          turned: 'Tay stopped at the door, looking back at Dr. Reyes'
+        }
+      };
+
+      let html = '';
+      if (activeState === 'absent') return html;
+      for (const [stateName, src] of Object.entries(srcMap[char])) {
+        const isActive = activeState === stateName;
+        const activeClass = isActive ? 'is-active' : '';
+        const stateClass = `is-state-${stateName}`;
+        const ariaHidden = isActive ? '' : ' aria-hidden="true"';
+        html += `<img id="act3-cast-${char}-${stateName}" src="Assets/Image/${src}" data-editor-id="act3-art-${char}-${stateName}" alt="${altMap[char][stateName]}" class="act3-cast-img act3-cast-${char} ${activeClass} ${stateClass}"${ariaHidden}>\n`;
+      }
+      return html;
+    };
+
+    const castHtml = `
+      <div class="act3-cast">
+        ${getCastImg('callie', this.castState.callie)}
+        ${getCastImg('tay', this.castState.tay)}
+        ${getCastImg('reyes', this.castState.reyes)}
+      </div>
+    `;
+
+    if (['wait', 'verdict', 'report', 'tayReturn', 'nextTime', 'recheck'].includes(this.currentBeat)) {
+      return { 
+        key: 'clinic', 
+        wash: 'wash-clinical', 
         html: `
-          <img
-            src="Assets/Image/CallieAndTay-Vet.jpg"
-            alt="Callie and Dr. Reyes either side of an exam table, with Tay sitting up on it"
-            class="act3-scene-img"
-            data-editor-id="act3-exam-img"
-          />
+          <img class="act3-scene-img" src="Assets/Image/Clinic-TreatmentRoom-BG.jpg" data-editor-id="act3-art-clinic" alt="The treatment room">
+          ${castHtml}
         `
       };
     }
+    
     return {
       key: 'home',
       wash: 'wash-evening',
@@ -705,9 +807,10 @@ export class Act3Screen {
     };
   }
 
+
   renderHudBar() {
     const status = this.getTayStatus();
-    const order = ['wait', 'verdict', 'report', 'tayReturn', 'nextTime', 'recheck', 'home', 'end'];
+    const order = ['wait', 'verdict', 'report', 'tayReturn', 'nextTime', 'recheck', 'home', 'recap', 'end'];
     const currentBeatNum = Math.max(1, order.indexOf(this.currentBeat) + 1);
     const totalBeats = order.length;
 
@@ -751,136 +854,6 @@ export class Act3Screen {
   // data-editor-id so a final illustration can replace it without touching beat logic.
   // =======================================================================
 
-  /** The lobby: reception, a row of chairs, the door Reyes will come through. */
-  renderLobbyArt() {
-    const reyesIn = this.currentBeat !== 'wait';
-
-    return `
-      <svg class="act3-lobby-svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"
-           data-editor-id="act3-art-lobby" role="img"
-           aria-label="A veterinary clinic waiting room: reception desk, a row of chairs, and a door to the back">
-        <rect x="0" y="0" width="1600" height="640" fill="#DDE3EC" />
-        <rect x="0" y="640" width="1600" height="260" fill="#B9C2CF" />
-        <rect x="0" y="628" width="1600" height="14" fill="#CBD3DE" />
-
-        <!-- reception counter, left -->
-        <rect x="60" y="392" width="430" height="248" rx="10" fill="#F1F4F8" />
-        <rect x="60" y="380" width="430" height="26" rx="8" fill="#94A3B8" />
-        <rect x="108" y="336" width="106" height="46" rx="6" fill="#CBD3DE" />
-        <rect x="120" y="348" width="82" height="22" rx="3" fill="#8B97A8" />
-        <rect x="250" y="356" width="60" height="26" rx="4" fill="#E2E8F0" />
-
-        <!-- wall board, centre -->
-        <rect x="618" y="150" width="330" height="200" rx="10" fill="#F8FAFC" />
-        <rect x="646" y="182" width="180" height="16" rx="6" fill="#B4BECD" />
-        <rect x="646" y="216" width="252" height="10" rx="5" fill="#CBD3DE" />
-        <rect x="646" y="238" width="220" height="10" rx="5" fill="#CBD3DE" />
-        <rect x="646" y="260" width="240" height="10" rx="5" fill="#CBD3DE" />
-        <circle cx="880" cy="212" r="34" fill="#BFD8DE" />
-
-        <!-- the door to the back -->
-        <g data-editor-id="act3-art-door">
-          <rect x="1120" y="196" width="270" height="444" rx="8" fill="#E6EBF2" />
-          <rect x="1140" y="216" width="230" height="404" rx="6" fill="#F5F8FB" />
-          <rect x="1160" y="248" width="190" height="120" rx="6" fill="#C6DDE4" />
-          <circle cx="1352" cy="430" r="9" fill="#8B97A8" />
-        </g>
-
-        <!-- the empty chair beside her. One, not a row: the lobby is not busy, it is just
-             somewhere she is stuck. -->
-        <g data-editor-id="act3-art-chairs">
-          <rect x="900" y="470" width="150" height="26" rx="8" fill="#8FA3B6" />
-          <rect x="906" y="392" width="138" height="82" rx="10" fill="#A6B8C9" />
-          <rect x="916" y="496" width="14" height="90" rx="6" fill="#7C8CA0" />
-          <rect x="1020" y="496" width="14" height="90" rx="6" fill="#7C8CA0" />
-        </g>
-
-        ${this.renderCallieWaiting()}
-        ${reyesIn ? this.renderReyesFigure() : ''}
-      </svg>
-    `;
-  }
-
-  /** Callie in a lobby chair, still damp, still holding the towel. Tay is not in this shot. */
-  renderCallieWaiting() {
-    const still = this.prefersReducedMotion() ? 'is-still' : '';
-    return `
-      <g class="act3-callie-waiting ${still}" data-editor-id="act3-art-callie-waiting"
-         transform="translate(-170, 0)">
-        <!-- chair she is sitting in -->
-        <rect x="730" y="470" width="150" height="26" rx="8" fill="#8FA3B6" />
-        <rect x="736" y="392" width="138" height="82" rx="10" fill="#A6B8C9" />
-        <rect x="746" y="496" width="14" height="90" rx="6" fill="#7C8CA0" />
-        <rect x="850" y="496" width="14" height="90" rx="6" fill="#7C8CA0" />
-
-        <!-- legs -->
-        <rect x="778" y="470" width="26" height="112" rx="13" fill="#8A5A3B" />
-        <rect x="812" y="470" width="26" height="112" rx="13" fill="#8A5A3B" />
-        <rect x="770" y="576" width="44" height="16" rx="8" fill="#E8DCC8" />
-        <rect x="804" y="576" width="44" height="16" rx="8" fill="#E8DCC8" />
-
-        <!-- torso: the dusty-blue top with the rust leaf motif -->
-        <path d="M760,470 L760,352 Q760,330 786,330 L840,330 Q866,330 866,352 L866,470 Z" fill="#7C93B4" />
-        <path d="M800,364 q16,18 4,44 q-16,-14 -4,-44 Z" fill="#B4663C" />
-
-        <!-- arms, holding the towel in her lap -->
-        <path d="M762,368 q-24,44 -8,84 l30,-8 q-10,-38 6,-70 Z" fill="#8A5A3B" />
-        <path d="M864,368 q24,44 8,84 l-30,-8 q10,-38 -6,-70 Z" fill="#8A5A3B" />
-
-        <!-- head, very long straight black hair -->
-        <path d="M776,318 q-16,-92 37,-92 q53,0 37,92 q10,74 -37,74 q-47,0 -37,-74 Z" fill="#0E0D0F" />
-        <ellipse cx="813" cy="292" rx="34" ry="40" fill="#96633F" />
-        <path d="M779,268 q34,-30 68,0 q6,-52 -34,-52 q-40,0 -34,52 Z" fill="#0E0D0F" />
-        <!-- eyes: single unbroken flat black shape, no catchlight (§2.3) -->
-        <ellipse cx="800" cy="292" rx="4.5" ry="5.5" fill="#000000" />
-        <ellipse cx="826" cy="292" rx="4.5" ry="5.5" fill="#000000" />
-        <path d="M804,312 q9,5 18,0" stroke="#5E3D2A" stroke-width="3" stroke-linecap="round" fill="none" />
-
-        <!-- the towel she has no use for -->
-        <g class="act3-towel-held" data-editor-id="act3-art-towel">
-          <rect x="768" y="436" width="90" height="42" rx="8" fill="#CBD8E4" />
-          <rect x="768" y="450" width="90" height="6" fill="#AFC1D2" />
-          <rect x="768" y="464" width="90" height="6" fill="#AFC1D2" />
-        </g>
-      </g>
-    `;
-  }
-
-  /** Dr. Reyes. Blonde, teal scrubs, stethoscope, chart — the vet from the exam-room art. */
-  renderReyesFigure() {
-    return `
-      <g class="act3-reyes-figure" data-editor-id="act3-art-reyes">
-        <rect x="1218" y="470" width="26" height="140" rx="13" fill="#5FA9BE" />
-        <rect x="1254" y="470" width="26" height="140" rx="13" fill="#5FA9BE" />
-        <rect x="1208" y="600" width="46" height="18" rx="9" fill="#FFFFFF" />
-        <rect x="1248" y="600" width="46" height="18" rx="9" fill="#FFFFFF" />
-
-        <path d="M1204,478 L1204,344 Q1204,322 1230,322 L1272,322 Q1298,322 1298,344 L1298,478 Z" fill="#67B4C6" />
-        <path d="M1226,322 q25,34 50,0" stroke="#4E93A5" stroke-width="6" fill="none" />
-        <path d="M1224,336 q-6,54 14,72" stroke="#2F5C68" stroke-width="6" fill="none" stroke-linecap="round" />
-        <circle cx="1240" cy="412" r="9" fill="#2F5C68" />
-
-        <path d="M1204,352 q-26,50 -10,92 l28,-10 q-10,-40 6,-72 Z" fill="#67B4C6" />
-        <path d="M1298,352 q26,50 10,92 l-28,-10 q10,-40 -6,-72 Z" fill="#67B4C6" />
-
-        <!-- the chart. She is never not holding it. -->
-        <g data-editor-id="act3-art-chart">
-          <rect x="1274" y="428" width="62" height="80" rx="5" fill="#F8FAFC" transform="rotate(-8 1305 468)" />
-          <rect x="1284" y="446" width="42" height="6" rx="3" fill="#B4BECD" transform="rotate(-8 1305 468)" />
-          <rect x="1284" y="462" width="42" height="6" rx="3" fill="#B4BECD" transform="rotate(-8 1305 468)" />
-          <rect x="1284" y="478" width="28" height="6" rx="3" fill="#B4BECD" transform="rotate(-8 1305 468)" />
-        </g>
-
-        <ellipse cx="1251" cy="286" rx="32" ry="38" fill="#E8B98F" />
-        <path d="M1215,282 q-14,-80 36,-80 q50,0 36,80 q6,-16 2,-40 q-12,-30 -38,-30 q-26,0 -38,30 q-4,24 2,40 Z" fill="#E9C978" />
-        <path d="M1219,266 q32,-26 64,0 q6,-48 -32,-48 q-38,0 -32,48 Z" fill="#E9C978" />
-        <ellipse cx="1239" cy="286" rx="4.5" ry="5.5" fill="#000000" />
-        <ellipse cx="1263" cy="286" rx="4.5" ry="5.5" fill="#000000" />
-        <path d="M1242,304 q9,6 18,0" stroke="#8A5A3B" stroke-width="3" stroke-linecap="round" fill="none" />
-      </g>
-    `;
-  }
-
   // =======================================================================
   // RENDER — SHARED DIALOGUE COMPONENTS
   // =======================================================================
@@ -901,60 +874,47 @@ export class Act3Screen {
   renderDialogueStep(step, editorId) {
     if (!step) return '';
 
-    if (step.type === 'stage') {
-      return `
-        <div class="act3-stage-card" data-editor-id="${editorId}-stage" role="note">
-          <span class="act3-stage-mark" aria-hidden="true">▸</span>
-          <p class="act3-stage-line">${step.text}</p>
-        </div>
-      `;
-    }
+    if (step.type === 'stage' || step.type === 'hold') { return ''; }
 
-    if (step.type === 'hold') {
-      return `
-        <div class="act3-hold-card" data-editor-id="${editorId}-hold" role="note">
-          <p class="act3-hold-line">${step.text}</p>
-          ${step.sub ? `<p class="act3-hold-sub">${step.sub}</p>` : ''}
-        </div>
-      `;
-    }
+    const stepKey = `${this.currentBeat}-${this.stepIndex}`;
+    const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
 
     if (step.speaker === 'tay') {
       return `
-        <div class="speech-bubble tay-bubble act3-tay-bubble" data-editor-id="${editorId}-tay">
+        <div class="speech-bubble tay-bubble act3-tay-bubble ${isNewLineClass}" data-step="${stepKey}" data-editor-id="${editorId}-tay">
           <div class="speech-bubble-speaker">
             <span aria-hidden="true">🐶</span>
             <span>Tay</span>
           </div>
           <p class="speech-bubble-text">
-            ${step.onomatopoeia ? `<span class="tay-onomatopoeia">${step.onomatopoeia}</span> ` : ''}<span class="tay-sub-dialogue">${step.text}</span>
+            ${step.onomatopoeia ? `<span class="tay-onomatopoeia">${step.onomatopoeia}</span> ` : ''}<span class="tay-sub-dialogue">(${step.text})</span>
           </p>
-          ${step.callback ? `<span class="act3-callback-tag">${step.callback}</span>` : ''}
         </div>
       `;
     }
 
     if (step.speaker === 'reyes') {
+      const textProp = step.smePending ? step.textUnattributed || step.text : step.text;
       return `
-        <div class="speech-bubble reyes-bubble act3-reyes-bubble" data-editor-id="${editorId}-reyes">
+        <div class="speech-bubble reyes-bubble act3-reyes-bubble ${isNewLineClass}" data-step="${stepKey}" data-editor-id="${editorId}-reyes">
           <div class="speech-bubble-speaker">
             <span aria-hidden="true">🩺</span>
             <span>Dr. Reyes</span>
-            ${step.business ? `<span class="act3-business">· ${step.business}</span>` : ''}
+            
           </div>
           <p class="speech-bubble-text">
-            <span class="act3-reyes-dialogue">“${step.text}”</span>
+            <span class="act3-reyes-dialogue">“${textProp}”</span>
           </p>
         </div>
       `;
     }
 
     return `
-      <div class="speech-bubble callie-bubble act3-callie-bubble" data-editor-id="${editorId}-callie">
+      <div class="speech-bubble callie-bubble act3-callie-bubble ${isNewLineClass}" data-step="${stepKey}" data-editor-id="${editorId}-callie">
         <div class="speech-bubble-speaker">
           <span aria-hidden="true">👩</span>
           <span>Callie</span>
-          ${step.business ? `<span class="act3-business">· ${step.business}</span>` : ''}
+          
         </div>
         <p class="speech-bubble-text">
           <span class="callie-dialogue">“${step.text}”</span>
@@ -986,7 +946,16 @@ export class Act3Screen {
     switch (this.currentBeat) {
       case 'wait': return this.renderWait();
       case 'verdict': return this.renderVerdict();
-      case 'report': return this.renderReport();
+      case 'report':
+        const rSteps = this.stepsForBeat();
+        const rStep = rSteps[this.stepIndex];
+        if (!rStep) return '';
+        const rStamp = this.activeStamp(rSteps, this.stepIndex);
+        return `
+          ${this.renderDialogueStep(rStep, `act3-report-${this.stepIndex}`)}
+          
+        `;
+      case 'recap': return this.renderRecap();
       case 'tayReturn': return this.renderTayReturn();
       case 'nextTime': return this.renderNextTime();
       case 'recheck': return this.renderRecheck();
@@ -997,33 +966,7 @@ export class Act3Screen {
   }
 
   // ---- Beat 3A — the wait -----------------------------------------------
-  renderWait() {
-    const pct = Math.min(100, (this.waitSeconds / this.WAIT_SECONDS) * 100);
-    const remaining = Math.max(0, this.WAIT_SECONDS - this.waitSeconds);
-
-    return `
-      <div class="act3-wait-panel" data-editor-id="act3-wait-panel">
-        <span class="act3-wait-badge">4:02 PM · Lakeside Veterinary</span>
-        <p class="act3-wait-line" id="act3-wait-line">You keep holding the towel. It is still damp and it is still cold.</p>
-        <p class="act3-wait-sub">Nobody has told you anything.</p>
-
-        <!-- A finite wait with accessible progress. The skip control in the nav bar is present from the first frame. -->
-        <div id="act3-wait-bar" class="act3-wait-bar" style="--act3-wait-progress: ${pct}%;"
-             data-editor-id="act3-wait-bar"
-             role="progressbar"
-             aria-valuemin="0"
-             aria-valuemax="${this.WAIT_SECONDS}"
-             aria-valuenow="${this.waitSeconds}"
-             aria-label="Waiting for clinic staff: approximately ${remaining} seconds remaining">
-          <span class="act3-wait-bar-fill"></span>
-        </div>
-
-        <div id="act3-wait-sr-status" class="sr-only" aria-live="polite">
-          ${this.waitSeconds === 0 ? 'Waiting for clinic staff. The doctor will appear in approximately 12 seconds, or you can skip the wait.' : ''}
-        </div>
-      </div>
-    `;
-  }
+  renderWait() { return ''; }
 
   /**
    * The last stamp revealed at or before `index` in `steps`. A truth stamp is not a flash — it
@@ -1045,7 +988,7 @@ export class Act3Screen {
 
     return `
       ${this.renderDialogueStep(step, `act3-verdict-${this.stepIndex}`)}
-      ${stamp ? this.renderTruthStamp(stamp, 'act3-stamp-survival-cooled') : ''}
+      
     `;
   }
 
@@ -1053,78 +996,74 @@ export class Act3Screen {
   // A dark case-file modal (§6.4). It is the only screen in the module where Act 1's counter
   // and Act 2's four checks appear together, and it builds one panel at a time so the beat
   // keeps moving instead of dumping a table.
-  renderReport() {
-    const step = this.reportSteps[this.reportStep];
-    const revealed = new Set(this.reportSteps.slice(0, this.reportStep + 1).map(s => s.reveals));
-
+  renderRecap() {
     return `
-      <div class="act3-report-modal" data-editor-id="act3-report-modal" role="dialog"
-           aria-modal="true" aria-labelledby="act3-report-title">
-        <div class="act3-report-card" data-editor-id="act3-report-card">
-
-          <header class="act3-report-header">
-            <span class="act3-report-badge" aria-hidden="true">CASE FILE</span>
-            <h2 class="act3-report-title" id="act3-report-title">
-              Tay · French Bulldog · 4 yr
-              <span class="act3-report-subtitle">Presented 3:41 PM · 105.8°F on arrival</span>
-            </h2>
-            <span class="act3-report-hints" data-editor-id="act3-report-hints">
-              <span aria-hidden="true">⚠️</span>
-              <span>Warning signs at the lake: ${this.hintsDropped} · all ${this.hintsDropped} reported</span>
-            </span>
+      <div class="act3-recap-modal" data-editor-id="act3-recap-modal" role="dialog" aria-modal="true" aria-labelledby="act3-recap-title">
+        <div class="act3-recap-card" data-editor-id="act3-recap-card">
+          <header class="act3-recap-header">
+            <h2 class="act3-recap-title" id="act3-recap-title">What happened to Tay</h2>
+            <p class="act3-recap-subtitle">The afternoon, in one place.</p>
           </header>
-
-          <div class="act3-report-body" data-editor-id="act3-report-body">
-            ${revealed.has('table') ? this.renderReportTable() : ''}
-            ${revealed.has('prevalence') ? this.renderPrevalence() : ''}
-            ${revealed.has('timeline') ? this.renderReportTimeline() : ''}
-            ${revealed.has('survival') ? this.renderTruthStamp(
-              this.reportSteps.find(s => s.reveals === 'survival').lines[0].stamp,
-              'act3-stamp-survival-range'
-            ) : ''}
-            ${revealed.has('breed') ? this.renderTruthStamp(
-              this.reportSteps.find(s => s.reveals === 'breed').lines[0].stamp,
-              'act3-stamp-breed'
-            ) : ''}
-          </div>
-
-          <footer class="act3-report-footer" data-editor-id="act3-report-footer">
-            <div class="act3-report-dialogue">
-              ${this.renderReportDialogue(step)}
+          <div class="act3-recap-content">
+            <div class="act3-recap-body act3-recap-left">
+              ${this.renderReportTable()}
+              ${this.renderPrevalence()}
+              ${this.renderReportTimeline()}
             </div>
-            <div class="act3-report-nav">
-              <div class="act3-report-nav-left">
-                ${this.reportStep > 0 ? `
-                  <button id="act3-btn-report-prev" class="act3-hud-btn act3-btn-quiet"
-                          data-editor-id="act3-btn-report-prev"
-                          aria-label="Go back one step in the case file">◀ Back</button>
-                ` : ''}
-                <div class="act3-beat-dots" aria-hidden="true">
-                  ${this.reportSteps.map((_, i) => `
-                    <span class="act3-beat-dot ${i === this.reportStep ? 'current' : ''} ${i < this.reportStep ? 'seen' : ''}"></span>
-                  `).join('')}
-                </div>
-              </div>
-              ${this.reportStep < this.reportSteps.length - 1 ? `
-                <button id="act3-btn-report-next" class="act3-hud-btn btn-action-primary"
-                        data-editor-id="act3-btn-report-next">Next ▶</button>
-              ` : `
-                <button id="act3-btn-report-done" class="act3-hud-btn btn-action-primary"
-                        data-editor-id="act3-btn-report-done">Close the file ➔</button>
-              `}
+            <div class="act3-recap-right">
+              ${this.renderTruthStamp(
+                this.reportSteps.find(s => s.reveals === 'survival').lines[0].stamp,
+                'act3-stamp-survival-range'
+              )}
+              ${this.renderTruthStamp(
+                this.reportSteps.find(s => s.reveals === 'breed').lines[0].stamp,
+                'act3-stamp-breed'
+              )}
+              ${this.renderDischargeSheet()}
+            </div>
+          </div>
+          <footer class="act3-recap-footer">
+            <div class="act3-recap-nav">
+              <button id="act3-btn-prev-step" class="act3-hud-btn act3-btn-quiet" data-editor-id="act3-btn-prev-step">◀ Back</button>
+              <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary" data-editor-id="act3-btn-beat-advance">Finish ➔</button>
             </div>
           </footer>
-
         </div>
       </div>
     `;
   }
 
   renderReportTable() {
+    const collapseTable = !this.reportTableExpanded;
+    if (collapseTable) {
+      return `
+        <div class="act3-recap-panel collapsed-table" id="act3-recap-table-container">
+          <div class="act3-recap-panel-head">
+            <h3 class="act3-panel-title">What you reported</h3>
+            <button id="act3-btn-report-table" class="act3-hud-btn act3-btn-quiet act3-btn-table-toggle" aria-expanded="false" aria-controls="act3-recap-table-container">
+              Show table
+            </button>
+          </div>
+          <div class="act3-recap-chips">
+            ${this.reportRows.map(row => `
+              <span class="act3-stage-chip stage-${row.stageNo}">
+                <span aria-hidden="true">${row.icon}</span> ${row.short || row.sign} &middot; <span class="act3-stage-no">${row.stageNo}</span>
+                <span>${row.stage}</span>
+              </span>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
     return `
-      <div class="act3-report-panel" data-editor-id="act3-report-panel-table">
-        <h3 class="act3-panel-title">What you reported, and when it started</h3>
-        <table class="act3-report-table">
+      <div class="act3-recap-panel" id="act3-recap-table-container">
+        <div class="act3-recap-panel-head">
+          <h3 class="act3-panel-title">What you reported, and when it started</h3>
+          <button id="act3-btn-report-table" class="act3-hud-btn act3-btn-quiet act3-btn-table-toggle" aria-expanded="true" aria-controls="act3-recap-table-container">
+            Hide table
+          </button>
+        </div>
+        <table class="act3-recap-table">
           <caption class="sr-only">The four signs reported to the clinic, and the stage of heat illness each belongs to</caption>
           <thead>
             <tr>
@@ -1144,7 +1083,6 @@ export class Act3Screen {
                   <span class="act3-cell-note">${row.note}</span>
                 </td>
                 <td class="act3-cell-stage">
-                  <!-- Stage is a NUMERAL and a WORD before it is a colour (§7.3). -->
                   <span class="act3-stage-chip stage-${row.stageNo}">
                     <span class="act3-stage-no">${row.stageNo}</span>
                     <span>${row.stage}</span>
@@ -1161,11 +1099,11 @@ export class Act3Screen {
 
   renderPrevalence() {
     return `
-      <div class="act3-report-panel" data-editor-id="act3-report-panel-prevalence">
+      <div class="act3-recap-panel">
         <h3 class="act3-panel-title">The two signs that get logged the most</h3>
         <ul class="act3-prevalence-list">
           ${this.prevalence.map(p => `
-            <li class="act3-prevalence-row" data-editor-id="act3-prevalence-${p.id}">
+            <li class="act3-prevalence-row">
               <span class="act3-prevalence-label">${p.label}</span>
               <span class="act3-prevalence-track" aria-hidden="true">
                 <span class="act3-prevalence-fill" style="width: ${p.pct}%;"></span>
@@ -1182,9 +1120,9 @@ export class Act3Screen {
 
   renderReportTimeline() {
     return `
-      <div class="act3-report-panel" data-editor-id="act3-report-panel-timeline">
+      <div class="act3-recap-panel">
         <h3 class="act3-panel-title">Her afternoon, from Act 1</h3>
-        <ol class="act3-report-timeline">
+        <ol class="act3-recap-timeline">
           ${this.hintsTimeline.map(item => `
             <li class="act3-timeline-item ${item.widest ? 'is-widest' : ''}">
               <span class="act3-timeline-time">${item.time}</span>
@@ -1192,8 +1130,11 @@ export class Act3Screen {
               <span class="act3-timeline-copy">
                 <strong>${item.title}</strong>
                 <span>${item.line}</span>
+                <span class="act3-timeline-next-time-row">
+                  <span class="act3-timeline-flag">NEXT TIME</span>
+                  ${item.nextTime}
+                </span>
               </span>
-              ${item.widest ? '<span class="act3-timeline-flag">Window was widest here</span>' : ''}
             </li>
           `).join('')}
         </ol>
@@ -1201,43 +1142,11 @@ export class Act3Screen {
     `;
   }
 
-  /**
-   * The dialogue under the chart. On the survival step the variant is chosen from Act 2's
-   * decision — and when we were not handed one, the neutral variant runs. Reyes never scolds
-   * in any branch.
-   */
-  renderReportDialogue(step) {
-    if (!step) return '';
-    let lines = [...step.lines];
-    if (step.variants) {
-      lines = lines.concat(step.variants[this.decisionChoice || 'unknown'] || step.variants.unknown);
-    }
-    return lines.map((line, i) => `
-      <div class="act3-report-line line-${line.speaker}" data-editor-id="act3-report-line-${this.reportStep}-${i}">
-        <span class="act3-report-who">
-          ${line.speaker === 'reyes' ? 'Dr. Reyes' : 'Callie'}
-          ${line.business ? `<span class="act3-business">· ${line.business}</span>` : ''}
-        </span>
-        <p class="act3-report-text">“${line.text}”</p>
-      </div>
-    `).join('');
-  }
-
-  // ---- Beat 3D — Tay's return -------------------------------------------
   renderTayReturn() {
     const step = this.tayReturnSteps[this.stepIndex];
     if (!step) return '';
 
-    // Her first line gets a marker. Nine minutes of story have gone by without her.
-    const isFirstTayLine = this.stepIndex === 1;
-
     return `
-      ${isFirstTayLine ? `
-        <div class="act3-voice-return-banner" data-editor-id="act3-voice-return-banner" role="note">
-          <span class="act3-voice-return-mark" aria-hidden="true">🔊</span>
-          <span>She has not said a word since the lake.</span>
-        </div>
-      ` : ''}
       ${this.renderDialogueStep(step, `act3-return-${this.stepIndex}`)}
     `;
   }
@@ -1254,10 +1163,11 @@ export class Act3Screen {
       return `
         <div class="act3-prevention-card" data-editor-id="act3-prevention-card" role="group"
              aria-label="What changes about the next lake day">
-          <span class="act3-prevention-badge">Beat 3E · Dr. Reyes, washing her hands</span>
+          <span class="act3-prevention-badge">Dr. Reyes</span>
           <h2 class="act3-prevention-title">“So what's different about the next lake day?”</h2>
           <p class="act3-prevention-sub">
-            Pick as many as you mean. There is no wrong answer in this list —
+            Choose every change you'd actually make. Each one opens Dr. Reyes's answer and stays
+            open — there's no wrong pick here.
             <span class="act3-prevention-count">${chosen} of ${total} chosen</span>.
           </p>
 
@@ -1270,26 +1180,30 @@ export class Act3Screen {
                           data-prevention="${opt.id}"
                           data-editor-id="act3-prevention-${opt.id}"
                           aria-pressed="${isChosen}"
+                          ${isChosen ? 'aria-disabled="true"' : ''}
                           ${isChosen ? `aria-describedby="act3-prevention-reply-${opt.id}"` : ''}>
                     <span class="act3-prevention-icon" aria-hidden="true">${opt.icon}</span>
                     <span class="act3-prevention-label">${opt.label}</span>
                     <!-- Chosen is a glyph and a word, never the green alone (§7.3). -->
                     <span class="act3-prevention-state">
-                      ${isChosen ? '<span aria-hidden="true">✓</span> Chosen' : 'Choose'}
+                      ${this.getPreventionStateHtml(isChosen)}
                     </span>
                   </button>
 
                   <!-- Reyes's answer stays attached to the choice that earned it. Showing only
                        the most recent one meant a learner who picked all four could read one,
                        and had to remember the other three. -->
-                  ${isChosen ? `
-                    <div class="act3-prevention-reply" id="act3-prevention-reply-${opt.id}"
-                         data-editor-id="act3-prevention-reply-${opt.id}"
-                         ${this.activePrevention === opt.id ? 'role="status"' : ''}>
-                      <span class="act3-report-who">Dr. Reyes</span>
-                      <p class="act3-report-text">“${opt.reply}”</p>
+                  <div class="act3-prevention-reply-wrap">
+                    <div class="act3-prevention-reply-clip">
+                      <div class="act3-prevention-reply" id="act3-prevention-reply-${opt.id}"
+                           data-editor-id="act3-prevention-reply-${opt.id}"
+                           aria-hidden="${!isChosen}"
+                           ${this.activePrevention === opt.id ? 'role="status"' : ''}>
+                        <span class="act3-report-who">Dr. Reyes</span>
+                        <p class="act3-report-text">“${opt.reply}”</p>
+                      </div>
                     </div>
-                  ` : ''}
+                  </div>
                 </li>
               `;
             }).join('')}
@@ -1304,7 +1218,6 @@ export class Act3Screen {
 
     return `
       ${this.renderDialogueStep(step, `act3-hotcar-${this.stepIndex}`)}
-      ${stamp ? this.renderTruthStamp(stamp, `act3-stamp-${stamp.metric.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`) : ''}
     `;
   }
 
@@ -1372,47 +1285,55 @@ export class Act3Screen {
     return `
       <div class="act3-end-modal" data-editor-id="act3-end-modal" role="dialog"
            aria-modal="true" aria-labelledby="act3-end-title">
-      <div class="act3-end-card" data-editor-id="act3-end-card">
-        <span class="act3-end-badge">The end</span>
-        <h2 class="act3-end-title" id="act3-end-title">Callie and Tay</h2>
-        <p class="act3-end-line">
-          Tay went home the same day, with a recheck booked for Thursday and somebody
-          sitting up with her.
-        </p>
+        <div class="act3-end-card" data-editor-id="act3-end-card">
+          <span class="act3-end-badge">The end</span>
+          <h2 class="act3-end-title" id="act3-end-title">Callie and Tay</h2>
+          <p class="act3-end-line">
+            Tay went home the same day, with a recheck booked for Thursday and somebody
+            sitting up with her.
+          </p>
 
-        <ul class="act3-end-recap" data-editor-id="act3-end-recap">
-          <li>
-            <span class="act3-end-recap-label">Signs you found at the lake</span>
-            <span class="act3-end-recap-value">${this.hintsDropped} of ${this.hintsDropped}</span>
-          </li>
-          <li>
-            <span class="act3-end-recap-label">Signs you reported to the clinic</span>
-            <span class="act3-end-recap-value">4 of 4</span>
-          </li>
-          ${known ? `
+          <ul class="act3-end-recap" data-editor-id="act3-end-recap">
             <li>
-              <span class="act3-end-recap-label">When you started cooling her</span>
-              <span class="act3-end-recap-value">${waited ? 'After five minutes' : 'Immediately'}</span>
+              <span class="act3-end-recap-label">Signs you found at the lake</span>
+              <span class="act3-end-recap-value">${this.hintsDropped} of ${this.hintsDropped}</span>
             </li>
-          ` : ''}
-          <li>
-            <span class="act3-end-recap-label">Cooled before the drive</span>
-            <span class="act3-end-recap-value">Yes — 2.5× more likely</span>
-          </li>
-        </ul>
+            <li>
+              <span class="act3-end-recap-label">Signs you reported to the clinic</span>
+              <span class="act3-end-recap-value">4 of 4</span>
+            </li>
+            ${known ? `
+              <li>
+                <span class="act3-end-recap-label">When you started cooling her</span>
+                <span class="act3-end-recap-value">${waited ? 'After five minutes' : 'Immediately'}</span>
+              </li>
+            ` : ''}
+            <li>
+              <span class="act3-end-recap-label">Cooled before the drive</span>
+              <span class="act3-end-recap-value">Yes — 2.5× more likely</span>
+            </li>
+          </ul>
 
-        <p class="act3-end-close">
-          Tay never knew anything was wrong. She still doesn't.
-          <strong>That part is always going to be your job.</strong>
-        </p>
+          <p class="act3-end-close">
+            Tay never knew anything was wrong. She still doesn't.
+            <strong>That part is always going to be your job.</strong>
+          </p>
 
-        <div class="act3-end-actions">
-          <button id="act3-btn-replay-act3" class="act3-hud-btn btn-action-primary"
-                  data-editor-id="act3-btn-replay-act3">⏮ Replay Act 3</button>
-          <button id="act3-btn-replay-act1" class="act3-hud-btn" data-editor-id="act3-btn-replay-act1">🐾 Replay Act 1</button>
-          <button id="act3-btn-end-title" class="act3-hud-btn" data-editor-id="act3-btn-end-title">🏠 Title</button>
+          <div class="act3-end-actions">
+            <button id="act3-btn-replay-act3" class="act3-hud-btn btn-action-primary"
+                    data-editor-id="act3-btn-replay-act3">⏮ Replay Act 3</button>
+            <button id="act3-btn-replay-act1" class="act3-hud-btn" data-editor-id="act3-btn-replay-act1">🐾 Replay Act 1</button>
+            <button id="act3-btn-end-title" class="act3-hud-btn" data-editor-id="act3-btn-end-title">🏠 Title</button>
+          </div>
         </div>
-      </div>
+
+        <div class="act3-sources-card">
+          <span class="act3-sources-badge">Works cited</span>
+          <h2 class="act3-sources-title">Sources</h2>
+          <ul class="act3-mla-list" aria-label="Sources">
+            ${this.sources.map(src => `<li>${src}</li>`).join('')}
+          </ul>
+        </div>
       </div>
     `;
   }
@@ -1422,13 +1343,7 @@ export class Act3Screen {
   // =======================================================================
 
   renderBottomLeftControls() {
-    if (this.currentBeat === 'wait') {
-      return `
-        <button id="act3-btn-skip-wait" class="act3-hud-btn act3-btn-quiet"
-                data-editor-id="act3-btn-skip-wait"
-                aria-label="Skip the wait and go straight to the verdict (or wait approximately 12 seconds for the doctor to appear)">Skip the wait ▶</button>
-      `;
-    }
+    if (this.currentBeat === 'wait') { return ''; }
     const back = this.canStepBack() ? `
       <button id="act3-btn-prev-step" class="act3-hud-btn act3-btn-quiet"
                 data-editor-id="act3-btn-prev-step"
@@ -1448,9 +1363,17 @@ export class Act3Screen {
   }
 
   renderBottomRightControls() {
+    const steps = this.stepsForBeat();
+    if (steps && steps[this.stepIndex]) {
+      const step = steps[this.stepIndex];
+      if ((step.type === 'stage' || step.type === 'hold') && !this.isEditModeActive()) return '';
+    }
     switch (this.currentBeat) {
       case 'wait':
-        return '';
+        return `
+          <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
+                  data-editor-id="act3-btn-beat-advance">Next ▶</button>
+        `;
 
       case 'verdict':
         return this.stepIndex < this.verdictSteps.length - 1 ? `
@@ -1461,7 +1384,12 @@ export class Act3Screen {
         `;
 
       case 'report':
-        return ''; // The modal owns its own navigation.
+        return this.stepIndex < this.stepsForBeat().length - 1 ? `
+          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
+        ` : `
+          <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
+                  data-editor-id="act3-btn-beat-advance">Where's Tay? ➔</button>
+        `;
 
       case 'tayReturn':
         return this.stepIndex < this.tayReturnSteps.length - 1 ? `
@@ -1473,12 +1401,11 @@ export class Act3Screen {
 
       case 'nextTime': {
         if (this.stepIndex === 0) {
-          const all = this.preventionChosen.size === this.preventionOptions.length;
-          const some = this.preventionChosen.size > 0;
+          const state = this.getPreventionButtonState();
           return `
-            <button id="act3-btn-next-step" class="act3-hud-btn ${all ? 'btn-action-primary pulse-btn' : ''}"
+            <button id="act3-btn-next-step" class="${state.className}"
                     data-editor-id="act3-btn-next-step">
-              ${all ? "That's all of them ➔" : some ? "That's what changes ▶" : 'Nothing changes ▶'}
+              ${state.html}
             </button>
           `;
         }
@@ -1505,6 +1432,9 @@ export class Act3Screen {
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
                   data-editor-id="act3-btn-beat-advance">Fade ➔</button>
         `;
+
+      case 'recap':
+        return '';
 
       default:
         return '';
@@ -1542,12 +1472,10 @@ export class Act3Screen {
     on('#act3-btn-beat-advance', () => this.nextBeat());
 
     // --- Beat 3A ---
-    on('#act3-btn-skip-wait', () => this.endWait());
+    
 
     // --- Beat 3C ---
-    on('#act3-btn-report-next', () => this.nextReportStep());
-    on('#act3-btn-report-prev', () => this.prevSubStep());
-    on('#act3-btn-report-done', () => this.nextBeat());
+                on('#act3-btn-report-table', () => { this.reportTableExpanded = !this.reportTableExpanded; this.render(); });
 
     // --- Beat 3E ---
     this.container.querySelectorAll('.act3-prevention-option').forEach(el => {
@@ -1585,29 +1513,67 @@ export class Act3Screen {
    * below the fold and leaving the learner looking at the previous one is the failure mode of
    * a progressive reveal.
    */
-  nextReportStep() {
-    if (this.reportStep >= this.reportSteps.length - 1) return;
-    this.reportStep++;
-    this.render();
-    const body = this.container?.querySelector('.act3-report-body');
-    if (!body) return;
-    const revealed = body.lastElementChild;
-    revealed?.scrollIntoView({
-      block: 'end',
-      behavior: this.prefersReducedMotion() ? 'auto' : 'smooth'
-    });
-  }
-
   togglePrevention(id) {
     if (!id) return;
-    if (this.preventionChosen.has(id)) {
-      this.preventionChosen.delete(id);
-      this.activePrevention = this.activePrevention === id ? null : this.activePrevention;
-    } else {
+    // A choice is final: once Reyes has answered, the answer stays on the table.
+    if (this.preventionChosen.has(id)) return;
+
+    // Mutate state
+    const isNowChosen = true;
+    if (isNowChosen) {
       this.preventionChosen.add(id);
       this.activePrevention = id;
+    } else {
+      this.preventionChosen.delete(id);
+      if (this.activePrevention === id) {
+        this.activePrevention = null;
+      }
     }
-    this.render();
+    
+    // Patch DOM
+    const li = this.container.querySelector(`.act3-prevention-item:has(.act3-prevention-option[data-prevention="${id}"])`);
+    const btn = li?.querySelector('.act3-prevention-option');
+    if (li && btn) {
+      li.classList.toggle('is-chosen', isNowChosen);
+      btn.classList.toggle('is-chosen', isNowChosen);
+      btn.setAttribute('aria-pressed', isNowChosen);
+      btn.setAttribute('aria-disabled', 'true');
+      if (isNowChosen) {
+        btn.setAttribute('aria-describedby', `act3-prevention-reply-${id}`);
+      } else {
+        btn.removeAttribute('aria-describedby');
+      }
+      const stateEl = btn.querySelector('.act3-prevention-state');
+      if (stateEl) {
+        stateEl.innerHTML = this.getPreventionStateHtml(isNowChosen);
+      }
+    }
+    
+    // Update aria-hidden and role="status" on all replies
+    this.container.querySelectorAll('.act3-prevention-reply').forEach(reply => {
+      const replyId = reply.getAttribute('id').replace('act3-prevention-reply-', '');
+      const replyChosen = this.preventionChosen.has(replyId);
+      reply.setAttribute('aria-hidden', !replyChosen);
+      if (this.activePrevention === replyId) {
+        reply.setAttribute('role', 'status');
+      } else {
+        reply.removeAttribute('role');
+      }
+    });
+
+    // Update count text
+    const countEl = this.container.querySelector('.act3-prevention-count');
+    if (countEl) {
+      countEl.textContent = `${this.preventionChosen.size} of ${this.preventionOptions.length} chosen`;
+    }
+
+    // Update advance button
+    const nextBtn = this.container.querySelector('#act3-btn-next-step');
+    if (nextBtn) {
+      const state = this.getPreventionButtonState();
+      nextBtn.className = state.className;
+      nextBtn.innerHTML = state.html;
+    }
   }
 
   // =======================================================================
@@ -1615,9 +1581,26 @@ export class Act3Screen {
   // =======================================================================
 
   /** The step arrays each beat advances through, so nextSubStep has one shape to reason about. */
+  get reportDialogueSteps() {
+    const steps = [];
+    for (const entry of this.reportSteps) {
+      for (const line of entry.lines) {
+        const step = { ...line };
+        step.cast = line.stamp ? { reyes: 'serious' } : { reyes: 'chart' };
+        steps.push(step);
+      }
+      if (entry.reveals === 'survival' && entry.variants) {
+        const variants = entry.variants[this.decisionChoice || 'unknown'] || entry.variants.unknown;
+        for (const line of variants) { const step = { ...line }; step.cast = line.stamp ? { reyes: 'serious' } : { reyes: 'chart' }; steps.push(step); }
+      }
+    }
+    return steps;
+  }
+
   stepsForBeat() {
     switch (this.currentBeat) {
       case 'verdict': return this.verdictSteps;
+      case 'report': return this.reportDialogueSteps;
       case 'tayReturn': return this.tayReturnSteps;
       case 'recheck': return this.recheckSteps;
       case 'home': return this.homeSteps;
@@ -1637,16 +1620,15 @@ export class Act3Screen {
   }
 
   nextBeat() {
-    const order = ['wait', 'verdict', 'report', 'tayReturn', 'nextTime', 'recheck', 'home', 'end'];
+    const order = ['wait', 'verdict', 'report', 'tayReturn', 'nextTime', 'recheck', 'home', 'recap', 'end'];
     const i = order.indexOf(this.currentBeat);
     if (i === -1 || i === order.length - 1) return;
 
     this.currentBeat = order[i + 1];
     this.stepIndex = 0;
-    this.stopWaitTimer();
 
     // Time passes between beats, not only inside them.
-    const jump = { verdict: 0, report: 3, tayReturn: 6, nextTime: 4, recheck: 3, home: 214, end: 0 };
+    const jump = { verdict: 0, report: 3, tayReturn: 6, nextTime: 4, recheck: 3, home: 214, recap: 0, end: 0 };
     this.clockMinutes += jump[this.currentBeat] ?? 0;
 
     this.render();
@@ -1671,12 +1653,16 @@ export class Act3Screen {
    * an act you want to leave.
    */
   prevSubStep() {
-    if (this.currentBeat === 'report') {
-      if (this.reportStep === 0) return false;
-      this.reportStep--;
+    if (this.currentBeat === 'recap') {
+      this.currentBeat = 'home';
+      this.stepIndex = this.homeSteps.length - 1;
     } else {
       if (this.stepIndex === 0 || !this.stepsForBeat()) return false;
+      const steps = this.stepsForBeat();
       this.stepIndex--;
+      while (this.stepIndex > 0 && steps[this.stepIndex] && (steps[this.stepIndex].type === 'stage' || steps[this.stepIndex].type === 'hold')) {
+        this.stepIndex--;
+      }
     }
     this.render();
     return true;
@@ -1684,8 +1670,7 @@ export class Act3Screen {
 
   /** Back is only offered where there is something to go back to — never a dead control. */
   canStepBack() {
-    if (this.currentBeat === 'report') return this.reportStep > 0;
-    if (this.currentBeat === 'end') return false;
+        if (this.currentBeat === 'end') return false;
     return this.stepIndex > 0 && !!this.stepsForBeat();
   }
 
@@ -1700,9 +1685,9 @@ export class Act3Screen {
 
     // Escape closes the case file, per docs/design-language.md §7.4. It closes it FORWARD —
     // the file is a beat the story passes through, not an optional overlay, and dropping the
-    // learner back into an empty lobby would be a dead end rather than an exit.
+    // learner back into an empty clinic would be a dead end rather than an exit.
     if (e.key === 'Escape') {
-      if (this.currentBeat === 'report') {
+      if (this.currentBeat === 'recap') {
         e.preventDefault();
         this.nextBeat();
       }
@@ -1721,10 +1706,9 @@ export class Act3Screen {
     // Space on a focused button is the button's own job — do not double-fire it.
     if (e.key !== 'ArrowRight' && e.target.tagName === 'BUTTON') return;
 
-    if (this.currentBeat === 'report') {
+    if (this.currentBeat === 'recap') {
       e.preventDefault();
-      if (this.reportStep < this.reportSteps.length - 1) this.nextReportStep();
-      else this.nextBeat();
+      this.nextBeat();
       return;
     }
 

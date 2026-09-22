@@ -27,6 +27,7 @@
   padding: 1rem;
   box-sizing: border-box;
   overflow: hidden;
+  min-height: 0;
 }
 
 /* Geometry matched to .act1-viewport-card / .act2-viewport-card.
@@ -40,14 +41,14 @@
   max-height: 84vh;
   border-radius: var(--radius-xl);
   overflow: hidden;
+  min-height: 0;
   box-shadow: var(--elev-card);
   border: 4px solid var(--palette-warm-white);
   background: var(--surface-card-dark);
   user-select: none;
 }
 
-.act3-scene-img,
-.act3-lobby-svg {
+.act3-scene-img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -56,9 +57,86 @@
   display: block;
   pointer-events: none;
   z-index: 10;
-  /* Recovery ramp. 54% at the lobby door, 100% by the time she is climbing Callie. */
+  /* Recovery ramp. 54% at the clinic door, 100% by the time she is climbing Callie. */
   filter: saturate(var(--act3-saturation, 100%));
   transition: filter var(--dur-escalation) ease;
+}
+
+
+/* ==========================================================
+   CAST LAYER
+   ========================================================== */
+.act3-cast {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 11; /* Above scene image, below wash */
+}
+
+
+.act3-cast-img {
+  opacity: 0;
+}
+.act3-cast-img.is-active {
+  opacity: 1;
+}
+.act3-cast-img {
+  position: absolute;
+  height: auto;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 14px 28px rgba(24, 20, 18, 0.35));
+  transition: opacity 0.18s ease;
+}
+
+.act3-cast-callie {
+  bottom: 4.4%;
+}
+.act3-cast-callie.is-state-relief { height: 50%; }
+.act3-cast-callie.is-state-waiting { height: 31%; left: 3%; bottom: 17%; }
+.act3-cast-callie.is-state-leaving, .act3-cast-callie.is-state-turned { right: 30%; left: auto; height: 50%; }
+/* "One more thing." — she has turned around to face Reyes. */
+.act3-cast-callie.is-state-turned { transform: scaleX(-1); }
+.act3-cast-callie.is-state-handover { right: 31%; left: auto; height: 52%; } /* her own chair, clear of the one against the wall */
+.act3-cast-callie.is-state-floor { height: 34%; }
+
+[data-beat="verdict"] .act3-cast-callie.is-state-relief,
+[data-beat="report"] .act3-cast-callie { left: 28%; }
+[data-beat="tayReturn"] .act3-cast-callie,
+[data-beat="nextTime"] .act3-cast-callie { left: 12%; }
+
+.act3-cast-tay {
+  bottom: 3%;
+  height: 22%;
+  /* Tay's Act 1 art faces right; in the treatment room she faces Callie on the left. */
+  transform: scaleX(-1);
+}
+[data-beat="tayReturn"] .act3-cast-tay,
+[data-beat="nextTime"] .act3-cast-tay { left: 36%; }
+.act3-cast-tay.is-state-leading { right: 18%; left: auto; transform: none; }
+.act3-cast-tay.is-state-turned { right: 18%; left: auto; }
+
+.act3-cast-reyes {
+  bottom: 4.4%;
+  height: 52%;
+  /* Reyes's art faces left. Whenever she stands to Callie's LEFT she is flipped so she is
+     still facing the person she is talking to. */
+  --act3-reyes-flip: 1;
+  transform: scaleX(var(--act3-reyes-flip));
+}
+[data-beat="verdict"] .act3-cast-reyes,
+[data-beat="report"] .act3-cast-reyes,
+[data-beat="tayReturn"] .act3-cast-reyes,
+[data-beat="nextTime"] .act3-cast-reyes { right: 26%; }
+.act3-cast-reyes.is-state-aside { right: 52%; --act3-reyes-flip: -1; }
+.is-entering[data-beat="verdict"] .act3-cast-reyes.is-active {
+  animation: act3ReyesSlide 0.35s var(--ease-out-expo) forwards;
+}
+
+@keyframes act3ReyesSlide {
+  from { transform: translateX(20px) scaleX(var(--act3-reyes-flip, 1)); }
+  to { transform: translateX(0) scaleX(var(--act3-reyes-flip, 1)); }
 }
 
 /* ==========================================================
@@ -75,7 +153,7 @@
   transition: opacity var(--dur-escalation) ease-in-out;
 }
 
-/* Lobby: fluorescent, cold, slightly drained. Fades out as she recovers. */
+/* Clinic: fluorescent, cold, slightly drained. Fades out as she recovers. */
 .act3-wash.wash-clinical {
   background:
     linear-gradient(to bottom, rgba(148, 163, 184, 0.35) 0%, rgba(148, 163, 184, 0.12) 46%, transparent 100%),
@@ -142,7 +220,7 @@
 .act3-hud-group {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
   pointer-events: auto;
 }
@@ -161,7 +239,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   box-shadow: var(--elev-3);
   box-sizing: border-box;
 }
@@ -197,7 +275,7 @@
               border-color var(--dur-base) var(--ease-out-expo);
 }
 
-/* Unresolved. Deliberately neutral slate, not amber and not red — the lobby does not know
+/* Unresolved. Deliberately neutral slate, not amber and not red — the clinic does not know
    anything yet and the interface must not pretend to. This is Beat 3A's whole engine. */
 .act3-hud-pill.status-pill.tone-unknown {
   background: var(--surface-clock);
@@ -230,13 +308,13 @@
   font-size: 0.92rem;
   font-weight: 700;
   height: 40px;
-  padding: 0 1.2rem;
+  padding: 0 1.25rem;
   border-radius: var(--radius-pill);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   box-sizing: border-box;
   box-shadow: var(--elev-2);
   pointer-events: auto;
@@ -261,11 +339,13 @@
 /* The way out of Beat 3A. Present and focusable from the first frame — a deliberate wait
    is fine, a trap is not (design-language.md §7.5, and Nielsen's user control heuristic). */
 .act3-hud-btn.act3-btn-quiet {
-  height: 34px;
+  height: 36px;
   font-size: 0.82rem;
   font-weight: 600;
-  border-color: var(--hairline-light-soft);
+  border: 1px solid var(--hairline-light-soft);
   box-shadow: var(--elev-1);
+  white-space: nowrap;
+  min-width: 5rem;
 }
 
 .act3-hud-btn.btn-action-primary {
@@ -280,7 +360,7 @@
 .act3-hud-btn.btn-action-primary:hover:not(:disabled),
 .act3-hud-btn.btn-action-primary:focus-visible:not(:disabled) {
   background: var(--color-heat-hover);
-  border-color: var(--palette-warm-white);
+  border-color: #FFFFFF;
   transform: translateY(-2px);
 }
 
@@ -361,11 +441,15 @@
 
 #screen-act3 .speech-bubble .speech-bubble-speaker {
   flex-wrap: wrap;
-  row-gap: 0.1rem;
+  row-gap: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 /* The report footer's byline is a single inline run — no wrapping there. */
-.act3-report-who .act3-business,
+.act3-recap-who .act3-business,
 .act3-prevention-reply .act3-business {
   flex: none;
 }
@@ -415,84 +499,96 @@
 /* Bubble placement, per room. Positioned with left/top/right so Edit Mode's !important
    overrides land on properties that actually move the element (§8.2), and the stem offsets
    are custom properties for the same reason. */
-.scene-lobby .act3-callie-bubble {
-  top: 26%;
-  right: 48%;
-  max-width: min(340px, 28%);
-  --stem-right: 30%;
-}
-
-.scene-lobby .act3-reyes-bubble {
+/* Bubbles live in the band between the HUD and the cast's heads (13%–44% of the stage),
+   so no face is ever covered. Each stem leans toward its speaker: Callie stands left of
+   centre, so her bubble hangs to her upper right and the stem points back down-left; Reyes
+   stands by the door, so hers hangs to her upper left and the stem points down-right; Tay
+   is centred under hers. */
+#screen-act3 .speech-bubble {
   top: 13%;
-  left: 60%;
-  max-width: min(420px, 36%);
-  --stem-left: 58%;
+  max-height: 30%;
+  overflow: hidden;
+  min-height: 0;
 }
 
-.scene-exam .act3-callie-bubble {
-  top: 22%;
-  right: 60%;
-  max-width: min(320px, 28%);
-  --stem-right: 8%;
-}
-
-.scene-exam .act3-reyes-bubble {
-  top: 7%;
-  left: 56%;
-  max-width: min(400px, 34%);
-  --stem-left: 30%;
-}
-
-/* While the discharge sheet is out it owns the right-hand column, so the bubbles pull in and
-   stop fighting it for the same space. The stem moves with them and still lands on Reyes. */
-.scene-exam .has-sheet .act3-reyes-bubble {
-  top: 8%;
-  left: 42%;
-  max-width: min(300px, 28%);
-  --stem-left: 78%;
-}
-
-.scene-exam .has-sheet .act3-callie-bubble {
-  top: 8%;
-  right: 62%;
-  max-width: min(280px, 26%);
-}
-
-.scene-exam .act3-tay-bubble {
-  top: 17%;
-  left: 34%;
-  max-width: min(380px, 32%);
-  --stem-left: 72%;
-}
-
+.scene-clinic .act3-callie-bubble,
 .scene-home .act3-callie-bubble {
-  top: 15%;
-  right: 58%;
-  max-width: min(330px, 28%);
-  --stem-right: 6%;
+  left: 8%;
+  right: auto;
+  max-width: 34%;
+  --stem-right: 72%;
+}
+.scene-clinic .act3-callie-bubble::before,
+.scene-home .act3-callie-bubble::before {
+  border-left: 6px solid transparent;
+  border-right: 18px solid transparent;
+}
+.scene-clinic .act3-callie-bubble::after,
+.scene-home .act3-callie-bubble::after {
+  border-left: 4px solid transparent;
+  border-right: 15px solid transparent;
 }
 
+.scene-clinic .act3-reyes-bubble {
+  right: 8%;
+  left: auto;
+  max-width: 36%;
+  --stem-left: 74%;
+}
+.scene-clinic .act3-reyes-bubble::before {
+  border-left: 18px solid transparent;
+  border-right: 6px solid transparent;
+}
+.scene-clinic .act3-reyes-bubble::after {
+  border-left: 15px solid transparent;
+  border-right: 4px solid transparent;
+}
+
+.scene-clinic .act3-tay-bubble,
 .scene-home .act3-tay-bubble {
-  top: 10%;
-  left: 46%;
-  max-width: min(340px, 30%);
-  --stem-left: 30%;
+  left: 33%;
+  right: auto;
+  max-width: 34%;
+  --stem-left: 46%;
+}
+
+/* Beat-specific bubble positioning */
+[data-beat="verdict"] .act3-callie-bubble,
+[data-beat="report"] .act3-callie-bubble {
+  left: 14%;
+  --stem-right: 60%;
+}
+[data-beat="verdict"] .act3-reyes-bubble,
+[data-beat="report"] .act3-reyes-bubble {
+  right: 14%;
+  --stem-left: 62%;
+}
+
+[data-beat="tayReturn"] .act3-callie-bubble,
+[data-beat="nextTime"] .act3-callie-bubble {
+  left: 2%;
+}
+[data-beat="tayReturn"] .act3-tay-bubble,
+[data-beat="nextTime"] .act3-tay-bubble {
+  left: 26%;
+  --stem-left: 46%;
+}
+[data-beat="tayReturn"] .act3-reyes-bubble,
+[data-beat="nextTime"] .act3-reyes-bubble {
+  right: 14%;
+}
+
+[data-beat="recheck"] .act3-callie-bubble {
+  left: auto;
+  right: 16%;
+  --stem-right: 22%;
+}
+[data-beat="recheck"] .act3-reyes-bubble {
+  right: 40%;
 }
 
 /* The Act 0 callback. Written for the learner — recognition is the payoff, so it names
    where they heard the line, not the shot number. Same component as Act 2's line tag. */
-.act3-callback-tag {
-  display: block;
-  margin-top: 0.5rem;
-  padding-top: 0.45rem;
-  border-top: 1px dashed rgba(124, 45, 18, 0.35);
-  font-family: var(--font-family-display);
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-heat-hover);
-}
 
 /* ==========================================================
    STAGE / HOLD CARDS
@@ -503,7 +599,7 @@
 .act3-hold-card,
 .act3-door-card {
   position: absolute;
-  bottom: 5.5rem;
+  bottom: max(4rem, 22%);
   left: 50%;
   width: min(680px, 76%);
   transform: translateX(-50%);
@@ -511,18 +607,21 @@
   backdrop-filter: blur(8px);
   border: 1px solid var(--hairline-light-soft);
   border-radius: var(--radius-sm);
-  padding: 0.75rem 1.15rem;
+  padding: 0.75rem 1.25rem;
   box-shadow: var(--elev-4);
   pointer-events: auto;
-  /* Ends on translateX(-50%): X-axis centring only, so this is the stampSlam shape,
-     never the stampSlamCentered one (§6.4). */
+}
+
+.is-entering .act3-stage-card,
+.is-entering .act3-hold-card,
+.is-entering .act3-door-card {
   animation: act3SlideUpX 0.35s var(--ease-out-expo) forwards;
 }
 
 .act3-stage-card {
   display: flex;
   align-items: baseline;
-  gap: 0.65rem;
+  gap: 0.75rem;
 }
 
 .act3-stage-mark {
@@ -552,7 +651,7 @@
 }
 
 .act3-hold-sub {
-  margin-top: 0.35rem;
+  margin-top: 0.25rem;
   font-family: var(--font-family-body);
   font-size: 0.84rem;
   line-height: 1.45;
@@ -578,48 +677,17 @@
    teaches, nothing here is scored, and the only control does nothing at all.
    ========================================================== */
 
-/* Anchored right, not centred: Callie and the towel own the left of the frame for the whole
+/* Anchored right, not centred: Callie owns the left of the frame for the whole
    beat, and the copy sits beside her instead of on top of her. No transform of its own, so
    its entrance keyframe must not carry one either (§6.4). */
-.act3-wait-panel {
-  position: absolute;
-  right: 3.5rem;
-  bottom: 4.5rem;
-  width: min(430px, 40%);
-  background: var(--palette-cream);
-  border: 3px solid var(--palette-warm-white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--elev-modal);
-  padding: 1.15rem 1.35rem 1.25rem;
-  text-align: center;
-  pointer-events: auto;
-  animation: act3SlideUp 0.35s var(--ease-out-expo) forwards;
-}
 
-.act3-wait-badge {
-  display: inline-block;
-  background: var(--palette-teal-dark);
-  color: var(--text-inverse);
-  font-family: var(--font-family-display);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 0.28rem 0.6rem;
-  border-radius: var(--radius-xs);
-  margin-bottom: 0.7rem;
-}
 
-.act3-wait-line {
-  font-family: var(--font-family-body);
-  font-size: clamp(0.92rem, 1.2vw, 1.04rem);
-  line-height: 1.55;
-  color: var(--palette-brown-dark);
-  min-height: 3.2em; /* four lines of copy of different lengths, one fixed box: no jump */
-}
+
+
+
 
 .act3-wait-sub {
-  margin-top: 0.55rem;
+  margin-top: 0.5rem;
   font-family: var(--font-family-display);
   font-size: 0.86rem;
   font-weight: 700;
@@ -627,55 +695,12 @@
   color: var(--palette-text-muted);
 }
 
-.act3-fold-btn {
-  margin-top: 0.9rem;
-  background: var(--palette-warm-white);
-  border: 1.5px solid var(--palette-peach-dark);
-  color: var(--palette-brown-med);
-  font-family: var(--font-family-display);
-  font-size: 0.84rem;
-  font-weight: 700;
-  height: 36px;
-  padding: 0 1rem;
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  transition: background-color var(--dur-fast) var(--ease-out-expo),
-              border-color var(--dur-fast) var(--ease-out-expo),
-              transform var(--dur-fast) var(--ease-out-expo);
-}
-
-.act3-fold-btn:hover,
-.act3-fold-btn:focus-visible {
-  background: var(--palette-sage-light);
-  border-color: var(--palette-sage);
-  transform: translateY(-1px);
-}
-
-.act3-fold-btn:active {
-  transform: translateY(0);
-}
 
 /* Not a loading bar — a wait, shown honestly so it does not read as a hang. It is
    aria-hidden because the skip control in the nav is the accessible way past it. */
-.act3-wait-bar {
-  margin-top: 1rem;
-  height: 4px;
-  border-radius: var(--radius-pill);
-  background: var(--palette-peach-dark);
-  overflow: hidden;
-}
 
-.act3-wait-bar-fill {
-  display: block;
-  height: 100%;
-  width: var(--act3-wait-progress, 0%);
-  background: var(--palette-teal-dark);
-  border-radius: var(--radius-pill);
-  transition: width 1s linear;
-}
+
+
 
 /* ==========================================================
    TRUTH STAMP — the flat third voice (§6.5)
@@ -684,11 +709,6 @@
    ========================================================== */
 
 .act3-truth-stamp {
-  position: absolute;
-  bottom: 4rem;
-  left: 50%;
-  width: min(680px, 86%);
-  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -697,11 +717,9 @@
   border: 1px solid rgba(245, 158, 11, 0.5);
   border-left: 4px solid var(--color-amber);
   border-radius: var(--radius-sm);
-  padding: 0.55rem 1rem;
+  padding: 0.5rem 1rem;
   box-shadow: var(--elev-5);
   pointer-events: auto;
-  z-index: 35;
-  animation: act3StampIn 0.4s var(--ease-out-expo) 0.25s both;
 }
 
 /* The measurement. --color-amber-pale on --color-amber-deep is 4.51 — it passes by 0.01,
@@ -716,7 +734,7 @@
   font-size: 0.82rem;
   font-weight: 800;
   letter-spacing: 0.04em;
-  padding: 0.3rem 0.6rem;
+  padding: 0.25rem 0.5rem;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
@@ -729,11 +747,18 @@
 }
 
 /* Inside the case file the stamp is a block in the flow, not a floating element. */
-.act3-report-body .act3-truth-stamp {
-  position: static;
-  transform: none;
-  width: 100%;
-  animation: act3FadeIn var(--dur-base) var(--ease-out-expo) forwards;
+.act3-truth-stamp {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--surface-stamp);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  border-left: 4px solid var(--color-amber);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 1rem;
+  box-shadow: var(--elev-5);
+  pointer-events: auto;
 }
 
 /* ==========================================================
@@ -743,7 +768,7 @@
    the same document the learner opened in Act 1, now filled in.
    ========================================================== */
 
-.act3-report-modal,
+.act3-recap-modal,
 .act3-end-modal {
   position: absolute;
   inset: 0;
@@ -752,9 +777,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2.25rem 1.5rem;
+  padding: 1rem 1.5rem;
   pointer-events: auto;
   z-index: 50;
+}
+
+.is-entering .act3-recap-modal,
+.is-entering .act3-end-modal {
   animation: act3FadeIn var(--dur-fast) ease forwards;
 }
 
@@ -762,8 +791,8 @@
    stampSlam / stampSlamCentered trap in §6.4 cannot bite here. */
 /* Fixed to the available height rather than sized to its content: the file fills up as Reyes
    talks, and the card does not resize under the learner between the five steps. */
-.act3-report-card {
-  width: min(980px, 100%);
+.act3-recap-card {
+  width: min(1280px, 100%);
   height: 100%;
   max-height: 100%;
   display: flex;
@@ -773,19 +802,23 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--elev-modal), 0 0 40px -12px rgba(56, 189, 248, 0.5);
   overflow: hidden;
+  min-height: 0;
+}
+
+.is-entering .act3-recap-card {
   animation: act3CardRise var(--dur-base) var(--ease-out-expo) forwards;
 }
 
-.act3-report-header {
+.act3-recap-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  padding: 1rem 1.4rem 0.85rem;
+  padding: 0.5rem 1.5rem;
   border-bottom: 1px solid var(--hairline-light-soft);
 }
 
-.act3-report-badge {
+.act3-recap-badge {
   background: var(--color-info-strong);
   color: var(--text-inverse);
   border-radius: var(--radius-xs);
@@ -793,10 +826,10 @@
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.09em;
-  padding: 0.3rem 0.55rem;
+  padding: 0.25rem 0.5rem;
 }
 
-.act3-report-title {
+.act3-recap-title {
   flex: 1;
   min-width: 14rem;
   font-family: var(--font-family-display);
@@ -806,9 +839,9 @@
   color: var(--text-inverse);
 }
 
-.act3-report-subtitle {
+.act3-recap-subtitle {
   display: block;
-  margin-top: 0.2rem;
+  margin-top: 0.25rem;
   font-family: var(--font-family-body);
   font-size: 0.8rem;
   font-weight: 500;
@@ -818,10 +851,10 @@
 }
 
 /* Act 1's counter, cashed out one last time. Text carries the count, not the colour. */
-.act3-report-hints {
+.act3-recap-hints {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
   background: var(--color-success);
   color: var(--text-inverse);
   border: 1px solid var(--color-success-pale);
@@ -830,31 +863,122 @@
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.03em;
-  padding: 0.32rem 0.75rem;
+  padding: 0.25rem 0.75rem;
 }
 
-.act3-report-body {
+
+.act3-recap-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.act3-recap-right {
+  width: 33%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  min-height: 0;
+  overflow-y: auto;
+  border-left: 1px solid var(--hairline-light-soft);
+}
+
+/* In the recap the discharge sheet is a block in the flow beneath the verdict stamps, not the
+   floating in-world object it is in the recheck beat. */
+.act3-recap-right .act3-discharge-sheet {
+  position: static;
+  width: auto;
+  margin: 0;
+  animation: none;
+}
+.act3-truth-stamp {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--surface-stamp);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  border-left: 4px solid var(--color-amber);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 1rem;
+  box-shadow: var(--elev-5);
+  pointer-events: auto;
+}
+.act3-recap-right .act3-discharge-sheet li,
+.act3-recap-right .act3-discharge-sheet p,
+.act3-recap-right .act3-discharge-sheet span {
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+.act3-recap-right .act3-discharge-sheet {
+  padding: 0.5rem 0.75rem 0.75rem;
+}
+.act3-recap-right .act3-discharge-sheet li {
+  padding: 0.25rem 0;
+}
+.act3-recap-left .act3-timeline-item {
+  padding: 0.25rem 0.5rem;
+}
+
+.act3-recap-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.act3-recap-panel-head .act3-panel-title {
+  margin: 0;
+}
+
+.act3-btn-table-toggle {
+  height: 30px;
+  font-size: 0.75rem;
+  padding: 0 0.8rem;
+}
+
+/* Four signs, two rows: glyph + sign name + stage numeral and word, never colour alone. */
+.act3-recap-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.act3-recap-chips .act3-stage-chip {
+  white-space: nowrap;
+}
+
+.act3-stage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.act3-recap-body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 0.85rem 1.4rem;
+  padding: 0.5rem 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.5rem;
   scrollbar-width: thin;
   scrollbar-color: var(--color-info-mid) transparent;
 }
 
-.act3-report-body::-webkit-scrollbar { width: 6px; }
-.act3-report-body::-webkit-scrollbar-thumb {
+.act3-recap-body::-webkit-scrollbar { width: 6px; }
+.act3-recap-body::-webkit-scrollbar-thumb {
   background: var(--color-info-mid);
   border-radius: var(--radius-pill);
 }
 
-.act3-report-panel {
+.act3-recap-panel {
   border: 1px solid var(--hairline-light-faint);
   border-radius: var(--radius-sm);
-  padding: 0.7rem 0.9rem;
+  padding: 0.5rem 1rem;
+}
+
+.is-entering .act3-recap-panel {
   animation: act3FadeIn var(--dur-base) var(--ease-out-expo) forwards;
 }
 
@@ -869,7 +993,7 @@
 }
 
 .act3-panel-foot {
-  margin-top: 0.7rem;
+  margin-top: 0.75rem;
   font-family: var(--font-family-display);
   font-size: 0.86rem;
   font-weight: 700;
@@ -878,21 +1002,21 @@
 
 /* --- The four checks --------------------------------------------------- */
 
-.act3-report-table {
+.act3-recap-table {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-family-body);
 }
 
-.act3-report-table th,
-.act3-report-table td {
+.act3-recap-table th,
+.act3-recap-table td {
   text-align: left;
   vertical-align: top;
-  padding: 0.38rem 0.6rem;
+  padding: 0.5rem 0.5rem;
   border-bottom: 1px solid var(--hairline-light-faint);
 }
 
-.act3-report-table thead th {
+.act3-recap-table thead th {
   font-family: var(--font-family-display);
   font-size: 0.72rem;
   font-weight: 900;
@@ -901,8 +1025,8 @@
   color: var(--text-on-dark-dim);
 }
 
-.act3-report-table tbody tr:last-child th,
-.act3-report-table tbody tr:last-child td {
+.act3-recap-table tbody tr:last-child th,
+.act3-recap-table tbody tr:last-child td {
   border-bottom: 0;
 }
 
@@ -922,8 +1046,8 @@
 
 .act3-cell-note {
   display: block;
-  margin-top: 0.15rem;
-  font-size: 0.74rem;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
   color: var(--text-on-dark-dim);
   font-style: italic;
 }
@@ -935,14 +1059,14 @@
 .act3-stage-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
   border-radius: var(--radius-xs);
   font-family: var(--font-family-display);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 0.28rem 0.5rem;
+  padding: 0.25rem 0.5rem;
 }
 
 /* A ring, not a translucent plate. The plate lightened the chip's own ground under the
@@ -984,14 +1108,15 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0;
 }
 
 .act3-prevalence-row {
   display: grid;
   grid-template-columns: 7rem 1fr 3.2rem;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.75rem;
+  height: 1.5rem;
 }
 
 .act3-prevalence-label {
@@ -1006,6 +1131,7 @@
   border-radius: var(--radius-pill);
   background: rgba(255, 255, 255, 0.1);
   overflow: hidden;
+  min-height: 0;
 }
 
 /* Bar LENGTH and the numeral both carry the value, so the chart survives being read in
@@ -1028,11 +1154,11 @@
 
 /* --- Her afternoon ------------------------------------------------------ */
 
-.act3-report-timeline {
+.act3-recap-timeline {
   list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
 }
 
 .act3-timeline-item {
@@ -1040,7 +1166,7 @@
   grid-template-columns: 4.6rem 1.6rem 1fr;
   align-items: start;
   gap: 0.5rem;
-  padding: 0.4rem 0.5rem;
+  padding: 0.5rem 0.75rem;
   border-radius: var(--radius-xs);
   border-left: 3px solid transparent;
 }
@@ -1063,7 +1189,7 @@
 .act3-timeline-copy {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0.25rem;
   font-family: var(--font-family-body);
   font-size: 0.84rem;
   line-height: 1.4;
@@ -1090,34 +1216,34 @@
 
 /* --- Reyes and Callie, under the chart ---------------------------------- */
 
-.act3-report-footer {
+.act3-recap-footer {
   border-top: 1px solid var(--hairline-light-soft);
-  padding: 0.75rem 1.4rem 0.85rem;
+  padding: 0.5rem 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  background: var(--surface-card-darkest);
 }
 
 /* Capped so the chart above it always keeps the majority of the card — the panels are the
    point of this beat, the dialogue is the walk-through. */
-.act3-report-dialogue {
+.act3-recap-dialogue {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  max-height: 17vh;
+  gap: 0.5rem;
+  flex: 1;
   overflow-y: auto;
+  padding: 1.5rem;
 }
 
-.act3-report-line {
+.act3-recap-line {
   border-left: 3px solid var(--hairline-light-soft);
-  padding-left: 0.7rem;
+  padding-left: 0.75rem;
 }
 
-.act3-report-line.line-reyes { border-left-color: var(--color-info); }
-.act3-report-line.line-callie { border-left-color: var(--color-amber-tint); }
+.act3-recap-line.line-reyes { border-left-color: var(--color-info); }
+.act3-recap-line.line-callie { border-left-color: var(--color-amber-tint); }
 
-.act3-report-who {
+.act3-recap-who {
   display: block;
   font-family: var(--font-family-display);
   font-size: 0.72rem;
@@ -1125,12 +1251,12 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-on-dark-dim);
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.25rem;
 }
 
-.act3-report-who .act3-business { color: var(--text-on-dark-dim); }
+.act3-recap-who .act3-business { color: var(--text-on-dark-dim); }
 
-.act3-report-text {
+.act3-recap-text {
   font-family: var(--font-family-body);
   font-size: clamp(0.88rem, 1.15vw, 1rem);
   line-height: 1.5;
@@ -1139,14 +1265,14 @@
   max-width: 68ch;
 }
 
-.act3-report-nav {
+.act3-recap-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
 }
 
-.act3-report-nav-left {
+.act3-recap-nav-left {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -1155,7 +1281,7 @@
 .act3-beat-dots {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
 }
 
 .act3-beat-dot {
@@ -1179,30 +1305,7 @@
 
 /* Her voice has been gone since one line in Act 2. That absence is the mechanism; this
    names it once, on her first line, and then gets out of the way. */
-.act3-voice-return-banner {
-  position: absolute;
-  top: 5.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--surface-glass-light);
-  backdrop-filter: blur(6px);
-  border: 2px solid var(--color-heat);
-  border-radius: var(--radius-md);
-  padding: 0.5rem 1rem;
-  box-shadow: var(--elev-4);
-  font-family: var(--font-family-display);
-  font-size: 0.88rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  color: var(--palette-brown-dark);
-  pointer-events: auto;
-  animation: act3SlideUpX 0.35s var(--ease-out-expo) forwards;
-}
 
-.act3-voice-return-mark { color: var(--color-heat); }
 
 /* ==========================================================
    BEAT 3E — NEXT TIME
@@ -1212,14 +1315,13 @@
 
 .act3-prevention-card,
 .act3-end-card {
-  width: min(720px, 88%);
   max-height: 100%;
   overflow-y: auto;
   background: var(--palette-cream);
   border: 3px solid var(--palette-warm-white);
   border-radius: var(--radius-lg);
   box-shadow: var(--elev-modal);
-  padding: 1.25rem 1.5rem 1.4rem;
+  padding: 1rem 1.5rem;
   pointer-events: auto;
 }
 
@@ -1234,11 +1336,14 @@
   max-height: 82%;
   z-index: 45;
   transform: translate(-50%, -50%);
+}
+
+.is-entering .act3-prevention-card {
   animation: act3CardInCentered var(--dur-base) var(--ease-out-expo) forwards;
 }
 
 /* The close screen is flex-centred by its own scrim, so it has no transform to preserve. */
-.act3-end-card {
+.is-entering .act3-end-card {
   animation: act3CardRise var(--dur-base) var(--ease-out-expo) forwards;
 }
 
@@ -1252,12 +1357,12 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 0.28rem 0.6rem;
+  padding: 0.25rem 0.5rem;
   border-radius: var(--radius-xs);
 }
 
 .act3-prevention-title {
-  margin-top: 0.7rem;
+  margin-top: 0.75rem;
   font-family: var(--font-family-display);
   font-size: clamp(1.1rem, 1.7vw, 1.45rem);
   font-weight: 800;
@@ -1266,7 +1371,7 @@
 }
 
 .act3-prevention-sub {
-  margin-top: 0.4rem;
+  margin-top: 0.5rem;
   font-family: var(--font-family-body);
   font-size: 0.9rem;
   line-height: 1.5;
@@ -1284,7 +1389,7 @@
   list-style: none;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.6rem;
+  gap: 0.5rem;
   margin-top: 1rem;
   align-items: start;
 }
@@ -1304,12 +1409,12 @@
     'icon label'
     '.    state';
   align-items: start;
-  gap: 0.2rem 0.6rem;
+  gap: 0.25rem 0.5rem;
   text-align: left;
   background: var(--palette-warm-white);
   border: 2px solid var(--palette-peach-dark);
   border-radius: var(--radius-sm);
-  padding: 0.8rem 0.9rem;
+  padding: 0.75rem 1rem;
   cursor: pointer;
   transition: background-color var(--dur-fast) var(--ease-out-expo),
               border-color var(--dur-fast) var(--ease-out-expo),
@@ -1348,9 +1453,9 @@
 
 .act3-prevention-state {
   grid-area: state;
-  margin-top: 0.3rem;
+  margin-top: 0.25rem;
   font-family: var(--font-family-display);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -1361,22 +1466,51 @@
   color: var(--palette-brown-dark);
 }
 
+.act3-prevention-reply-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-base) var(--ease-out-expo);
+}
+.is-chosen > .act3-prevention-reply-wrap {
+  grid-template-rows: 1fr;
+}
+@media (prefers-reduced-motion: reduce) {
+  .act3-prevention-reply-wrap {
+    transition: none;
+  }
+}
+/* The clip is the grid item: it carries no padding or border of its own, so at 0fr it is
+   exactly 0px tall and nothing of the reply peeks out. Collapsed replies are also hidden from
+   hit-testing and screen readers. */
+.act3-prevention-reply-clip {
+  overflow: hidden;
+  min-height: 0;
+  visibility: hidden;
+  transition: visibility 0s linear var(--dur-base);
+}
+.is-chosen > .act3-prevention-reply-wrap > .act3-prevention-reply-clip {
+  visibility: visible;
+  transition-delay: 0s;
+}
+/* Chosen is final — the button stays readable but no longer invites a second click. */
+.act3-prevention-option.is-chosen {
+  cursor: default;
+}
 .act3-prevention-reply {
-  margin-top: 0.4rem;
+  margin-top: 0.5rem;
   background: var(--palette-warm-white);
   border-left: 5px solid var(--palette-teal-dark);
   border-radius: var(--radius-sm);
-  padding: 0.6rem 0.8rem;
+  padding: 0.5rem 0.75rem;
   box-shadow: var(--elev-1);
-  animation: act3FadeIn var(--dur-base) var(--ease-out-expo) forwards;
 }
 
-.act3-prevention-reply .act3-report-text {
+.act3-prevention-reply .act3-recap-text {
   font-size: clamp(0.82rem, 1.05vw, 0.92rem);
 }
 
-.act3-prevention-reply .act3-report-who { color: var(--color-info-strong); }
-.act3-prevention-reply .act3-report-text { color: var(--palette-brown-dark); }
+.act3-prevention-reply .act3-recap-who { color: var(--color-info-strong); }
+.act3-prevention-reply .act3-recap-text { color: var(--palette-brown-dark); }
 
 /* ==========================================================
    BEAT 3F — THE DISCHARGE SHEET
@@ -1387,24 +1521,27 @@
 
 .act3-discharge-sheet {
   position: absolute;
-  bottom: 5rem;
-  right: 1.75rem;
+  bottom: max(4rem, 22%);
+  right: 1.5rem;
   width: min(280px, 24%);
   background: var(--palette-warm-white);
   border: 1px solid var(--palette-peach-dark);
   border-top: 5px solid var(--palette-teal-dark);
   border-radius: var(--radius-sm);
   box-shadow: var(--elev-4);
-  padding: 0.85rem 1rem 0.95rem;
+  padding: 0.75rem 1rem 1rem;
   pointer-events: auto;
   z-index: 32;
+}
+
+.is-entering .act3-discharge-sheet {
   animation: act3SlideInRight var(--dur-base) var(--ease-out-expo) forwards;
 }
 
 .act3-discharge-header {
-  padding-bottom: 0.55rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--palette-peach);
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.5rem;
 }
 
 .act3-discharge-badge {
@@ -1419,7 +1556,7 @@
 
 .act3-discharge-patient {
   display: block;
-  margin-top: 0.15rem;
+  margin-top: 0.25rem;
   font-family: var(--font-family-body);
   font-size: 0.72rem;
   font-weight: 600;
@@ -1431,7 +1568,7 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.5rem;
 }
 
 .act3-discharge-item {
@@ -1449,7 +1586,7 @@
 .act3-discharge-copy {
   display: flex;
   flex-direction: column;
-  gap: 0.12rem;
+  gap: 0.25rem;
   font-family: var(--font-family-body);
   font-size: 0.76rem;
   line-height: 1.45;
@@ -1469,10 +1606,10 @@
    so the last screen states what this learner actually did and then gets out of the way.
    ========================================================== */
 
-.act3-end-card { text-align: center; width: min(640px, 88%); }
+.act3-end-card { text-align: center; }
 
 .act3-end-title {
-  margin-top: 0.7rem;
+  margin-top: 0.75rem;
   font-family: var(--font-family-display);
   font-size: clamp(1.5rem, 2.6vw, 2.1rem);
   font-weight: 800;
@@ -1482,7 +1619,7 @@
 }
 
 .act3-end-line {
-  margin: 0.6rem auto 0;
+  margin: 0.5rem auto 0;
   max-width: 46ch;
   font-family: var(--font-family-body);
   font-size: 1rem;
@@ -1492,7 +1629,7 @@
 
 .act3-end-recap {
   list-style: none;
-  margin: 1.1rem 0;
+  margin: 0.5rem 0;
   border-top: 1px solid var(--palette-peach);
   text-align: left;
 }
@@ -1502,7 +1639,7 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.55rem 0.2rem;
+  padding: 0.5rem 0.25rem;
   border-bottom: 1px solid var(--palette-peach);
 }
 
@@ -1522,7 +1659,7 @@
 }
 
 .act3-end-close {
-  margin: 0 auto 1.2rem;
+  margin: 0 auto 0.75rem;
   max-width: 44ch;
   font-family: var(--font-family-body);
   font-size: 0.98rem;
@@ -1532,7 +1669,7 @@
 
 .act3-end-close strong {
   display: block;
-  margin-top: 0.35rem;
+  margin-top: 0.25rem;
   font-family: var(--font-family-display);
   font-weight: 800;
   color: var(--palette-brown-dark);
@@ -1542,7 +1679,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
@@ -1607,10 +1744,10 @@
   #screen-act3 .act3-wait-panel,
   #screen-act3 .act3-voice-return-banner,
   #screen-act3 .act3-truth-stamp,
-  #screen-act3 .act3-report-modal,
-  #screen-act3 .act3-report-card,
+  #screen-act3 .act3-recap-modal,
+  #screen-act3 .act3-recap-card,
   #screen-act3 .act3-end-modal,
-  #screen-act3 .act3-report-panel,
+  #screen-act3 .act3-recap-panel,
   #screen-act3 .act3-prevention-card,
   #screen-act3 .act3-prevention-reply,
   #screen-act3 .act3-discharge-sheet,
@@ -1621,8 +1758,7 @@
   }
 
   #screen-act3 .act3-scene-img,
-  #screen-act3 .act3-lobby-svg,
-  #screen-act3 .act3-wash,
+    #screen-act3 .act3-wash,
   #screen-act3 .act3-wait-bar-fill {
     transition: none;
   }
@@ -1644,13 +1780,13 @@
   .act3-hud-pill {
     height: 32px;
     font-size: 0.76rem;
-    padding: 0 0.7rem;
+    padding: 0 0.75rem;
   }
 
   .act3-hud-btn {
     height: 34px;
     font-size: 0.8rem;
-    padding: 0 0.8rem;
+    padding: 0 0.75rem;
   }
 
   /* Bubbles stop trying to point at people on a 4:3 crop and stack along the bottom. */
@@ -1658,7 +1794,7 @@
   .act3-reyes-bubble,
   .act3-tay-bubble {
     top: auto !important;
-    bottom: 5rem;
+    bottom: max(4rem, 22%);
     left: 4% !important;
     right: auto !important;
     max-width: 92% !important;
@@ -1673,51 +1809,104 @@
   /* On a 4:3 phone card there is not enough height to pin a header, scroll a body and pin a
      footer — the header alone consumed the whole card. The case file becomes one scrolling
      column instead, so all of it is reachable at the cost of seeing less at once. */
-  .act3-report-modal,
+  .act3-recap-modal,
   .act3-end-modal {
-    padding: 0.6rem;
+    padding: 0.5rem;
   }
 
-  .act3-report-card {
+  .act3-recap-card {
     display: block;
     overflow-y: auto;
   }
 
-  .act3-report-header {
+  .act3-recap-content {
+    display: block;
+  }
+  .act3-recap-right {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--hairline-light-soft);
+  }
+
+
+  .act3-recap-header {
     position: sticky;
     top: 0;
     z-index: 1;
     background: var(--surface-card-dark);
-    padding: 0.6rem 0.8rem 0.5rem;
-    gap: 0.4rem;
+    padding: 0.5rem 0.75rem 0.5rem;
+    gap: 0.5rem;
   }
 
-  .act3-report-badge { font-size: 0.62rem; padding: 0.22rem 0.4rem; }
+  .act3-recap-badge { font-size: 0.62rem; padding: 0.25rem 0.5rem; }
 
-  .act3-report-title {
+  .act3-recap-title {
     min-width: 0;
     flex: 1 1 100%;
     font-size: 1rem;
   }
 
-  .act3-report-subtitle { font-size: 0.7rem; }
-  .act3-report-hints { font-size: 0.66rem; padding: 0.22rem 0.5rem; }
+  .act3-recap-subtitle { font-size: 0.7rem; }
+  .act3-recap-hints { font-size: 0.66rem; padding: 0.25rem 0.5rem; }
 
-  .act3-report-body {
+  
+.act3-recap-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.act3-recap-right {
+  width: 36%;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--hairline-light-soft);
+}
+
+.act3-recap-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.act3-recap-panel-head .act3-panel-title {
+  margin: 0;
+}
+
+.act3-btn-table-toggle {
+  height: 30px;
+  font-size: 0.75rem;
+  padding: 0 0.8rem;
+}
+
+.act3-recap-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.act3-stage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.act3-recap-body {
     overflow: visible;
-    padding: 0.6rem 0.8rem;
+    padding: 0.5rem 0.75rem;
   }
 
-  .act3-report-footer {
+  .act3-recap-footer {
     position: sticky;
     bottom: 0;
-    padding: 0.6rem 0.8rem;
+    padding: 0.5rem 0.75rem;
   }
 
-  .act3-report-dialogue { max-height: none; overflow: visible; }
-  .act3-report-panel { padding: 0.55rem 0.65rem; }
+  .act3-recap-dialogue { max-height: none; overflow: visible; }
+  .act3-recap-panel { padding: 0.5rem 0.75rem; }
 
-  .act3-report-card,
+  .act3-recap-card,
   .act3-prevention-card,
   .act3-end-card {
     width: 96%;
@@ -1725,20 +1914,20 @@
 
   .act3-prevention-options { grid-template-columns: 1fr; }
 
-  .act3-report-table thead { display: none; }
+  .act3-recap-table thead { display: none; }
 
-  .act3-report-table tbody tr {
+  .act3-recap-table tbody tr {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 0.2rem 0.5rem;
+    gap: 0.25rem 0.5rem;
     padding: 0.5rem 0;
     border-bottom: 1px solid var(--hairline-light-faint);
   }
 
-  .act3-report-table th,
-  .act3-report-table td {
+  .act3-recap-table th,
+  .act3-recap-table td {
     border-bottom: 0;
-    padding: 0.15rem 0;
+    padding: 0.25rem 0;
   }
 
   .act3-cell-reported { grid-column: 1 / -1; }
@@ -1748,20 +1937,255 @@
   .act3-discharge-sheet {
     position: static;
     width: auto;
-    margin: 5.5rem 1rem 0;
+    margin: 4rem 1rem 0;
   }
 }
 
 @media (max-height: 700px) {
-  .act3-report-card,
+  .act3-recap-card,
   .act3-prevention-card,
   .act3-end-card {
     padding: 0.9rem 1.1rem;
   }
 
-  .act3-report-header { padding: 0.7rem 1rem 0.6rem; }
-  .act3-report-body { padding: 0.7rem 1rem; gap: 0.7rem; }
-  .act3-report-footer { padding: 0.7rem 1rem; }
-  .act3-report-dialogue { max-height: 22vh; }
-  .act3-end-recap li { padding: 0.4rem 0.2rem; }
+  .act3-recap-header { padding: 0.75rem 1rem 0.5rem; }
+  
+.act3-recap-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.act3-recap-right {
+  width: 36%;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--hairline-light-soft);
+}
+
+.act3-recap-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.act3-recap-panel-head .act3-panel-title {
+  margin: 0;
+}
+
+.act3-btn-table-toggle {
+  height: 30px;
+  font-size: 0.75rem;
+  padding: 0 0.8rem;
+}
+
+.act3-recap-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.act3-stage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.act3-recap-body { padding: 0.75rem 1rem; gap: 0.75rem; }
+  .act3-recap-footer { padding: 0.75rem 1rem; }
+  .act3-recap-dialogue { max-height: none; }
+  .act3-end-recap li { padding: 0.5rem 0.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .act3-cast-img {
+    transition-duration: 0.01s !important;
+  }
+  .act3-cast-reyes {
+    animation-duration: 0.01s !important;
+  }
+}
+
+#screen-act3 .speech-bubble-text, #screen-act3 .speech-bubble-text span {
+  font-family: var(--font-family-display);
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+#screen-act3 .speech-bubble-text {
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+}
+
+.act3-timeline-next-time-row {
+  display: block;
+  margin-top: 0.25rem;
+  font-family: var(--font-family-body);
+  font-size: 0.8rem;
+  color: var(--palette-text-muted);
+}
+.act3-timeline-next-time-row .act3-timeline-flag {
+  display: inline-block;
+  margin-top: 0;
+  margin-right: 0.25rem;
+}
+
+/* Living room: Tay is asleep on the right-hand cushion, so her bubble sits over her. */
+.scene-home .act3-tay-bubble {
+  left: 48%;
+  --stem-left: 30%;
+}
+
+/* Anchor each bubble by its BOTTOM edge so the stem sits just above the speaker's head no
+   matter how long the line is. Heads: Callie/Reyes ≈ 44–47% from the top of the stage, Tay
+   ≈ 80%; in the living room Callie ≈ 35%, Tay on the cushion ≈ 55%. */
+#screen-act3 .scene-clinic .act3-callie-bubble,
+#screen-act3 .scene-clinic .act3-reyes-bubble {
+  top: auto;
+  bottom: 59%;
+}
+#screen-act3 .scene-clinic .act3-tay-bubble {
+  top: auto;
+  bottom: 30%;
+}
+#screen-act3 .scene-home .act3-callie-bubble {
+  top: auto;
+  bottom: 69%;
+}
+#screen-act3 .scene-home .act3-tay-bubble {
+  top: auto;
+  bottom: 49%;
+  left: 58%;
+  max-width: 30%;
+  --stem-left: 18%;
+}
+
+/* Recap timeline: the "next time" row is the payload; keep both rows compact so all four
+   items and their advice stay on one screen. */
+.act3-recap-left .act3-timeline-copy,
+.act3-recap-left .act3-timeline-next-time-row {
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.act3-recap-right .act3-discharge-list {
+  gap: 0.25rem;
+}
+.act3-recap-right .act3-discharge-item {
+  padding: 0.25rem 0;
+}
+.act3-recap-right .act3-discharge-label {
+  font-size: 0.8rem;
+}
+.act3-recap-right .act3-discharge-sub {
+  font-size: 0.7rem;
+  line-height: 1.25;
+}
+.act3-recap-right .act3-discharge-header {
+  margin-bottom: 0.25rem;
+}
+
+#screen-act3 .scene-clinic .has-sheet .act3-discharge-sheet {
+  right: auto;
+  left: 1.5rem;
+}
+
+.act3-recap-right .act3-truth-stamp-line {
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+.act3-recap-right .act3-discharge-sheet {
+  padding: 0.25rem 0.75rem 0.5rem;
+}
+
+
+/* ==========================================================
+   SOURCES CARD
+   ========================================================== */
+
+.act3-end-modal {
+  gap: 1.5rem;
+}
+
+.act3-end-card {
+  width: 52%;
+}
+
+.act3-sources-card {
+  width: 45%;
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--surface-card-dark);
+  border: 2px solid var(--color-info);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-modal), 0 0 40px -12px rgba(56, 189, 248, 0.5);
+  padding: 1rem 1.5rem;
+  pointer-events: auto;
+}
+
+.is-entering .act3-sources-card {
+  animation: act3CardRise var(--dur-base) var(--ease-out-expo) forwards;
+}
+
+.act3-sources-badge {
+  display: inline-block;
+  background: var(--palette-teal-dark);
+  color: var(--text-inverse);
+  font-family: var(--font-family-display);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-xs);
+}
+
+.act3-sources-title {
+  margin-top: 0.75rem;
+  font-family: var(--font-family-display);
+  font-size: clamp(1.1rem, 1.7vw, 1.45rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text-on-dark);
+}
+
+.act3-mla-list {
+  list-style: none;
+  margin: 1rem 0 0 0;
+  padding: 0;
+  font-family: var(--font-family-body);
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+
+.act3-mla-list li {
+  padding-left: 1.5rem;
+  text-indent: -1.5rem;
+  margin-bottom: 0.5rem;
+  overflow-wrap: anywhere;
+  color: var(--text-on-dark);
+}
+
+@media (max-height: 700px) {
+  .act3-mla-list {
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .act3-end-modal {
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+  }
+  .act3-end-card,
+  .act3-sources-card {
+    width: 96%;
+    max-height: none;
+  }
+}
+
+#screen-act3 .speech-bubble:not(.is-new-line) {
+  animation: none;
 }
