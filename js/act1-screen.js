@@ -34,6 +34,8 @@ export class Act1Screen {
     
     // Sub-step index for multi-step beats
     this.stepIndex = 0;
+    this._enteredBeat = null;
+    this._renderedStep = null;
     this.activeLeadId = null;
     this.returnFocusLeadId = null; // interactable to hand focus back to when the POV dialog closes
     this.povStepIndex = 0;        // position within the active lead's dialogue
@@ -238,6 +240,8 @@ export class Act1Screen {
     this.container = document.getElementById('screen-act1');
     if (!this.container) return;
 
+    this._enteredBeat = null;
+    this._renderedStep = null;
     this.render();
     window.addEventListener('keydown', this.handleKeyDown);
   }
@@ -332,13 +336,17 @@ export class Act1Screen {
     const isCanopyFocus = this.currentBeat === 'nap' || this.currentBeat === 'drift' || this.currentBeat === 'alarm';
     const isColdOpenClickable = this.currentBeat === 'cold_open' && this.coldOpenSteps[this.stepIndex]?.type !== 'mission_card';
 
+    const entering = this._enteredBeat !== this.currentBeat;
+    this._enteredBeat = this.currentBeat;
+
     this.container.innerHTML = `
       <div class="act1-container" data-editor-id="act1-screen-container">
 
         <!-- Main 16:9 Viewport Stage -->
         <div
           id="act1-card"
-          class="act1-viewport-card ${isPovRaised ? 'pov-raised' : 'low-cam'} ${isCanopyFocus ? 'canopy-focus' : ''} ${isColdOpenClickable ? 'is-cold-open-active' : ''}"
+          class="act1-viewport-card ${isPovRaised ? 'pov-raised' : 'low-cam'} ${isCanopyFocus ? 'canopy-focus' : ''} ${isColdOpenClickable ? 'is-cold-open-active' : ''} ${entering ? 'is-entering' : ''}"
+          data-beat="${this.currentBeat}"
           data-editor-id="act1-viewport-card"
           style="--act1-drift-opacity: ${driftOpacity}; --act1-saturation-drop: ${saturationDrop}%; --act1-shade-shift: ${shadeShiftX}%; --act1-shade-scale-y: ${shadeScaleY};"
           ${isColdOpenClickable ? 'title="Click anywhere to continue (or press Space)"' : ''}
@@ -453,6 +461,10 @@ export class Act1Screen {
     if (this.currentBeat === 'nap' || this.currentBeat === 'drift') {
       this.tayHasEnteredScene = true;
     }
+    
+    this._renderedStep = this.currentBeat === 'lead_active' 
+      ? `${this.currentBeat}-${this.activeLeadId}-${this.povStepIndex}`
+      : `${this.currentBeat}-${this.stepIndex}`;
   }
 
   // A single interactive lead object: no separate floating pin/badge — the drawn
@@ -812,9 +824,12 @@ export class Act1Screen {
     const step = this.coldOpenSteps[this.stepIndex];
     if (!step) return '';
 
+    const stepKey = `${this.currentBeat}-${this.stepIndex}`;
+    const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
+
     if (step.type === 'mission_card') {
       return `
-        <div class="act1-mission-card" data-editor-id="act1-mission-card"
+        <div class="act1-mission-card ${isNewLineClass}" data-editor-id="act1-mission-card"
              role="dialog" aria-modal="true" aria-labelledby="act1-mission-card-title">
           <div class="mission-card-header">
             <span class="mission-card-badge">🐾 Tay's Detective Mission</span>
@@ -843,7 +858,7 @@ export class Act1Screen {
     if (step.speaker === 'callie_offscreen') {
       return `
         <div 
-          class="speech-bubble callie-bubble act1-callie-offscreen-bubble" 
+          class="speech-bubble callie-bubble act1-callie-offscreen-bubble ${isNewLineClass}" 
           style="${step.pos || 'top: 24%; left: 45%; max-width: var(--bubble-max-w, 320px);'}" 
           data-editor-id="act1-coldopen-callie"
         >
@@ -864,7 +879,7 @@ export class Act1Screen {
 
     return `
       <div 
-        class="speech-bubble tay-bubble act1-coldopen-tay-bubble" 
+        class="speech-bubble tay-bubble act1-coldopen-tay-bubble ${isNewLineClass}" 
         style="${step.pos}" 
         data-editor-id="act1-coldopen-bubble-${this.stepIndex}"
       >
@@ -886,9 +901,11 @@ export class Act1Screen {
 
   renderHubIntro() {
     const allVisited = this.visitedLeads.size === 4;
+    const stepKey = `${this.currentBeat}-${this.stepIndex}`;
+    const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
     return `
       <div 
-        class="speech-bubble tay-bubble" 
+        class="speech-bubble tay-bubble ${isNewLineClass}" 
         style="top: 24%; left: 45%; max-width: var(--bubble-max-w, 320px);" 
         data-editor-id="act1-hub-speech"
       >
@@ -1065,6 +1082,9 @@ export class Act1Screen {
     const isLakeRevisit = isLake && (this.leadVisitCounts[this.activeLeadId] || 1) > 1;
     const stamp = (isLastStep && !isLakeRevisit) ? lead.stamp : null;
 
+    const stepKey = `${this.currentBeat}-${this.activeLeadId}-${this.povStepIndex}`;
+    const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
+
     return `
       <div class="act1-pov-viewport-modal" data-editor-id="act1-pov-viewport-modal"
            role="dialog" aria-modal="true" aria-label="Tay's point of view: ${lead.tayName}">
@@ -1087,7 +1107,7 @@ export class Act1Screen {
           <div class="pov-overlay-speech">
             ${step.speaker === 'tay' ? `
               <div
-                class="speech-bubble tay-bubble pov-dialogue-bubble ${step.isExit ? 'is-exit-line' : ''}"
+                class="speech-bubble tay-bubble pov-dialogue-bubble ${step.isExit ? 'is-exit-line' : ''} ${isNewLineClass}"
                 data-editor-id="act1-lead-tay-speech"
               >
                 <div class="speech-bubble-speaker">
@@ -1101,7 +1121,7 @@ export class Act1Screen {
               </div>
             ` : `
               <div
-                class="speech-bubble callie-bubble pov-callie-bubble"
+                class="speech-bubble callie-bubble pov-callie-bubble ${isNewLineClass}"
                 data-editor-id="act1-lead-callie-speech"
               >
                 <div class="speech-bubble-speaker">
@@ -1115,7 +1135,7 @@ export class Act1Screen {
             `}
 
             ${stamp ? `
-              <div class="act1-truth-stamp" data-editor-id="act1-truth-stamp">
+              <div class="act1-truth-stamp ${isNewLineClass}" data-editor-id="act1-truth-stamp">
                 <span class="truth-stamp-metric">${stamp.metric}</span>
                 <span class="truth-stamp-line">${stamp.line}</span>
               </div>
@@ -1147,9 +1167,11 @@ export class Act1Screen {
 
   renderGate() {
     const remaining = 4 - this.visitedLeads.size;
+    const stepKey = `${this.currentBeat}-${this.stepIndex}`;
+    const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
     return `
       <div 
-        class="speech-bubble tay-bubble" 
+        class="speech-bubble tay-bubble ${isNewLineClass}" 
         style="top: 24%; left: 45%; max-width: var(--bubble-max-w, 340px);" 
         data-editor-id="act1-gate-bubble"
       >
@@ -1169,9 +1191,12 @@ export class Act1Screen {
     const step = this.napSteps[this.stepIndex];
     if (!step) return '';
 
+    const stepKey = `${this.currentBeat}-${this.stepIndex}`;
+    const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
+
     return `
       <div 
-        class="speech-bubble tay-bubble" 
+        class="speech-bubble tay-bubble ${isNewLineClass}" 
         style="${step.pos}" 
         data-editor-id="act1-nap-tay-bubble"
       >
@@ -1264,9 +1289,11 @@ export class Act1Screen {
   }
 
   renderPovRise() {
+    const stepKey = `${this.currentBeat}-${this.stepIndex}`;
+    const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
     return `
       <div 
-        class="speech-bubble callie-bubble" 
+        class="speech-bubble callie-bubble ${isNewLineClass}" 
         style="top: 18%; left: 35%; max-width: var(--bubble-max-w, 340px);" 
         data-editor-id="act1-pov-callie-bubble"
       >
