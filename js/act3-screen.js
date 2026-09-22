@@ -34,10 +34,8 @@
  * restores it "at recovery in Act 3". `--act3-saturation` carries that as one continuous ramp
  * (see `getRecovery()`), not a state swap.
  *
- * SME PENDING: the Texas A&M cool-down attribution is flagged in the dialogue script as not
- * present in the Research Notes. It carries `smePending: true` and ships with its own
- * unattributed fallback string, so sourcing it (or cutting the attribution) is a one-field
- * swap. See `getSmePendingCopy()` — same pattern as Act 2's ice-chest copy.
+ * SME PENDING: No items are currently pending SME review in this act.
+ * (The pattern remains in getSmePendingCopy() for future use).
  */
 
 import { renderPreservingFocus, focusInto, containFocusIn, releaseFocusContainment } from './a11y-focus.js';
@@ -91,15 +89,15 @@ export class Act3Screen {
     // =====================================================================
 
     this.sources = [
-      { id: 'rvc_hotdogs', text: "Royal Veterinary College, 'Hot Dogs' research project — rvc.ac.uk" },
-      { id: 'vetsnow', text: 'Vets Now — vets-now.com' },
-      { id: 'vetcompass2020', text: 'RVC VetCompass, Scientific Reports (2020)' },
-      { id: 'vetcompass2024', text: 'RVC VetCompass, Veterinary Record (2024)' },
-      { id: 'null_sfsu', text: 'Jan Null, San Francisco State University — vehicle heat research' },
-      { id: 'pediatrics2005', text: 'McLaren, Null & Quinn, Pediatrics (2005)' },
-      { id: 'tamu', text: 'Texas A&M — attribution pending SME review', pending: true },
-      { id: 'cornell_vca', text: 'Cornell University College of Veterinary Medicine; VCA Animal Hospitals' },
-      { id: 'sme', text: 'Dr. Clark, module subject-matter expert' }
+      'Beard, Sian, et al. "Epidemiology of Heat-Related Illness in Dogs under UK Emergency Veterinary Care in 2022." <i>Veterinary Record</i>, vol. 194, no. 11, 2024, article e4153, https://doi.org/10.1002/vetr.4153.',
+      'Hall, Emily J., et al. "Incidence and Risk Factors for Heat-Related Illness (Heatstroke) in UK Dogs under Primary Veterinary Care in 2016." <i>Scientific Reports</i>, vol. 10, no. 1, 2020, article 9128, https://doi.org/10.1038/s41598-020-66015-8.',
+      '"Heat Stroke in Dogs." <i>Vets Now</i>, www.vets-now.com/pet-care-advice/heat-stroke-in-dogs/. Accessed 21 Sept. 2026.',
+      '"Heatstroke: A Medical Emergency." <i>Riney Canine Health Center</i>, Cornell University College of Veterinary Medicine, www.vet.cornell.edu/departments-centers-and-institutes/riney-canine-health-center/canine-health-information/heatstroke-medical-emergency. Accessed 21 Sept. 2026.',
+      '"Hot Dogs." <i>VetCompass</i>, Royal Veterinary College, www.rvc.ac.uk/vetcompass/research-projects-and-facilities/hot-dogs. Accessed 21 Sept. 2026.',
+      'Hunter, Tammy, and Ernest Ward. "Heat Stroke in Dogs." <i>VCA Animal Hospitals</i>, vcahospitals.com/know-your-pet/heat-stroke-in-dogs. Accessed 21 Sept. 2026.',
+      '"Keep Pets Cool in the Summer Heat." <i>Pet Talk</i>, Texas A&amp;M College of Veterinary Medicine &amp; Biomedical Sciences, 6 June 2019, vetmed.tamu.edu/news/pet-talk/keep-pets-cool-in-the-summer-heat/.',
+      'McLaren, Catherine, et al. "Heat Stress from Enclosed Vehicles: Moderate Ambient Temperatures Cause Significant Temperature Rise in Enclosed Vehicles." <i>Pediatrics</i>, vol. 116, no. 1, 2005, pp. e109–12, https://doi.org/10.1542/peds.2004-2368.',
+      'Null, Jan. "Heatstroke Deaths of Children in Vehicles." <i>No Heat Stroke</i>, San Francisco State University, www.noheatstroke.org. Accessed 21 Sept. 2026.'
     ];
 
     // ---- Beat 3B — The verdict --------------------------------------------
@@ -122,7 +120,6 @@ export class Act3Screen {
         business: 'washing her hands at the clinic sink',
         text: "Good. That's the whole difference. Dogs that get cooled before the car are about <strong>2.5 times</strong> more likely to make it than dogs that don't. You didn't just drive her here, Callie. You started treating her — and <em>then</em> you drove.",
         cast: { reyes: 'warm' },
-        cite: ['vetsnow'],
         stamp: {
           metric: '2.5× more likely',
           line: 'Cooling started before the drive, not after it. That is the single thing on this chart you controlled.'
@@ -203,7 +200,7 @@ export class Act3Screen {
       {
         reveals: 'prevalence',
         lines: [
-          { speaker: 'reyes', business: 'still writing', text: "Heat. Panting is the early stage — we see it in about 69% of cases. Lethargy in about 48%. They're the first signs, and the easiest ones to wave off, because —", cite: ['vetcompass2020'] },
+          { speaker: 'reyes', business: 'still writing', text: "Heat. Panting is the early stage — we see it in about 69% of cases. Lethargy in about 48%. They're the first signs, and the easiest ones to wave off, because —" },
           { speaker: 'callie', text: "— because she just looked tired. I thought she was tired." },
           { speaker: 'reyes', business: 'not unkindly', text: "Everyone does. That's the trap. The early stage looks like a normal afternoon." }
         ]
@@ -215,7 +212,6 @@ export class Act3Screen {
             speaker: 'reyes',
             business: 'flat, not warning',
             text: "Caught while it's still mild, dogs come through about 95% of the time. Once it's severe before anyone starts cooling, that drops to about 43%.",
-            cite: ['rvc_hotdogs'],
             stamp: {
               metric: '95% → 43%',
               line: 'Treated while it is still mild against treated once it is already severe. The gap is not the illness. The gap is the delay.'
@@ -243,7 +239,6 @@ export class Act3Screen {
             speaker: 'reyes',
             business: 'assuming Callie already knew this',
             text: "And she was never running the same odds as other dogs. Brachycephalic breeds — the flat-faced ones, Frenchies, bulldogs, pugs — get heat illness about <strong>4 times</strong> as often.",
-            cite: ['vetcompass2024'],
             stamp: {
               metric: '4× the risk',
               line: 'Brachycephalic (flat-faced) breeds are diagnosed with heat illness roughly 4× as often. Tay has been playing this hand her whole life.'
@@ -300,8 +295,7 @@ export class Act3Screen {
         id: 'temp_humidity',
         icon: '🌡️',
         label: 'Watch the temperature, not just the sun',
-        reply: "Past 80°F I'd think twice. And check the humidity — that's the part people miss. Panting barely works when the air's already wet.",
-        cite: ['sme']
+        reply: "Past 80°F I'd think twice. And check the humidity — that's the part people miss. Panting barely works when the air's already wet."
       },
       {
         id: 'stay_in',
@@ -321,7 +315,6 @@ export class Act3Screen {
         business: 'washing her hands',
         cast: { reyes: 'serious' },
         text: "You'd think. It's 20 degrees hotter inside within the first 10 minutes. And cracking the windows? That takes it from about 3.5 degrees every 5 minutes to about 3. It does <strong>next to nothing</strong>.",
-        cite: ['null_sfsu', 'pediatrics2005'],
         stamp: {
           metric: '+20°F in 10 min',
           line: 'Cracking the windows barely moves it: about 3.4°F every 5 minutes becomes about 3.1°F. It does next to nothing.'
@@ -329,19 +322,14 @@ export class Act3Screen {
       },
       { speaker: 'callie', text: "That's — that's it? Half a degree?" },
       { speaker: 'reyes', business: 'handing it over, not lecturing', cast: { reyes: 'warm' }, text: "That's it. You don't need this lecture. Somebody you know does — so now you've got the number." },
-      {
+            {
         speaker: 'reyes',
         business: 'on her way to the door',
-        // SME PENDING — see getSmePendingCopy(). The Texas A&M attribution is not in the Research
-        // Notes. `textUnattributed` is the drop-in if it cannot be sourced before recording.
-        smePending: true,
-        text: "And if you're out in the heat anyway — 15–20 minutes of cooling off between anything active. That's what Texas A&M recommends for heat like ours, and it's the number I'd give you.",
+        text: "And if you're out in it anyway — every 15 or 20 minutes of anything active, stop for 10 or 15 in the shade. That's Texas A&M's number for heat like ours, and it's the one I'd give you.",
         cast: { reyes: 'serious' },
-        textUnattributed: "And if you're out in the heat anyway — 15–20 minutes of cooling off between anything active. That's the number I'd give you.",
-        cite: ['tamu'],
         stamp: {
-          metric: '15–20 min',
-          line: 'Cooling off between bouts of anything active once it is past 80°F. Shade, water, and stillness — not a shorter walk.'
+          metric: '10–15 min break every 15–20',
+          line: 'Past 80°F: every 15–20 minutes of activity, 10–15 minutes of shade, water and stillness. Not a shorter walk — more stops.'
         }
       }
     ];
@@ -351,7 +339,7 @@ export class Act3Screen {
       { type: 'stage', text: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.', sceneCue: 'Tay is standing, tail going, obviously herself. Callie picks up her keys.', cast: { callie: 'leaving', tay: 'leading', reyes: 'aside' } },
       { speaker: 'reyes', business: 'not moving out of the doorway', text: "One more thing.", cast: { callie: 'turned', tay: 'turned' } },
       { speaker: 'callie', text: "She's fine, though. You said she's fine." },
-      { speaker: 'reyes', business: 'chart back out', text: "She is, today. Her bloodwork's normal — that's good, and it's not the whole story. Kidneys and clotting can go sideways 12–48 hours after something like this. It doesn't show up while you're standing here.", cite: ['cornell_vca'] },
+      { speaker: 'reyes', business: 'chart back out', text: "She is, today. Her bloodwork's normal — that's good, and it's not the whole story. Kidneys and clotting can go sideways 12–48 hours after something like this. It doesn't show up while you're standing here." },
       {
         speaker: 'reyes',
         business: 'nodding at Tay',
@@ -446,7 +434,7 @@ export class Act3Screen {
   /**
    * Every string still waiting on a subject-matter expert, reachable from one place so the
    * confirmation lands as a targeted swap rather than a hunt. Same contract as Act 2's
-   * getSmePendingCopy(). Currently: the Texas A&M cool-down attribution (dialogue-script flag).
+   * getSmePendingCopy(). Currently: no items pending.
    */
   getSmePendingCopy() {
     return this.hotCarSteps
@@ -607,7 +595,7 @@ export class Act3Screen {
             <div class="act3-hud-group">${this.renderBottomRightControls()}</div>
           </nav>
 
-          ${this.renderSourceStrip()}
+
 
           <p class="sr-only" role="status" aria-live="polite" data-editor-id="act3-sr-status">
             ${this.renderSrStatusText()}
@@ -631,41 +619,6 @@ export class Act3Screen {
     return this.currentBeat === 'recap' || this.currentBeat === 'end';
   }
 
-  renderSourceStrip() {
-    let cites = [];
-    const addCites = (c) => { if (c) cites.push(...c); };
-
-    if (this.currentBeat === 'nextTime' && this.stepIndex === 0) {
-      for (const opt of this.preventionOptions) {
-        if (this.preventionChosen.has(opt.id)) addCites(opt.cite);
-      }
-    } else {
-      const steps = this.stepsForBeat();
-      if (steps && steps[this.stepIndex]) {
-        addCites(steps[this.stepIndex].cite);
-      }
-    }
-
-    if (cites.length === 0) return '';
-    cites = [...new Set(cites)];
-
-    const sourceTexts = cites.map(id => {
-      const index = this.sources.findIndex(s => s.id === id);
-      if (index === -1) return '';
-      const source = this.sources[index];
-      const supMap = ['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹'];
-      const supNum = (index + 1).toString().split('').map(d => supMap[parseInt(d)]).join('');
-      return `${supNum} ${source.text}`;
-    }).filter(t => t);
-
-    if (sourceTexts.length === 0) return '';
-
-    return `
-      <div class="act3-source-strip">
-        ${sourceTexts.join(' &middot; ')}
-      </div>
-    `;
-  }
 
   renderSrStatusText() {
     const status = this.getTayStatus();
@@ -899,17 +852,6 @@ export class Act3Screen {
 
     if (step.type === 'stage' || step.type === 'hold') { return ''; }
 
-    let citeMark = '';
-    if (step.cite && step.cite.length > 0) {
-      const nums = step.cite.map(id => {
-        const idx = this.sources.findIndex(s => s.id === id);
-        return idx !== -1 ? idx + 1 : null;
-      }).filter(n => n !== null);
-      if (nums.length > 0) {
-        citeMark = `<sup class="act3-cite-mark" aria-hidden="true">${nums.join(',')}</sup><span class="sr-only"> (source ${nums.join(', ')})</span>`;
-      }
-    }
-
     if (step.speaker === 'tay') {
       return `
         <div class="speech-bubble tay-bubble act3-tay-bubble" data-editor-id="${editorId}-tay">
@@ -918,14 +860,14 @@ export class Act3Screen {
             <span>Tay</span>
           </div>
           <p class="speech-bubble-text">
-            ${step.onomatopoeia ? `<span class="tay-onomatopoeia">${step.onomatopoeia}</span> ` : ''}<span class="tay-sub-dialogue">(${step.text}${citeMark})</span>
+            ${step.onomatopoeia ? `<span class="tay-onomatopoeia">${step.onomatopoeia}</span> ` : ''}<span class="tay-sub-dialogue">(${step.text})</span>
           </p>
         </div>
       `;
     }
 
     if (step.speaker === 'reyes') {
-      const textProp = (step.smePending && !step.cite) ? step.textUnattributed || step.text : step.text;
+      const textProp = step.smePending ? step.textUnattributed || step.text : step.text;
       return `
         <div class="speech-bubble reyes-bubble act3-reyes-bubble" data-editor-id="${editorId}-reyes">
           <div class="speech-bubble-speaker">
@@ -934,7 +876,7 @@ export class Act3Screen {
             
           </div>
           <p class="speech-bubble-text">
-            <span class="act3-reyes-dialogue">“${textProp}${citeMark}”</span>
+            <span class="act3-reyes-dialogue">“${textProp}”</span>
           </p>
         </div>
       `;
@@ -948,7 +890,7 @@ export class Act3Screen {
           
         </div>
         <p class="speech-bubble-text">
-          <span class="callie-dialogue">“${step.text}${citeMark}”</span>
+          <span class="callie-dialogue">“${step.text}”</span>
         </p>
       </div>
     `;
@@ -1222,26 +1164,14 @@ export class Act3Screen {
                   <!-- Reyes's answer stays attached to the choice that earned it. Showing only
                        the most recent one meant a learner who picked all four could read one,
                        and had to remember the other three. -->
-                  ${isChosen ? (() => {
-                    let citeMark = '';
-                    if (opt.cite && opt.cite.length > 0) {
-                      const nums = opt.cite.map(id => {
-                        const idx = this.sources.findIndex(s => s.id === id);
-                        return idx !== -1 ? idx + 1 : null;
-                      }).filter(n => n !== null);
-                      if (nums.length > 0) {
-                        citeMark = `<sup class="act3-cite-mark" aria-hidden="true">${nums.join(',')}</sup><span class="sr-only"> (source ${nums.join(', ')})</span>`;
-                      }
-                    }
-                    return `
+                  ${isChosen ? `
                     <div class="act3-prevention-reply" id="act3-prevention-reply-${opt.id}"
                          data-editor-id="act3-prevention-reply-${opt.id}"
                          ${this.activePrevention === opt.id ? 'role="status"' : ''}>
                       <span class="act3-report-who">Dr. Reyes</span>
-                      <p class="act3-report-text">“${opt.reply}${citeMark}”</p>
+                      <p class="act3-report-text">“${opt.reply}”</p>
                     </div>
-                  `;
-                  })() : ''}
+                  ` : ''}
                 </li>
               `;
             }).join('')}
@@ -1323,53 +1253,55 @@ export class Act3Screen {
     return `
       <div class="act3-end-modal" data-editor-id="act3-end-modal" role="dialog"
            aria-modal="true" aria-labelledby="act3-end-title">
-      <div class="act3-end-card" data-editor-id="act3-end-card">
-        <span class="act3-end-badge">The end</span>
-        <h2 class="act3-end-title" id="act3-end-title">Callie and Tay</h2>
-        <p class="act3-end-line">
-          Tay went home the same day, with a recheck booked for Thursday and somebody
-          sitting up with her.
-        </p>
+        <div class="act3-end-card" data-editor-id="act3-end-card">
+          <span class="act3-end-badge">The end</span>
+          <h2 class="act3-end-title" id="act3-end-title">Callie and Tay</h2>
+          <p class="act3-end-line">
+            Tay went home the same day, with a recheck booked for Thursday and somebody
+            sitting up with her.
+          </p>
 
-        <ul class="act3-end-recap" data-editor-id="act3-end-recap">
-          <li>
-            <span class="act3-end-recap-label">Signs you found at the lake</span>
-            <span class="act3-end-recap-value">${this.hintsDropped} of ${this.hintsDropped}</span>
-          </li>
-          <li>
-            <span class="act3-end-recap-label">Signs you reported to the clinic</span>
-            <span class="act3-end-recap-value">4 of 4</span>
-          </li>
-          ${known ? `
+          <ul class="act3-end-recap" data-editor-id="act3-end-recap">
             <li>
-              <span class="act3-end-recap-label">When you started cooling her</span>
-              <span class="act3-end-recap-value">${waited ? 'After five minutes' : 'Immediately'}</span>
+              <span class="act3-end-recap-label">Signs you found at the lake</span>
+              <span class="act3-end-recap-value">${this.hintsDropped} of ${this.hintsDropped}</span>
             </li>
-          ` : ''}
-          <li>
-            <span class="act3-end-recap-label">Cooled before the drive</span>
-            <span class="act3-end-recap-value">Yes — 2.5× more likely</span>
-          </li>
-        </ul>
+            <li>
+              <span class="act3-end-recap-label">Signs you reported to the clinic</span>
+              <span class="act3-end-recap-value">4 of 4</span>
+            </li>
+            ${known ? `
+              <li>
+                <span class="act3-end-recap-label">When you started cooling her</span>
+                <span class="act3-end-recap-value">${waited ? 'After five minutes' : 'Immediately'}</span>
+              </li>
+            ` : ''}
+            <li>
+              <span class="act3-end-recap-label">Cooled before the drive</span>
+              <span class="act3-end-recap-value">Yes — 2.5× more likely</span>
+            </li>
+          </ul>
 
-        <ol class="act3-end-sources" aria-label="Sources">
-          ${this.sources.map((src, i) => `
-            <li><span aria-hidden="true">${i+1}</span> ${src.text}${src.pending ? ' <span class="act3-source-pending">pending SME review</span>' : ''}</li>
-          `).join('')}
-        </ol>
+          <p class="act3-end-close">
+            Tay never knew anything was wrong. She still doesn't.
+            <strong>That part is always going to be your job.</strong>
+          </p>
 
-        <p class="act3-end-close">
-          Tay never knew anything was wrong. She still doesn't.
-          <strong>That part is always going to be your job.</strong>
-        </p>
-
-        <div class="act3-end-actions">
-          <button id="act3-btn-replay-act3" class="act3-hud-btn btn-action-primary"
-                  data-editor-id="act3-btn-replay-act3">⏮ Replay Act 3</button>
-          <button id="act3-btn-replay-act1" class="act3-hud-btn" data-editor-id="act3-btn-replay-act1">🐾 Replay Act 1</button>
-          <button id="act3-btn-end-title" class="act3-hud-btn" data-editor-id="act3-btn-end-title">🏠 Title</button>
+          <div class="act3-end-actions">
+            <button id="act3-btn-replay-act3" class="act3-hud-btn btn-action-primary"
+                    data-editor-id="act3-btn-replay-act3">⏮ Replay Act 3</button>
+            <button id="act3-btn-replay-act1" class="act3-hud-btn" data-editor-id="act3-btn-replay-act1">🐾 Replay Act 1</button>
+            <button id="act3-btn-end-title" class="act3-hud-btn" data-editor-id="act3-btn-end-title">🏠 Title</button>
+          </div>
         </div>
-      </div>
+
+        <div class="act3-sources-card">
+          <span class="act3-sources-badge">Works cited</span>
+          <h2 class="act3-sources-title">Sources</h2>
+          <ul class="act3-mla-list" aria-label="Sources">
+            ${this.sources.map(src => `<li>${src}</li>`).join('')}
+          </ul>
+        </div>
       </div>
     `;
   }

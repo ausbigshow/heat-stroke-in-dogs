@@ -1297,7 +1297,6 @@
 
 .act3-prevention-card,
 .act3-end-card {
-  width: min(720px, 88%);
   max-height: 100%;
   overflow-y: auto;
   background: var(--palette-cream);
@@ -1554,7 +1553,7 @@
    so the last screen states what this learner actually did and then gets out of the way.
    ========================================================== */
 
-.act3-end-card { text-align: center; width: min(640px, 88%); }
+.act3-end-card { text-align: center; }
 
 .act3-end-title {
   margin-top: 0.75rem;
@@ -2047,56 +2046,86 @@
   padding: 0.25rem 0.75rem 0.5rem;
 }
 
+
 /* ==========================================================
-   CITATIONS & SOURCES
+   SOURCES CARD
    ========================================================== */
 
-.act3-cite-mark {
-  font-size: 0.75em;
-  line-height: 0;
-  position: relative;
-  vertical-align: baseline;
-  top: -0.5em;
-  font-weight: 600;
-  color: var(--palette-text-muted);
-  margin-left: 0.1em;
+.act3-end-modal {
+  gap: 1.5rem;
 }
 
-.act3-source-strip {
-  position: absolute;
-  bottom: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: 60%;
-  pointer-events: none;
-  z-index: 40;
-  font-size: 0.72rem;
+.act3-end-card {
+  width: 52%;
+}
+
+.act3-sources-card {
+  width: 45%;
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--surface-card-dark);
+  border: 2px solid var(--color-info);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-modal), 0 0 40px -12px rgba(56, 189, 248, 0.5);
+  padding: 1rem 1.5rem;
+  pointer-events: auto;
+  animation: act3CardRise var(--dur-base) var(--ease-out-expo) forwards;
+}
+
+.act3-sources-badge {
+  display: inline-block;
+  background: var(--palette-teal-dark);
+  color: var(--text-inverse);
   font-family: var(--font-family-display);
-  letter-spacing: 0.02em;
-  color: var(--palette-text-muted);
-  background: rgba(255, 253, 251, 0.85);
-  border: 1px solid var(--hairline-light);
-  border-radius: var(--radius-pill);
-  padding: 0.25rem 0.75rem;
-  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-xs);
 }
 
-.act3-end-sources {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem 1rem;
-  font-size: 0.72rem;
-  color: var(--palette-text-muted);
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  padding: 0;
+.act3-sources-title {
+  margin-top: 0.75rem;
+  font-family: var(--font-family-display);
+  font-size: clamp(1.1rem, 1.7vw, 1.45rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text-on-dark);
+}
+
+.act3-mla-list {
   list-style: none;
+  margin: 1rem 0 0 0;
+  padding: 0;
+  font-family: var(--font-family-body);
+  font-size: 0.74rem;
+  line-height: 1.4;
 }
-.act3-end-sources li {
-  margin: 0;
+
+.act3-mla-list li {
+  padding-left: 1.5rem;
+  text-indent: -1.5rem;
+  margin-bottom: 0.5rem;
+  overflow-wrap: anywhere;
+  color: var(--text-on-dark);
 }
-.act3-source-pending {
-  font-size: 0.65rem;
-  font-style: italic;
-  opacity: 0.8;
+
+@media (max-height: 700px) {
+  .act3-mla-list {
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .act3-end-modal {
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+  }
+  .act3-end-card,
+  .act3-sources-card {
+    width: 96%;
+    max-height: none;
+  }
 }
