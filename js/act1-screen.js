@@ -742,7 +742,18 @@ export class Act1Screen {
              background plate, so the interactable itself carries no art: just the hit
              area and its ring token. The water's motion is a separate scene-wide layer
              (below), because the ripples belong to the whole lake, not to this hit box. -->
-        ${this.renderInteractable('lake', '')}
+        ${this.renderInteractable('lake', `
+          <svg class="lake-touch-svg" viewBox="0 0 100 100" aria-hidden="true">
+            <!-- Rings spreading from a point on the water, the way a drop reads. They are
+                 flattened to ry/rx = 0.35 because this is a receding plane seen from a low
+                 eyeline — true circles would sit up out of the water like a decal. -->
+            <g class="lake-touch-rings">
+              <ellipse class="lake-touch-ring ring-1" cx="50" cy="50" rx="38" ry="13.3" />
+              <ellipse class="lake-touch-ring ring-2" cx="50" cy="50" rx="38" ry="13.3" />
+              <ellipse class="lake-touch-ring ring-3" cx="50" cy="50" rx="38" ry="13.3" />
+            </g>
+          </svg>
+        `)}
 
       </div>
     `;
