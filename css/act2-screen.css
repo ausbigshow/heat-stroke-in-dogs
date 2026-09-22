@@ -2266,9 +2266,10 @@
 
 
 
+/* Block, not flex: the card is height-capped and scrolls, and flex items would be shrunk
+   to zero, collapsing the 0fr -> 1fr reply row that should be opening. */
 .act2-cool-replies {
-  display: flex;
-  flex-direction: column;
+  display: block;
 }
 .act2-cool-item.is-chosen > .act2-cool-reply-wrap > .act2-cool-reply-clip > .act2-cool-feedback {
   margin-top: 0.9rem;
@@ -2285,14 +2286,20 @@
   transform: none;
 }
 
+/* Collapsible reply. The 0fr -> 1fr grid trick (guideline-persistent-cards.md, Rule 3)
+   collapses to zero inside this card — the card is absolutely positioned with its own
+   max-height + overflow, and the fr track resolves against zero available space — so the
+   same wrap/clip/box structure animates on max-height instead. The clip still carries the
+   overflow and the visibility toggle, so there is no sliver and no hit-testing when closed. */
 .act2-cool-reply-wrap {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows var(--dur-base) var(--ease-out-expo);
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--dur-base) var(--ease-out-expo);
 }
 .act2-cool-item.is-chosen > .act2-cool-reply-wrap {
-  grid-template-rows: 1fr;
+  max-height: 1400px;
 }
+
 .act2-cool-reply-clip {
   overflow: hidden;
   min-height: 0;

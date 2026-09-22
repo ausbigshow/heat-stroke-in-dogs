@@ -2106,6 +2106,18 @@ export class Act2Screen {
     if (item) {
       item.classList.add('is-chosen', opt.correct ? 'is-correct' : 'is-wrong');
       item.querySelector('.act2-cool-feedback')?.setAttribute('aria-hidden', 'false');
+      // The card scrolls; once the reply has finished opening, bring its Next / Try again
+      // button into view — without moving focus off the option the learner just pressed.
+      const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const wrap = item.querySelector('.act2-cool-reply-wrap');
+      const reveal = () => {
+        // Scroll the CARD only — scrollIntoView would also pan the stage behind it.
+        const card = item.closest('.act2-cool-card');
+        if (!card) return;
+        card.scrollTo({ top: card.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+      };
+      wrap?.addEventListener('transitionend', reveal, { once: true });
+      window.setTimeout(reveal, 700); // fallback if the transition never fires
     }
     this.patchCoolingChrome();
   }
