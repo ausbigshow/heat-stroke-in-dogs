@@ -89,29 +89,33 @@
 }
 
 .act3-cast-callie {
-  left: 18%;
   bottom: 4.4%;
 }
 .act3-cast-callie.is-state-relief { height: 50%; }
 .act3-cast-callie.is-state-waiting { height: 31%; left: 3%; bottom: 17%; }
-.act3-cast-callie.is-state-leaving, .act3-cast-callie.is-state-turned { right: 20%; left: auto; height: 50%; }
+.act3-cast-callie.is-state-leaving, .act3-cast-callie.is-state-turned { right: 30%; left: auto; height: 50%; }
 /* "One more thing." — she has turned around to face Reyes. */
 .act3-cast-callie.is-state-turned { transform: scaleX(-1); }
-.act3-cast-callie.is-state-handover { right: 4%; left: auto; height: 52%; } /* her own chair, clear of the one against the wall */
+.act3-cast-callie.is-state-handover { right: 31%; left: auto; height: 52%; } /* her own chair, clear of the one against the wall */
 .act3-cast-callie.is-state-floor { height: 34%; }
 
+[data-beat="verdict"] .act3-cast-callie.is-state-relief,
+[data-beat="report"] .act3-cast-callie { left: 28%; }
+[data-beat="tayReturn"] .act3-cast-callie,
+[data-beat="nextTime"] .act3-cast-callie { left: 12%; }
+
 .act3-cast-tay {
-  left: 46%;
   bottom: 3%;
   height: 22%;
   /* Tay's Act 1 art faces right; in the treatment room she faces Callie on the left. */
   transform: scaleX(-1);
 }
-.act3-cast-tay.is-state-leading { right: 6%; left: auto; transform: none; }
-.act3-cast-tay.is-state-turned { right: 6%; left: auto; }
+[data-beat="tayReturn"] .act3-cast-tay,
+[data-beat="nextTime"] .act3-cast-tay { left: 36%; }
+.act3-cast-tay.is-state-leading { right: 18%; left: auto; transform: none; }
+.act3-cast-tay.is-state-turned { right: 18%; left: auto; }
 
 .act3-cast-reyes {
-  right: 14%;
   bottom: 4.4%;
   height: 52%;
   /* Reyes's art faces left. Whenever she stands to Callie's LEFT she is flipped so she is
@@ -119,7 +123,11 @@
   --act3-reyes-flip: 1;
   transform: scaleX(var(--act3-reyes-flip));
 }
-.act3-cast-reyes.is-state-aside { right: 40%; --act3-reyes-flip: -1; }
+[data-beat="verdict"] .act3-cast-reyes,
+[data-beat="report"] .act3-cast-reyes,
+[data-beat="tayReturn"] .act3-cast-reyes,
+[data-beat="nextTime"] .act3-cast-reyes { right: 26%; }
+.act3-cast-reyes.is-state-aside { right: 52%; --act3-reyes-flip: -1; }
 .act3-cast-reyes.is-active {
   animation: act3ReyesSlide 0.35s var(--ease-out-expo) forwards;
 }
@@ -539,6 +547,41 @@
   right: auto;
   max-width: 34%;
   --stem-left: 46%;
+}
+
+/* Beat-specific bubble positioning */
+[data-beat="verdict"] .act3-callie-bubble,
+[data-beat="report"] .act3-callie-bubble {
+  left: 14%;
+  --stem-right: 60%;
+}
+[data-beat="verdict"] .act3-reyes-bubble,
+[data-beat="report"] .act3-reyes-bubble {
+  right: 14%;
+  --stem-left: 62%;
+}
+
+[data-beat="tayReturn"] .act3-callie-bubble,
+[data-beat="nextTime"] .act3-callie-bubble {
+  left: 2%;
+}
+[data-beat="tayReturn"] .act3-tay-bubble,
+[data-beat="nextTime"] .act3-tay-bubble {
+  left: 26%;
+  --stem-left: 46%;
+}
+[data-beat="tayReturn"] .act3-reyes-bubble,
+[data-beat="nextTime"] .act3-reyes-bubble {
+  right: 14%;
+}
+
+[data-beat="recheck"] .act3-callie-bubble {
+  left: auto;
+  right: 16%;
+  --stem-right: 22%;
+}
+[data-beat="recheck"] .act3-reyes-bubble {
+  right: 40%;
 }
 
 /* The Act 0 callback. Written for the learner — recognition is the payoff, so it names
@@ -1261,7 +1304,7 @@
   border: 3px solid var(--palette-warm-white);
   border-radius: var(--radius-lg);
   box-shadow: var(--elev-modal);
-  padding: 1.25rem 1.5rem 1.5rem;
+  padding: 1rem 1.5rem;
   pointer-events: auto;
 }
 
@@ -1534,7 +1577,7 @@
 
 .act3-end-recap {
   list-style: none;
-  margin: 1rem 0;
+  margin: 0.5rem 0;
   border-top: 1px solid var(--palette-peach);
   text-align: left;
 }
@@ -1564,7 +1607,7 @@
 }
 
 .act3-end-close {
-  margin: 0 auto 1.25rem;
+  margin: 0 auto 0.75rem;
   max-width: 44ch;
   font-family: var(--font-family-body);
   font-size: 0.98rem;
@@ -1991,56 +2034,6 @@
   margin-bottom: 0.25rem;
 }
 
-/* Recheck beat bubbles */
-.scene-clinic .act3-recheck-layer .act3-callie-bubble {
-  right: 6%;
-  left: auto;
-  --stem-right: 70%;
-}
-.scene-clinic .act3-recheck-layer .act3-callie-bubble::before {
-  border-left: 18px solid transparent;
-  border-right: 6px solid transparent;
-}
-.scene-clinic .act3-recheck-layer .act3-callie-bubble::after {
-  border-left: 15px solid transparent;
-  border-right: 4px solid transparent;
-}
-
-
-/* Bubbles follow the cast when the blocking changes for the recheck. Callie has crossed to
-   the door (right side), so her bubble hangs to her upper LEFT and the stem points down-right;
-   Reyes has stepped aside toward the table, and during the handover she is the left figure of
-   the two-shot. The discharge sheet moves to the empty left wall so it never covers them. */
-#screen-act3 .scene-clinic[data-callie="leaving"] .act3-callie-bubble,
-#screen-act3 .scene-clinic[data-callie="turned"] .act3-callie-bubble,
-#screen-act3 .scene-clinic[data-callie="handover"] .act3-callie-bubble {
-  left: auto;
-  right: 6%;
-  max-width: 34%;
-  --stem-right: 22%;
-}
-#screen-act3 .scene-clinic[data-callie="leaving"] .act3-callie-bubble::before,
-#screen-act3 .scene-clinic[data-callie="turned"] .act3-callie-bubble::before,
-#screen-act3 .scene-clinic[data-callie="handover"] .act3-callie-bubble::before {
-  border-left: 18px solid transparent;
-  border-right: 6px solid transparent;
-}
-#screen-act3 .scene-clinic[data-callie="leaving"] .act3-callie-bubble::after,
-#screen-act3 .scene-clinic[data-callie="turned"] .act3-callie-bubble::after,
-#screen-act3 .scene-clinic[data-callie="handover"] .act3-callie-bubble::after {
-  border-left: 15px solid transparent;
-  border-right: 4px solid transparent;
-}
-#screen-act3 .scene-clinic[data-reyes="aside"] .act3-reyes-bubble {
-  right: 34%;
-  max-width: 32%;
-  --stem-left: 60%;
-}
-#screen-act3 .scene-clinic[data-callie="handover"] .act3-reyes-bubble {
-  right: 28%;
-  max-width: 32%;
-  --stem-left: 60%;
-}
 #screen-act3 .scene-clinic .has-sheet .act3-discharge-sheet {
   right: auto;
   left: 1.5rem;
@@ -2052,4 +2045,58 @@
 }
 .act3-recap-right .act3-discharge-sheet {
   padding: 0.25rem 0.75rem 0.5rem;
+}
+
+/* ==========================================================
+   CITATIONS & SOURCES
+   ========================================================== */
+
+.act3-cite-mark {
+  font-size: 0.75em;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+  top: -0.5em;
+  font-weight: 600;
+  color: var(--palette-text-muted);
+  margin-left: 0.1em;
+}
+
+.act3-source-strip {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 60%;
+  pointer-events: none;
+  z-index: 40;
+  font-size: 0.72rem;
+  font-family: var(--font-family-display);
+  letter-spacing: 0.02em;
+  color: var(--palette-text-muted);
+  background: rgba(255, 253, 251, 0.85);
+  border: 1px solid var(--hairline-light);
+  border-radius: var(--radius-pill);
+  padding: 0.25rem 0.75rem;
+  text-align: center;
+}
+
+.act3-end-sources {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+  font-size: 0.72rem;
+  color: var(--palette-text-muted);
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding: 0;
+  list-style: none;
+}
+.act3-end-sources li {
+  margin: 0;
+}
+.act3-source-pending {
+  font-size: 0.65rem;
+  font-style: italic;
+  opacity: 0.8;
 }
