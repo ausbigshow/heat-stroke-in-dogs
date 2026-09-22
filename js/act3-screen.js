@@ -49,6 +49,8 @@ export class Act3Screen {
     // 'wait' | 'verdict' | 'report' | 'tayReturn' | 'nextTime' | 'recheck' | 'home' | 'recap' | 'end'
     this.currentBeat = 'wait';
     this.stepIndex = 0;
+    this._enteredBeat = null;
+    this._renderedStep = null;
 
     // ---- Beat 3A: the wait ----------------------------------------------
     // Twelve seconds of nothing, which is what makes the vet's entrance land. It is a real
@@ -386,6 +388,20 @@ export class Act3Screen {
     this.handleKeyDown = this.handleKeyDown.bind(this);
       }
 
+
+  getPreventionButtonState() {
+    const all = this.preventionChosen.size === this.preventionOptions.length;
+    const some = this.preventionChosen.size > 0;
+    return {
+      className: `act3-hud-btn ${some ? 'btn-action-primary pulse-btn' : 'act3-btn-quiet'}`,
+      html: all ? "That's all of them ➔" : some ? "That's what changes ▶" : 'Nothing changes ▶'
+    };
+  }
+
+  getPreventionStateHtml(isChosen) {
+    return isChosen ? '<span aria-hidden="true">✓</span> Chosen' : 'Choose';
+  }
+
   // =======================================================================
   // LIFECYCLE
   // =======================================================================
@@ -394,6 +410,8 @@ export class Act3Screen {
     this.container = document.getElementById('screen-act3');
     if (!this.container) return;
 
+    this._enteredBeat = null;
+    this._renderedStep = null;
     this.render();
         window.addEventListener('keydown', this.handleKeyDown);
   }
@@ -413,6 +431,8 @@ export class Act3Screen {
     // Kept verbatim as well as unpacked, so anything Act 2 tracks that this screen does not
     // read still survives the round trip back to it (see getHandoff()).
     this.handoff = { ...handoff };
+    this._enteredBeat = null;
+    this._renderedStep = null;
     if (handoff.decisionChoice === 'act_now' || handoff.decisionChoice === 'wait') {
       this.decisionChoice = handoff.decisionChoice;
     }
@@ -564,6 +584,9 @@ export class Act3Screen {
     const { recovery, saturation, coolOpacity } = this.getRecovery();
     const scene = this.getScene();
 
+    const entering = this._enteredBeat !== this.currentBeat;
+    this._enteredBeat = this.currentBeat;
+
     this.container.innerHTML = `
       <div class="act3-container" data-editor-id="act3-screen-container">
 
@@ -571,7 +594,7 @@ export class Act3Screen {
              as one piece. §9 of docs/design-language.md. -->
         <div
           id="act3-card"
-          class="act3-viewport-card scene-${scene.key}"
+          class="act3-viewport-card scene-${scene.key} ${entering ? 'is-entering' : ''}"
           data-callie="${this.castState?.callie || ''}"
           data-reyes="${this.castState?.reyes || ''}"
           data-beat="${this.currentBeat}"
@@ -608,6 +631,7 @@ export class Act3Screen {
     `;
 
     this.bindEvents();
+    this._renderedStep = `${this.currentBeat}-${this.stepIndex}`;
   }
 
   /**
@@ -852,9 +876,12 @@ export class Act3Screen {
 
     if (step.type === 'stage' || step.type === 'hold') { return ''; }
 
+    const stepKey = `${this.currentBeat}-${this.stepIndex}`;
+    const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
+
     if (step.speaker === 'tay') {
       return `
-        <div class="speech-bubble tay-bubble act3-tay-bubble" data-editor-id="${editorId}-tay">
+        <div class="speech-bubble tay-bubble act3-tay-bubble ${isNewLineClass}" data-step="${stepKey}" data-editor-id="${editorId}-tay">
           <div class="speech-bubble-speaker">
             <span aria-hidden="true">🐶</span>
             <span>Tay</span>
@@ -869,7 +896,7 @@ export class Act3Screen {
     if (step.speaker === 'reyes') {
       const textProp = step.smePending ? step.textUnattributed || step.text : step.text;
       return `
-        <div class="speech-bubble reyes-bubble act3-reyes-bubble" data-editor-id="${editorId}-reyes">
+        <div class="speech-bubble reyes-bubble act3-reyes-bubble ${isNewLineClass}" data-step="${stepKey}" data-editor-id="${editorId}-reyes">
           <div class="speech-bubble-speaker">
             <span aria-hidden="true">🩺</span>
             <span>Dr. Reyes</span>
@@ -883,7 +910,7 @@ export class Act3Screen {
     }
 
     return `
-      <div class="speech-bubble callie-bubble act3-callie-bubble" data-editor-id="${editorId}-callie">
+      <div class="speech-bubble callie-bubble act3-callie-bubble ${isNewLineClass}" data-step="${stepKey}" data-editor-id="${editorId}-callie">
         <div class="speech-bubble-speaker">
           <span aria-hidden="true">👩</span>
           <span>Callie</span>
@@ -1157,21 +1184,22 @@ export class Act3Screen {
                     <span class="act3-prevention-label">${opt.label}</span>
                     <!-- Chosen is a glyph and a word, never the green alone (§7.3). -->
                     <span class="act3-prevention-state">
-                      ${isChosen ? '<span aria-hidden="true">✓</span> Chosen' : 'Choose'}
+                      ${this.getPreventionStateHtml(isChosen)}
                     </span>
                   </button>
 
                   <!-- Reyes's answer stays attached to the choice that earned it. Showing only
                        the most recent one meant a learner who picked all four could read one,
                        and had to remember the other three. -->
-                  ${isChosen ? `
+                  <div class="act3-prevention-reply-wrap">
                     <div class="act3-prevention-reply" id="act3-prevention-reply-${opt.id}"
                          data-editor-id="act3-prevention-reply-${opt.id}"
+                         aria-hidden="${!isChosen}"
                          ${this.activePrevention === opt.id ? 'role="status"' : ''}>
                       <span class="act3-report-who">Dr. Reyes</span>
                       <p class="act3-report-text">“${opt.reply}”</p>
                     </div>
-                  ` : ''}
+                  </div>
                 </li>
               `;
             }).join('')}
@@ -1369,12 +1397,11 @@ export class Act3Screen {
 
       case 'nextTime': {
         if (this.stepIndex === 0) {
-          const all = this.preventionChosen.size === this.preventionOptions.length;
-          const some = this.preventionChosen.size > 0;
+          const state = this.getPreventionButtonState();
           return `
-            <button id="act3-btn-next-step" class="act3-hud-btn ${some ? 'btn-action-primary pulse-btn' : 'act3-btn-quiet'}"
+            <button id="act3-btn-next-step" class="${state.className}"
                     data-editor-id="act3-btn-next-step">
-              ${all ? "That's all of them ➔" : some ? "That's what changes ▶" : 'Nothing changes ▶'}
+              ${state.html}
             </button>
           `;
         }
@@ -1484,14 +1511,62 @@ export class Act3Screen {
    */
   togglePrevention(id) {
     if (!id) return;
-    if (this.preventionChosen.has(id)) {
-      this.preventionChosen.delete(id);
-      this.activePrevention = this.activePrevention === id ? null : this.activePrevention;
-    } else {
+    
+    // Mutate state
+    const isNowChosen = !this.preventionChosen.has(id);
+    if (isNowChosen) {
       this.preventionChosen.add(id);
       this.activePrevention = id;
+    } else {
+      this.preventionChosen.delete(id);
+      if (this.activePrevention === id) {
+        this.activePrevention = null;
+      }
     }
-    this.render();
+    
+    // Patch DOM
+    const li = this.container.querySelector(`.act3-prevention-item:has(.act3-prevention-option[data-prevention="${id}"])`);
+    const btn = li?.querySelector('.act3-prevention-option');
+    if (li && btn) {
+      li.classList.toggle('is-chosen', isNowChosen);
+      btn.classList.toggle('is-chosen', isNowChosen);
+      btn.setAttribute('aria-pressed', isNowChosen);
+      if (isNowChosen) {
+        btn.setAttribute('aria-describedby', `act3-prevention-reply-${id}`);
+      } else {
+        btn.removeAttribute('aria-describedby');
+      }
+      const stateEl = btn.querySelector('.act3-prevention-state');
+      if (stateEl) {
+        stateEl.innerHTML = this.getPreventionStateHtml(isNowChosen);
+      }
+    }
+    
+    // Update aria-hidden and role="status" on all replies
+    this.container.querySelectorAll('.act3-prevention-reply').forEach(reply => {
+      const replyId = reply.getAttribute('id').replace('act3-prevention-reply-', '');
+      const replyChosen = this.preventionChosen.has(replyId);
+      reply.setAttribute('aria-hidden', !replyChosen);
+      if (this.activePrevention === replyId) {
+        reply.setAttribute('role', 'status');
+      } else {
+        reply.removeAttribute('role');
+      }
+    });
+
+    // Update count text
+    const countEl = this.container.querySelector('.act3-prevention-count');
+    if (countEl) {
+      countEl.textContent = `${this.preventionChosen.size} of ${this.preventionOptions.length} chosen`;
+    }
+
+    // Update advance button
+    const nextBtn = this.container.querySelector('#act3-btn-next-step');
+    if (nextBtn) {
+      const state = this.getPreventionButtonState();
+      nextBtn.className = state.className;
+      nextBtn.innerHTML = state.html;
+    }
   }
 
   // =======================================================================

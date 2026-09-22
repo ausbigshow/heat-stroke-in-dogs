@@ -27,6 +27,7 @@
   padding: 1rem;
   box-sizing: border-box;
   overflow: hidden;
+  min-height: 0;
 }
 
 /* Geometry matched to .act1-viewport-card / .act2-viewport-card.
@@ -40,6 +41,7 @@
   max-height: 84vh;
   border-radius: var(--radius-xl);
   overflow: hidden;
+  min-height: 0;
   box-shadow: var(--elev-card);
   border: 4px solid var(--palette-warm-white);
   background: var(--surface-card-dark);
@@ -128,7 +130,7 @@
 [data-beat="tayReturn"] .act3-cast-reyes,
 [data-beat="nextTime"] .act3-cast-reyes { right: 26%; }
 .act3-cast-reyes.is-state-aside { right: 52%; --act3-reyes-flip: -1; }
-.act3-cast-reyes.is-active {
+.is-entering[data-beat="verdict"] .act3-cast-reyes.is-active {
   animation: act3ReyesSlide 0.35s var(--ease-out-expo) forwards;
 }
 
@@ -506,6 +508,7 @@
   top: 13%;
   max-height: 30%;
   overflow: hidden;
+  min-height: 0;
 }
 
 .scene-clinic .act3-callie-bubble,
@@ -607,8 +610,11 @@
   padding: 0.75rem 1.25rem;
   box-shadow: var(--elev-4);
   pointer-events: auto;
-  /* Ends on translateX(-50%): X-axis centring only, so this is the stampSlam shape,
-     never the stampSlamCentered one (§6.4). */
+}
+
+.is-entering .act3-stage-card,
+.is-entering .act3-hold-card,
+.is-entering .act3-door-card {
   animation: act3SlideUpX 0.35s var(--ease-out-expo) forwards;
 }
 
@@ -774,6 +780,10 @@
   padding: 1rem 1.5rem;
   pointer-events: auto;
   z-index: 50;
+}
+
+.is-entering .act3-recap-modal,
+.is-entering .act3-end-modal {
   animation: act3FadeIn var(--dur-fast) ease forwards;
 }
 
@@ -792,6 +802,10 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--elev-modal), 0 0 40px -12px rgba(56, 189, 248, 0.5);
   overflow: hidden;
+  min-height: 0;
+}
+
+.is-entering .act3-recap-card {
   animation: act3CardRise var(--dur-base) var(--ease-out-expo) forwards;
 }
 
@@ -962,6 +976,9 @@
   border: 1px solid var(--hairline-light-faint);
   border-radius: var(--radius-sm);
   padding: 0.5rem 1rem;
+}
+
+.is-entering .act3-recap-panel {
   animation: act3FadeIn var(--dur-base) var(--ease-out-expo) forwards;
 }
 
@@ -1114,6 +1131,7 @@
   border-radius: var(--radius-pill);
   background: rgba(255, 255, 255, 0.1);
   overflow: hidden;
+  min-height: 0;
 }
 
 /* Bar LENGTH and the numeral both carry the value, so the chart survives being read in
@@ -1318,11 +1336,14 @@
   max-height: 82%;
   z-index: 45;
   transform: translate(-50%, -50%);
+}
+
+.is-entering .act3-prevention-card {
   animation: act3CardInCentered var(--dur-base) var(--ease-out-expo) forwards;
 }
 
 /* The close screen is flex-centred by its own scrim, so it has no transform to preserve. */
-.act3-end-card {
+.is-entering .act3-end-card {
   animation: act3CardRise var(--dur-base) var(--ease-out-expo) forwards;
 }
 
@@ -1445,14 +1466,28 @@
   color: var(--palette-brown-dark);
 }
 
+.act3-prevention-reply-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-base) var(--ease-out-expo);
+}
+.is-chosen > .act3-prevention-reply-wrap {
+  grid-template-rows: 1fr;
+}
+@media (prefers-reduced-motion: reduce) {
+  .act3-prevention-reply-wrap {
+    transition: none;
+  }
+}
 .act3-prevention-reply {
+  overflow: hidden;
+  min-height: 0;
   margin-top: 0.5rem;
   background: var(--palette-warm-white);
   border-left: 5px solid var(--palette-teal-dark);
   border-radius: var(--radius-sm);
   padding: 0.5rem 0.75rem;
   box-shadow: var(--elev-1);
-  animation: act3FadeIn var(--dur-base) var(--ease-out-expo) forwards;
 }
 
 .act3-prevention-reply .act3-recap-text {
@@ -1482,6 +1517,9 @@
   padding: 0.75rem 1rem 1rem;
   pointer-events: auto;
   z-index: 32;
+}
+
+.is-entering .act3-discharge-sheet {
   animation: act3SlideInRight var(--dur-base) var(--ease-out-expo) forwards;
 }
 
@@ -2069,6 +2107,9 @@
   box-shadow: var(--elev-modal), 0 0 40px -12px rgba(56, 189, 248, 0.5);
   padding: 1rem 1.5rem;
   pointer-events: auto;
+}
+
+.is-entering .act3-sources-card {
   animation: act3CardRise var(--dur-base) var(--ease-out-expo) forwards;
 }
 
@@ -2128,4 +2169,8 @@
     width: 96%;
     max-height: none;
   }
+}
+
+#screen-act3 .speech-bubble:not(.is-new-line) {
+  animation: none;
 }
