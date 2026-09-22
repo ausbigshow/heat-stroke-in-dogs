@@ -1166,7 +1166,8 @@ export class Act3Screen {
           <span class="act3-prevention-badge">Dr. Reyes</span>
           <h2 class="act3-prevention-title">“So what's different about the next lake day?”</h2>
           <p class="act3-prevention-sub">
-            Pick as many as you mean. There is no wrong answer in this list —
+            Choose every change you'd actually make. Each one opens Dr. Reyes's answer and stays
+            open — there's no wrong pick here.
             <span class="act3-prevention-count">${chosen} of ${total} chosen</span>.
           </p>
 
@@ -1179,6 +1180,7 @@ export class Act3Screen {
                           data-prevention="${opt.id}"
                           data-editor-id="act3-prevention-${opt.id}"
                           aria-pressed="${isChosen}"
+                          ${isChosen ? 'aria-disabled="true"' : ''}
                           ${isChosen ? `aria-describedby="act3-prevention-reply-${opt.id}"` : ''}>
                     <span class="act3-prevention-icon" aria-hidden="true">${opt.icon}</span>
                     <span class="act3-prevention-label">${opt.label}</span>
@@ -1192,12 +1194,14 @@ export class Act3Screen {
                        the most recent one meant a learner who picked all four could read one,
                        and had to remember the other three. -->
                   <div class="act3-prevention-reply-wrap">
-                    <div class="act3-prevention-reply" id="act3-prevention-reply-${opt.id}"
-                         data-editor-id="act3-prevention-reply-${opt.id}"
-                         aria-hidden="${!isChosen}"
-                         ${this.activePrevention === opt.id ? 'role="status"' : ''}>
-                      <span class="act3-report-who">Dr. Reyes</span>
-                      <p class="act3-report-text">“${opt.reply}”</p>
+                    <div class="act3-prevention-reply-clip">
+                      <div class="act3-prevention-reply" id="act3-prevention-reply-${opt.id}"
+                           data-editor-id="act3-prevention-reply-${opt.id}"
+                           aria-hidden="${!isChosen}"
+                           ${this.activePrevention === opt.id ? 'role="status"' : ''}>
+                        <span class="act3-report-who">Dr. Reyes</span>
+                        <p class="act3-report-text">“${opt.reply}”</p>
+                      </div>
                     </div>
                   </div>
                 </li>
@@ -1511,9 +1515,11 @@ export class Act3Screen {
    */
   togglePrevention(id) {
     if (!id) return;
-    
+    // A choice is final: once Reyes has answered, the answer stays on the table.
+    if (this.preventionChosen.has(id)) return;
+
     // Mutate state
-    const isNowChosen = !this.preventionChosen.has(id);
+    const isNowChosen = true;
     if (isNowChosen) {
       this.preventionChosen.add(id);
       this.activePrevention = id;
@@ -1531,6 +1537,7 @@ export class Act3Screen {
       li.classList.toggle('is-chosen', isNowChosen);
       btn.classList.toggle('is-chosen', isNowChosen);
       btn.setAttribute('aria-pressed', isNowChosen);
+      btn.setAttribute('aria-disabled', 'true');
       if (isNowChosen) {
         btn.setAttribute('aria-describedby', `act3-prevention-reply-${id}`);
       } else {

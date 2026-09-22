@@ -1479,9 +1479,24 @@
     transition: none;
   }
 }
-.act3-prevention-reply {
+/* The clip is the grid item: it carries no padding or border of its own, so at 0fr it is
+   exactly 0px tall and nothing of the reply peeks out. Collapsed replies are also hidden from
+   hit-testing and screen readers. */
+.act3-prevention-reply-clip {
   overflow: hidden;
   min-height: 0;
+  visibility: hidden;
+  transition: visibility 0s linear var(--dur-base);
+}
+.is-chosen > .act3-prevention-reply-wrap > .act3-prevention-reply-clip {
+  visibility: visible;
+  transition-delay: 0s;
+}
+/* Chosen is final — the button stays readable but no longer invites a second click. */
+.act3-prevention-option.is-chosen {
+  cursor: default;
+}
+.act3-prevention-reply {
   margin-top: 0.5rem;
   background: var(--palette-warm-white);
   border-left: 5px solid var(--palette-teal-dark);
