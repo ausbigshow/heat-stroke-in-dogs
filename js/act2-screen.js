@@ -16,12 +16,12 @@
  * Beats:
  *   2-arrival  — Callie crouches. Tay's ONE subtitle ("I'm okay. I'm okay."), then silence.
  *   2A call    — the clinic phone call; a vet tech asks the triage questions.
- *   2A checks  — four observation checks (any order), each flashing back to its Act 1 lead.
+ *   2A checks  — four observation checks (any order).
  *   2A gate    — all four must be reported before the call moves on.
  *   2A payoff  — "How long has this been going on?" — HINTS DROPPED: 4 cashes out.
- *   2B decision— act now, or give her five minutes. NO fail state; waiting visibly costs.
+ *   2B decision— act now, or give her 5 minutes. NO fail state; waiting visibly costs.
  *   2C cooling — five fixed choices, real wrong answers, consequence + correction.
- *   2D transport— the towel micro-sim (it warms; re-wet it), AC, windows, call-ahead.
+ *   2D transport— a first-person driver-seat view where the learner switches on the AC and cracks the rear windows.
  *
  * DELIBERATE OMISSION: there is no temperature gauge anywhere in this act. Act 1 had one.
  * "Callie never gets a temperature readout, and neither does the learner." Everything the
@@ -81,12 +81,14 @@ export class Act2Screen {
     this.coolingFeedback = null; // { optionId, correct }
     this.coolingWrongCount = 0;
 
-    // ---- Beat 2D: the towel micro-sim ------------------------------------
-    this.towelWarmth = 0; // 0 = just re-wet and cool, 100 = at body temperature
-    this.towelTimer = null;
-    this.rewetCount = 0;
+    // ---- Beat 2D ------------------------------------
     this.acOn = false;
+    this.acInteracted = false;
     this.windowsOpen = false;
+    this.winInteracted = false;
+    this.arriving = false;
+    this.arriveTimeout = null;
+    this.skipListener = null;
     // Pre-paid off by the phone call in Beat 2A — the learner does not have to do this.
     this.calledAhead = true;
 
@@ -112,8 +114,8 @@ export class Act2Screen {
     this.callSteps = [
       { speaker: 'system', text: 'Calling Lakeside Emergency Clinic…' },
       { speaker: 'tech', text: "Lakeside Emergency, this is Dana." },
-      { speaker: 'callie', text: "My dog's down. French Bulldog, she's four, she won't get up. We're out at the lake." },
-      { speaker: 'tech', text: "Okay. Is she breathing? Is she standing up? Alright, stay with me. I need you to look at four things and tell me what you see. Don't move her yet." },
+      { speaker: 'callie', text: "My dog's down. French Bulldog, she's 4, she won't get up. We're out at the lake." },
+      { speaker: 'tech', text: "Okay. Is she breathing? Is she standing up? Alright, stay with me. I need you to look at 4 things and tell me what you see. Don't move her yet." },
       { speaker: 'tech', text: "You're my eyes right now. Take them in whatever order you can get to. Start whenever you're ready." }
     ];
 
@@ -122,76 +124,47 @@ export class Act2Screen {
     this.checksData = {
       gums: {
         id: 'gums',
-        icon: '👄',
         label: 'Lift her lip',
         hudLabel: 'Gums + refill',
         hotspotAria: 'Lift Tay\'s lip and check her gum colour and capillary refill time',
-        techPrompt: "Lift her lip for me. Two things — what colour are the gums, and when you press on them and let go, how many seconds until the colour comes back?",
-        techResponse: "Both of those are outside normal. Colour on its own can fool you; the refill time is the part I actually needed.",
-        flashback: {
-          leadId: 'bowl',
-          leadName: 'Her Water Bowl',
-          tayName: 'The Water One',
-          recall: "Sun-side, half empty, warm since noon. She sniffed it, filed it under boring, and walked away.",
-          link: "Not a drop since the car. That is where the slow refill comes from."
-        }
+        techPrompt: "Lift her lip for me. 2 things — what colour are the gums, and when you press on them and let go, how many seconds until the colour comes back?",
+        // Carries the "under two seconds" threshold in dialogue. It used to be printed in
+        // the readout panel beside the art; with those panels gone, this spoken line is
+        // the only place the learner meets the normal range, so it has to live here.
+        techResponse: "Both of those are outside normal — under 2 seconds is what I want to hear. Colour on its own can fool you; the refill time is the part I actually needed."
       },
       ears: {
         id: 'ears',
-        icon: '👂',
         label: 'Hands on her ears',
         hudLabel: 'Ears',
         hotspotAria: 'Put your hands on Tay\'s ears to feel how hot they are',
         techPrompt: "Cup both her ears in your hands. Ears run hot before the rest of her does. Tell me what they feel like.",
-        techResponse: "That's not sun on the outside of her. That's heat coming out of her.",
-        flashback: {
-          leadId: 'cooler',
-          leadName: 'The Cooler',
-          tayName: 'The Vault',
-          recall: "Ninety minutes pressed against a cold box in open sun, because the sandwiches were inside it.",
-          link: "The cooler was cold. The spot she picked was 99°F and had no shade at all."
-        }
+        techResponse: "That's not sun on the outside of her. That's heat coming out of her."
       },
       panting: {
         id: 'panting',
-        icon: '💨',
         label: 'Watch her panting',
         hudLabel: 'Panting',
         hotspotAria: 'Watch the rhythm and depth of Tay\'s panting',
-        techPrompt: "Don't touch her for this one. Just watch her ribs for fifteen seconds. Is it deep and even, or fast and shallow — and does she ever stop?",
-        techResponse: "Panting is nearly all the cooling a dog has. When it goes fast and shallow it's moving less air, not more. She's working and losing ground.",
-        flashback: {
-          leadId: 'dock',
-          leadName: 'The Dock',
-          tayName: 'High Ground',
-          recall: "She patrolled the whole length of it looking for a hot dog that was there last summer.",
-          link: "137°F boards, four inches under a flat-faced dog who can't pant efficiently to begin with."
-        }
+        techPrompt: "Don't touch her for this one. Just watch her ribs for 15 seconds. Is it deep and even, or fast and shallow — and does she ever stop?",
+        techResponse: "Panting is nearly all the cooling a dog has. When it goes fast and shallow it's moving less air, not more. She's working and losing ground."
       },
       name: {
         id: 'name',
-        icon: '🗣️',
         label: 'Say her name',
         hudLabel: 'Name response',
         hotspotAria: 'Say Tay\'s name and count how long she takes to respond',
         techPrompt: "Say her name in your normal voice and count out loud until she reacts. I want the number, even if the number is 'she didn't'.",
-        techResponse: "Okay. I have everything I need from you.",
-        flashback: {
-          leadId: 'shade',
-          leadName: 'The Shade That Moved',
-          tayName: 'The Best Spot',
-          recall: "She picked the coolest spot on the grass and went to sleep in it. Then the afternoon moved the shade off her and nobody moved her back.",
-          link: "Twenty-seven minutes asleep in full sun. She has been climbing since before you noticed anything."
-        }
+        techResponse: "A slow answer to her own name is not her being tired. That's heat reaching the brain, and it shows up before anything else looks wrong."
       }
     };
 
     // Beat 2A payoff: the four Act 1 leads, restated as a case history with times.
     this.hintsTimeline = [
-      { time: '1:30 PM', icon: '🥪', title: 'The cooler, in open sun', line: 'She parked herself against it for ninety minutes. No shade.' },
-      { time: '1:48 PM', icon: '☀️', title: 'The dock', line: '137°F boards. She patrolled the length of them twice.' },
-      { time: '2:03 PM', icon: '🥣', title: 'The water bowl', line: 'Sun-warm, half empty, untouched. No water since the car.' },
-      { time: '2:38 PM', icon: '🌳', title: 'The shade that moved', line: 'Asleep for twenty-seven minutes while the shade crept off her.' }
+      { time: '1:30 PM', title: 'The cooler, in open sun', line: 'She parked herself against it for 90 minutes. No shade.' },
+      { time: '1:48 PM', title: 'The dock', line: '137°F boards. She patrolled the length of them twice.' },
+      { time: '2:03 PM', title: 'The water bowl', line: 'Sun-warm, half empty, untouched. No water since the car.' },
+      { time: '2:38 PM', title: 'The shade that moved', line: 'Asleep for 27 minutes while the shade crept off her.' }
     ];
 
     // Beat 2C: fixed sequence. Real wrong answers, real consequences, never a game-over.
@@ -205,7 +178,7 @@ export class Act2Screen {
             id: 'shade_air',
             label: 'Get her out of the sun and get air moving over her',
             correct: true,
-            result: "You haul the canopy over her, drag the beach umbrella around to close the gap, and start fanning her with your shirt. It is a stupid-looking way to move air and it is moving air. She is out of the sun in about eight seconds.",
+            result: "You haul the canopy over her, drag the beach umbrella around to close the gap, and start fanning her with your shirt. It is a stupid-looking way to move air and it is moving air. She is out of the sun in about 8 seconds.",
             stamp: {
               metric: 'Shade first, then airflow',
               line: "Stop the heat going in before you start taking heat out. Moving air over a panting dog cools her, and it costs nothing."
@@ -215,8 +188,8 @@ export class Act2Screen {
             id: 'straight_water',
             label: 'Pick her up and get her into the lake right now',
             correct: false,
-            consequence: "You carry her twenty feet across open sand in full sun to get there. She goes heavy in your arms halfway. The whole trip she is still absorbing heat.",
-            correction: "Shade and airflow first. It costs ten seconds and it stops the heat load while you set everything else up. The water is not going anywhere."
+            consequence: "You carry her 20 feet across open sand in full sun to get there. She goes heavy in your arms halfway. The whole trip she is still absorbing heat.",
+            correction: "Shade and airflow first. It costs 10 seconds and it stops the heat load while you set everything else up. The water is not going anywhere."
           }
         ]
       },
@@ -229,9 +202,9 @@ export class Act2Screen {
         options: [
           {
             id: 'lake_water',
-            label: 'Cool lake water, twenty feet away',
+            label: 'Cool lake water, 20 feet away',
             correct: true,
-            result: "You take the towel and the bowl to the water and back at a dead run. It is 72°F — cool, not cold. It is the one thing at this lake Tay looked at four times and walked away from.",
+            result: "You take the towel and the bowl to the water and back at a dead run. It is 72°F — cool, not cold. It is the one thing at this lake Tay looked at 4 times and walked away from.",
             stamp: {
               metric: '72°F lake water',
               line: "Cool water, not ice water. This is the hotspot she dismissed all afternoon, and it is the thing that helps her now."
@@ -242,7 +215,7 @@ export class Act2Screen {
             label: 'Ice out of the cooler — pack it against her',
             correct: false,
             smePending: true,
-            consequence: "You have the lid up before you finish the thought — the same cooler she spent ninety minutes pressed against. Ice against her skin makes the surface vessels clamp down, and heat that needs to leave her core stays in it. She feels cold to your hand and is no cooler inside.",
+            consequence: "You have the lid up before you finish the thought — the same cooler she spent 90 minutes pressed against. Ice against her skin makes the surface vessels clamp down, and heat that needs to leave her core stays in it. She feels cold to your hand and is no cooler inside.",
             correction: "Cool water, not ice, and not ice packs. Extreme cold constricts the vessels near the skin and traps the heat where you least want it. The lake is right there."
           }
         ]
@@ -280,7 +253,7 @@ export class Act2Screen {
             id: 'small_sips',
             label: 'Offer small sips from the bowl and let her choose',
             correct: true,
-            result: "You hold the bowl under her chin. She takes three shallow laps, stops, and puts her head back down. You let her.",
+            result: "You hold the bowl under her chin. She takes 3 shallow laps, stops, and puts her head back down. You let her.",
             stamp: {
               metric: 'Small sips, only if she can swallow',
               line: "Offered, never administered. A dog who can lap on her own is a dog whose airway is working — that is the whole test."
@@ -297,33 +270,33 @@ export class Act2Screen {
       },
       {
         id: 'covering',
-        stepLabel: 'Covering her for the drive',
-        techPrompt: "Get her in the car. What is on her when you do?",
-        commonBelief: "Wrap her up good and tight and keep the cold on her the whole way in. Tuck it under her so none of it gets out.",
+        stepLabel: 'Getting her in the car',
+        smePending: true,
+        techPrompt: "Get her in the car. Where is that towel when you do?",
+        commonBelief: "Wrap her up good and tight and keep the cold on her the whole way in. Tuck it right around her so none of it gets out.",
         options: [
           {
-            id: 'wet_towel_rewet',
-            label: 'A cool wet towel laid over her, and you plan to re-wet it',
+            id: 'towel_under',
+            label: 'Lay the cool wet towel flat on the seat and lay her down on it',
             correct: true,
-            result: "You lay the soaked towel across her belly and flank, loose, and put the bowl in the footwell to re-wet it from. A second towel goes on the passenger seat, wrung out and waiting.",
+            result: "You spread the soaked towel across the back seat, flat, and lower her onto it so it meets her belly and her flank. Nothing is on top of her. The air in the car can still reach every part of her.",
             stamp: {
-              metric: 'Wet towel, re-wet often',
-              line: "A cool wet towel is the practical option in a car. It only works while it is still cool — the towel is a tool, not a blanket."
+              metric: 'Cool towel under her, nothing on top',
+              line: "She lies on it, she is not wrapped in it. Heat leaves a dog through moving air, and anything laid over her is one more layer the air has to get through."
             }
           },
           {
             id: 'wrap_and_leave',
-            label: 'Wrap her up tight in it and leave it on for the drive',
+            label: 'Wrap her up tight in it for the drive',
             correct: false,
-            consequence: "Twelve minutes into the drive that towel is at her body temperature and wrapped around her. It has stopped taking heat away and started holding it in — you have insulated her.",
-            correction: "Lay it on loose, and re-wet or swap it as it warms. A towel left in place stops cooling and starts trapping."
+            consequence: "12 minutes in, that towel is at her body temperature and wrapped around her. It has stopped taking heat away and started holding it in — you have insulated her, in a hot car, on the way to an emergency.",
+            correction: "Never wrap her. Lay the towel flat and put her on it, then get air moving over her. A towel around a dog stops cooling and starts trapping."
           }
         ]
       }
     ];
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
-    this.tickTowel = this.tickTowel.bind(this);
     this.tickElapsed = this.tickElapsed.bind(this);
   }
 
@@ -356,7 +329,15 @@ export class Act2Screen {
   unmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
     this.stopElapsedClock();
-    this.stopTowelTimer();
+    if (this.arriveTimeout) {
+      clearTimeout(this.arriveTimeout);
+      this.arriveTimeout = null;
+    }
+    if (this.skipListener) {
+      this.container?.removeEventListener('click', this.skipListener);
+      this.skipListener = null;
+    }
+    this.arriving = false;
   }
 
   isEditModeActive() {
@@ -368,7 +349,7 @@ export class Act2Screen {
    *
    * Act 3's whole claim is that every number Dr. Reyes says lands on a decision the learner
    * already made, so this state has to survive leaving the screen. It travels forward on the
-   * Act 3 button and back again on Act 3's "◀ Act 2" — without the return trip, stepping back
+   * Act 3 button and back again on Act 3's "Act 2" — without the return trip, stepping back
    * and forward rebuilt this screen from defaults and silently downgraded the learner's
    * playthrough to "we were never told".
    */
@@ -378,14 +359,15 @@ export class Act2Screen {
       checkReportOrder: [...this.checkReportOrder],
       hintsDropped: this.hintsDropped,
       hintsCashedOut: this.hintsCashedOut,
-      rewetCount: this.rewetCount,
       coolingWrongCount: this.coolingWrongCount,
       severity: this.severity,
       clockMinutes: this.clockMinutes,
       elapsedSeconds: this.elapsedSeconds,
       clockVisible: this.clockVisible,
       acOn: this.acOn,
-      windowsOpen: this.windowsOpen
+      acInteracted: this.acInteracted,
+      windowsOpen: this.windowsOpen,
+      winInteracted: this.winInteracted
     };
   }
 
@@ -399,14 +381,15 @@ export class Act2Screen {
       this.checksDone = new Set(this.checkReportOrder);
     }
     if (Number.isFinite(handoff.hintsDropped)) this.hintsDropped = handoff.hintsDropped;
-    if (Number.isFinite(handoff.rewetCount)) this.rewetCount = handoff.rewetCount;
     if (Number.isFinite(handoff.coolingWrongCount)) this.coolingWrongCount = handoff.coolingWrongCount;
     if (Number.isFinite(handoff.severity)) this.severity = handoff.severity;
     if (Number.isFinite(handoff.clockMinutes)) this.clockMinutes = handoff.clockMinutes;
     if (Number.isFinite(handoff.elapsedSeconds)) this.elapsedSeconds = handoff.elapsedSeconds;
     if (typeof handoff.hintsCashedOut === 'boolean') this.hintsCashedOut = handoff.hintsCashedOut;
     if (typeof handoff.acOn === 'boolean') this.acOn = handoff.acOn;
+    if (typeof handoff.acInteracted === 'boolean') this.acInteracted = handoff.acInteracted;
     if (typeof handoff.windowsOpen === 'boolean') this.windowsOpen = handoff.windowsOpen;
+    if (typeof handoff.winInteracted === 'boolean') this.winInteracted = handoff.winInteracted;
     // The emergency clock is running by the time any of this is restorable, so restart it
     // rather than leaving a visible timer frozen.
     if (handoff.clockVisible) this.startElapsedClock();
@@ -480,6 +463,10 @@ export class Act2Screen {
     return {
       refillSeconds,
       refillNormal: '< 2.0 s',
+      // Computed above but never exported until now. renderNameArt() used to recompute it
+      // locally, so nothing caught the omission; the moment Callie started speaking the
+      // number it surfaced as "I counted undefined seconds". Single source for both.
+      responseSeconds,
       // Colour is ALWAYS reported alongside the refill time and a written label —
       // never colour alone. See the colourblind-safety note in renderGumArt().
       gumLabel: s < 0.72 ? 'Brick red, tacky to the touch' : 'Dull red, greying at the edges',
@@ -524,10 +511,21 @@ export class Act2Screen {
     renderPreservingFocus(
       this.container,
       () => this.renderNow(),
-      ['#act2-btn-check-next', '#act2-btn-report-check', '#act2-btn-next-step', '#act2-btn-report-all']
+      ['#act2-btn-check-nav', '#act2-btn-next-step', '#act2-btn-report-all']
     );
     const dialog = this.container?.querySelector('[role="dialog"]');
     if (dialog) containFocusIn(dialog);
+    const conv = this.container?.querySelector('.act2-check-conversation');
+    if (conv) {
+      requestAnimationFrame(() => {
+        conv.scrollTop = conv.scrollHeight;
+      });
+    }
+  }
+
+  getEntranceKey(beat) {
+    if (beat === 'check_active') return 'checks';
+    return beat;
   }
 
   renderNow() {
@@ -538,8 +536,9 @@ export class Act2Screen {
     const isCloseCanopy = this.currentBeat === 'arrival' || this.currentBeat === 'call';
     const isFpvInspect = !isTransport && !isCloseCanopy;
 
-    const entering = this._enteredBeat !== this.currentBeat;
-    this._enteredBeat = this.currentBeat;
+    const beatKey = this.getEntranceKey(this.currentBeat);
+    const entering = this._enteredBeat !== beatKey;
+    this._enteredBeat = beatKey;
 
     this.container.innerHTML = `
       <div class="act2-container" data-editor-id="act2-screen-container">
@@ -552,7 +551,7 @@ export class Act2Screen {
           data-editor-id="act2-viewport-card"
           style="--act2-saturation-drop: ${saturationDrop}%; --act2-heat-opacity: ${heatOpacity}; --act2-severity: ${severity};"
         >
-          ${isTransport ? this.renderCarBackdrop() : (
+          ${isTransport ? `<img src="Assets/Image/Car-FPV-Interior.jpg" alt="" class="act2-scene-img" data-editor-id="act2-art-car-interior" />` : (
             isCloseCanopy ? `
               <img
                 src="Assets/Image/Lake-CanopyClose-BG.jpg"
@@ -600,12 +599,6 @@ export class Act2Screen {
     `;
 
     this.bindEvents();
-
-    if (this.currentBeat === 'transport') {
-      this.startTowelTimer();
-    } else {
-      this.stopTowelTimer();
-    }
     
     this._renderedStep = this.currentBeat === 'check_active' 
       ? `${this.currentBeat}-${this.activeCheckId}-${this.checkStepIndex}`
@@ -641,21 +634,19 @@ export class Act2Screen {
       <header class="act2-hud-bar" data-editor-id="act2-hud-bar">
         <div class="act2-hud-group">
           <button id="act2-btn-back-act1" class="act2-hud-btn" data-editor-id="act2-btn-back-act1"
-                  title="Return to Act 1" aria-label="Return to Act 1">◀ Act 1</button>
+                  title="Return to Act 1" aria-label="Return to Act 1">Back to Act 1</button>
           <button id="act2-btn-title" class="act2-hud-btn" data-editor-id="act2-btn-title"
-                  title="Return to Title" aria-label="Return to the title screen">🏠 Title</button>
+                  title="Return to Title" aria-label="Return to the title screen">Title</button>
         </div>
 
         <div class="act2-hud-group">
           <div class="act2-hud-pill clock-pill" data-editor-id="act2-hud-clock" title="Lake time">
-            <span aria-hidden="true">🕒</span>
             <span>${timeStr}</span>
           </div>
 
           ${this.clockVisible ? `
             <div class="act2-hud-pill elapsed-pill" data-editor-id="act2-hud-elapsed"
                  role="timer" aria-label="Time since you decided to act">
-              <span aria-hidden="true">⏱</span>
               <span>SINCE YOU DECIDED</span>
               <span id="act2-elapsed-text" class="elapsed-value">${this.getFormattedElapsed()}</span>
             </div>
@@ -663,14 +654,12 @@ export class Act2Screen {
 
           ${this.hintsCashedOut ? `
             <div class="act2-hud-pill hints-cashed-pill" data-editor-id="act2-hud-hints"
-                 aria-label="Four warning signs from Act 1, all reported to the clinic">
-              <span aria-hidden="true">⚠️</span>
+                 aria-label="4 warning signs from Act 1, all reported to the clinic">
               <span>HINTS DROPPED: ${this.hintsDropped} — REPORTED</span>
             </div>
           ` : `
             <div class="act2-hud-pill hints-pill" data-editor-id="act2-hud-hints"
-                 aria-label="Four warning signs dropped during Act 1, not yet reported">
-              <span aria-hidden="true">⚠️</span>
+                 aria-label="4 warning signs dropped during Act 1, not yet reported">
               <span>HINTS DROPPED: ${this.hintsDropped}</span>
             </div>
           `}
@@ -679,7 +668,6 @@ export class Act2Screen {
             <div class="act2-hud-pill checks-pill ${allReported ? 'all-done' : ''}"
                  data-editor-id="act2-hud-checks"
                  aria-label="${reported} of 4 observations reported">
-              <span aria-hidden="true">👁</span>
               <span>REPORTED: ${reported}/4</span>
             </div>
           ` : ''}
@@ -843,7 +831,7 @@ export class Act2Screen {
       <div class="act2-phone" data-editor-id="act2-art-phone">
         <div class="act2-phone-bezel" data-editor-id="act2-art-phone-bezel">
           <div class="act2-phone-header" data-editor-id="act2-phone-header">
-            <span class="act2-phone-avatar" aria-hidden="true">🏥</span>
+            
             <span class="act2-phone-meta">
               <span class="act2-phone-name">Lakeside Veterinary Clinic</span>
               <span class="act2-phone-status">
@@ -861,48 +849,66 @@ export class Act2Screen {
 
   // PLACEHOLDER ART — lifted lip / gum closeup.
   //
+  getGumKeyframeOffsets(refillSeconds) {
+    const refill = parseFloat(refillSeconds);
+    const total = 0.6 + 0.5 + refill + 1.0;
+    const pct = (s) => (s / total * 100).toFixed(2) + '%';
+    
+    const styleBlock = `
+      <style>
+        @keyframes act2GumHandAnim {
+          0% { transform: translate(var(--hand-offset-x, 8%), var(--hand-offset-y, 16%)); animation-timing-function: ease-out; }
+          ${pct(0.6)} { transform: translate(0, 0); }
+          ${pct(1.1)} { transform: translate(0, 0); animation-timing-function: ease-in; }
+          ${pct(1.3)} { transform: translate(var(--hand-offset-x, 8%), var(--hand-offset-y, 16%)); }
+          100% { transform: translate(var(--hand-offset-x, 8%), var(--hand-offset-y, 16%)); }
+        }
+        @keyframes act2GumBlanchAnim {
+          0%, ${pct(0.6)} { background-color: var(--gum-color); animation-timing-function: ease; }
+          ${pct(1.1)} { background-color: #F2DCD6; animation-timing-function: linear; }
+          ${pct(1.1 + refill)} { background-color: var(--gum-color); }
+          100% { background-color: var(--gum-color); }
+        }
+      </style>
+    `;
+    return { styleBlock, cssVars: `--cycle-total: ${total}s;` };
+  }
+
   // COLOURBLIND SAFETY (Craft doc, and the single most important observation in the act):
   // gum state is NEVER carried by colour alone. Every gum render pairs the swatch with
   //   (a) a written colour label,
   //   (c) the capillary refill TIME in seconds against the printed normal range.
-  renderGumArt(v) {
+  renderGumArt(v, convHtml) {
+    const animConfig = this.getGumKeyframeOffsets(v.refillSeconds);
     return `
+      ${animConfig.styleBlock}
       <div class="act2-check-art" data-editor-id="act2-art-gums">
-        <div class="act2-check-art-media" style="--gum-color: ${v.gumSwatch};">
+        <div class="act2-check-art-media" style="--gum-color: ${v.gumSwatch}; ${animConfig.cssVars}">
           <img
             src="Assets/Image/Check-Gums-Art.jpg"
             alt="Close-up of Tay's snout and upper gum at the lake park, showing canine tooth and capillary refill blanch spot"
             class="act2-check-char-img"
           />
+          <div class="act2-gum-blanch" aria-hidden="true"></div>
+          <img
+            src="Assets/Image/Check-Gums-Hand-Press.png"
+            alt=""
+            aria-hidden="true"
+            class="act2-check-char-img act2-gum-hand"
+          />
         </div>
 
-        <!-- The refill-time counter: the colourblind-safe half of this observation. -->
-        <div class="act2-refill-counter" data-editor-id="act2-art-refill-counter"
-             role="group" aria-label="Capillary refill time">
-          <div class="act2-refill-head">
-            <span class="act2-refill-title">Capillary refill</span>
-            <span class="act2-refill-normal">normal ${v.refillNormal}</span>
-          </div>
-          <div class="act2-refill-track">
-            <span class="act2-refill-normal-marker" aria-hidden="true"></span>
-            <span class="act2-refill-fill" style="--refill-pct: ${Math.min(100, (parseFloat(v.refillSeconds) / 5) * 100)}%"></span>
-          </div>
-          <div class="act2-refill-readout">
-            <strong class="act2-refill-value">${v.refillSeconds} s</strong>
-            <span class="act2-refill-flag">${v.gumSeverityWord}</span>
+        <div class="act2-check-right-col">
+          <div class="act2-check-conversation">
+            ${convHtml}
           </div>
         </div>
-
-        <dl class="act2-check-readout" data-editor-id="act2-readout-gums">
-          <div><dt>Colour</dt><dd>${v.gumLabel}</dd></div>
-          <div><dt>Refill</dt><dd>${v.refillSeconds} seconds (normal ${v.refillNormal})</dd></div>
-        </dl>
       </div>
     `;
   }
 
   // CHARACTER ART — ear closeup with Callie cupping Tay's bat ears (Note 4).
-  renderEarArt(v) {
+  renderEarArt(v, convHtml) {
     return `
       <div class="act2-check-art" data-editor-id="act2-art-ears">
         <div class="act2-check-art-media">
@@ -918,16 +924,17 @@ export class Act2Screen {
             </svg>
           </div>
         </div>
-        <dl class="act2-check-readout" data-editor-id="act2-readout-ears">
-          <div><dt>Feel</dt><dd>${v.earLabel}</dd></div>
-          <div><dt>Compare</dt><dd>Radiating heat — noticeably hotter than your hands</dd></div>
-        </dl>
+        <div class="act2-check-right-col">
+          <div class="act2-check-conversation">
+            ${convHtml}
+          </div>
+        </div>
       </div>
     `;
   }
 
   // CHARACTER ART — panting rhythm with actual character art of Tay (Note 10).
-  renderPantingArt(v) {
+  renderPantingArt(v, convHtml) {
     return `
       <div class="act2-check-art" data-editor-id="act2-art-panting">
         <div class="act2-panting-img-wrap">
@@ -937,18 +944,19 @@ export class Act2Screen {
             class="act2-check-char-img"
           />
         </div>
-        <dl class="act2-check-readout" data-editor-id="act2-readout-panting">
-          <div><dt>Rhythm</dt><dd>${v.pantLabel}</dd></div>
-          <div><dt>Rate</dt><dd>About ${v.pantRate} breaths per minute — she never closes her mouth</dd></div>
-        </dl>
+        <div class="act2-check-right-col">
+          <div class="act2-check-conversation">
+            ${convHtml}
+          </div>
+        </div>
       </div>
     `;
   }
 
   // CHARACTER ART — Callie calls Tay's name, measuring responsiveness (Note 3).
-  renderNameArt(v) {
-    const delay = Math.round(3 + Math.max(0, Math.min(1, this.severity)) * 5);
-    const ticks = [1, 2, 3, 4, 5, 6, 7, 8];
+  renderNameArt(v, convHtml) {
+    // The tick counter that used to live here is gone with the rest of the info panels —
+    // Callie speaks the number now, from the same v.responseSeconds it used to read.
     return `
       <div class="act2-check-art" data-editor-id="act2-art-name">
         <div class="act2-check-art-media">
@@ -958,60 +966,16 @@ export class Act2Screen {
             class="act2-check-char-img"
           />
         </div>
-        <div class="act2-count-strip" data-editor-id="act2-art-name-counter"
-             role="group" aria-label="Seconds counted before Tay responded: ${v.responseWord.toLowerCase()} after ${delay} seconds">
-          ${ticks.map(n => `
-            <span class="act2-count-tick ${n <= delay ? 'counted' : ''} ${n === delay ? 'is-final' : ''}">${n}</span>
-          `).join('')}
+        <div class="act2-check-right-col">
+          <div class="act2-check-conversation">
+            ${convHtml}
+          </div>
         </div>
-        <dl class="act2-check-readout" data-editor-id="act2-readout-name">
-          <div><dt>Response</dt><dd>${v.responseWord} — ${delay} seconds and counting</dd></div>
-          <div><dt>What you see</dt><dd>${v.responseLabel}</dd></div>
-        </dl>
       </div>
     `;
   }
 
-  // PLACEHOLDER ART — the towel, tinted by how warm it has become.
-  renderTowelArt(warmth) {
-    const warm = Math.max(0, Math.min(100, warmth));
-    const cool = '#5E9BB0';
-    const hot = '#C2410C';
-    return `
-      <svg class="act2-towel-svg" viewBox="0 0 220 120" data-editor-id="act2-art-towel"
-           role="img" aria-label="The wet towel across Tay. Warmth ${Math.round(warm)} percent of the way to her body temperature.">
-        <defs>
-          <linearGradient id="act2-towel-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="${cool}" />
-            <stop offset="${warm}%" stop-color="${warm > 55 ? hot : cool}" />
-            <stop offset="100%" stop-color="${warm > 55 ? hot : cool}" />
-          </linearGradient>
-        </defs>
-        <path d="M16,84 C40,52 84,36 128,38 C172,40 202,56 210,82 C196,102 150,112 110,110 C70,108 32,100 16,84 Z"
-              fill="url(#act2-towel-grad)" />
-        <path d="M30,80 C58,58 96,50 132,52" stroke="rgba(255,255,255,0.45)" stroke-width="5" fill="none" stroke-linecap="round" />
-        <path d="M46,94 C78,74 118,68 154,72" stroke="rgba(255,255,255,0.28)" stroke-width="5" fill="none" stroke-linecap="round" />
-      </svg>
-    `;
-  }
 
-  // PLACEHOLDER ART — car interior backdrop for Beat 2D.
-  renderCarBackdrop() {
-    return `
-      <svg class="act2-car-svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"
-           data-editor-id="act2-art-car-interior" aria-hidden="true">
-        <rect width="1600" height="900" fill="#2A2320" />
-        <rect x="120" y="70" width="1360" height="380" rx="26" fill="#8FB6C4" />
-        <path d="M120,300 C420,240 900,232 1480,300 L1480,450 L120,450 Z" fill="#7CA294" />
-        <rect x="120" y="430" width="1360" height="70" rx="14" fill="#3A302B" />
-        <rect x="80" y="500" width="1440" height="120" rx="24" fill="#4A3D36" />
-        <rect x="180" y="530" width="360" height="60" rx="14" fill="#3A302B" />
-        <rect x="1060" y="530" width="360" height="60" rx="14" fill="#3A302B" />
-        <rect x="0" y="620" width="1600" height="280" fill="#5A4A41" />
-        <rect x="120" y="660" width="1360" height="200" rx="30" fill="#6B584D" />
-      </svg>
-    `;
-  }
 
   // =======================================================================
   // RENDER — SCENE LAYER
@@ -1068,7 +1032,7 @@ export class Act2Screen {
               aria-label="${check.hotspotAria}${done ? ' — already reported' : ''}"
               aria-pressed="${done ? 'true' : 'false'}"
             >
-              <span class="act2-hotspot-icon" aria-hidden="true">${done ? '✓' : check.icon}</span>
+              <span class="act2-hotspot-icon" aria-hidden="true">${done ? '✓' : ''}</span>
               <span class="act2-hotspot-tooltip">${check.label}</span>
             </button>
           `;
@@ -1112,7 +1076,7 @@ export class Act2Screen {
              style="bottom: 22%; top: auto; left: 42%; max-width: min(320px, 26vw);"
              data-editor-id="act2-tay-final-bubble">
           <div class="speech-bubble-speaker">
-            <span aria-hidden="true">🐶</span>
+            
             <span>Tay</span>
           </div>
           <p class="speech-bubble-text">
@@ -1129,7 +1093,7 @@ export class Act2Screen {
            style="top: 14%; left: 18%; max-width: min(380px, 32vw);"
            data-editor-id="act2-arrival-callie-bubble">
         <div class="speech-bubble-speaker">
-          <span aria-hidden="true">👩</span>
+          
           <span>Callie</span>
         </div>
         <p class="speech-bubble-text">
@@ -1162,7 +1126,7 @@ export class Act2Screen {
              style="top: 14%; left: 18%; max-width: min(380px, 32vw);"
              data-editor-id="act2-call-callie-bubble">
           <div class="speech-bubble-speaker">
-            <span aria-hidden="true">👩</span>
+            
             <span>Callie</span>
           </div>
           <p class="speech-bubble-text">
@@ -1178,7 +1142,7 @@ export class Act2Screen {
              style="top: 12%; left: 26%; max-width: min(440px, 36vw);"
              data-editor-id="act2-art-phone-bezel">
           <div class="speech-bubble-speaker comic-radio-speaker">
-            <span aria-hidden="true">⚡ 📱</span>
+            
             <span>Dana · Lakeside Emergency (Phone)</span>
           </div>
           <p class="speech-bubble-text comic-radio-text">
@@ -1199,21 +1163,21 @@ export class Act2Screen {
     const remaining = Object.values(this.checksData).filter(c => !this.checksDone.has(c.id));
     const nextPrompt = remaining.length
       ? remaining[0].techPrompt
-      : "That's all four. Stay on the line with me.";
+      : "That's all 4. Stay on the line with me.";
 
     const body = `
       <div class="act2-phone-line line-tech">
         <span class="act2-phone-line-who">Dana · Vet Tech</span>
         <p class="act2-phone-line-text">"${remaining.length
           ? "Whichever one you can get to. I'll take them in any order."
-          : "That's all four. Stay on the line."}"</p>
+          : "That's all 4. Stay on the line."}"</p>
       </div>
       <ul class="act2-triage-list" data-editor-id="act2-triage-list">
         ${Object.values(this.checksData).map(c => {
           const done = this.checksDone.has(c.id);
           return `
             <li class="act2-triage-item ${done ? 'is-done' : ''}">
-              <span class="act2-triage-mark" aria-hidden="true">${done ? '✓' : '○'}</span>
+              ${done ? '<span class="act2-triage-mark" aria-hidden="true">✓</span>' : ''}
               <span class="act2-triage-label">${c.hudLabel}</span>
               <span class="act2-triage-state">${done ? 'reported' : 'not yet'}</span>
             </li>
@@ -1234,48 +1198,123 @@ export class Act2Screen {
   }
 
   // ---- Beat 2A: one check, opened ---------------------------------------
+  
+  // ONE line per check — no severity variants. Anything that changes with severity is
+  // interpolated from getVitals(), never written out twice, so Callie and the readout
+  // beside her cannot drift apart. The gum colour in particular is read from the SAME
+  // v.gumLabel the panel prints: hardcoding "brick red" here would contradict the readout
+  // once severity passes the threshold where that label becomes "Dull red, greying…".
+  getCallieReportLine(checkId, v) {
+    if (checkId === 'gums') {
+      const colour = v.gumLabel.charAt(0).toLowerCase() + v.gumLabel.slice(1);
+      // Whole seconds. Callie is counting out loud under pressure, not reading an
+      // instrument — nobody counts "three point three". The underlying vitals keep the
+      // decimal, so the gum refill animation still runs on the precise value.
+      const counted = Math.round(parseFloat(v.refillSeconds));
+      return `Her gums are ${colour}. I pressed and counted — about ${counted} seconds before the colour came back.`;
+    }
+    if (checkId === 'ears') {
+      return `Hot. Really hot. I'm going right round the edges and there's no cool spot anywhere on her.`;
+    }
+    if (checkId === 'panting') {
+      return `Fast. Fast and shallow — about ${v.pantRate} in a minute. And she never closes her mouth. Not once in 15 seconds.`;
+    }
+    if (checkId === 'name') {
+      // "not lifting her head" holds whether her eye still moves or nothing moves at all.
+      return `Tay. Tay. … I counted ${v.responseSeconds} seconds. She's not lifting her head.`;
+    }
+    return '';
+  }
+
   buildCheckSteps(checkId) {
     const check = this.checksData[checkId];
     if (!check) return [];
+    // No 'observe' step. It rendered no dialogue, so clicking Next on it looked like a
+    // dead click — one press appeared to do nothing and the next moved the conversation
+    // on. The art is on screen for the whole exchange anyway, so the step bought nothing.
     return [
       { type: 'prompt', text: check.techPrompt },
-      { type: 'observe' },
-      { type: 'flashback' },
+      { type: 'report' },
       { type: 'response', text: check.techResponse }
     ];
+  }
+
+  getCheckBodyHtml(checkId, stepIndex) {
+    const v = this.getVitals();
+    const artByCheck = {
+      gums: (conv) => this.renderGumArt(v, conv),
+      ears: (conv) => this.renderEarArt(v, conv),
+      panting: (conv) => this.renderPantingArt(v, conv),
+      name: (conv) => this.renderNameArt(v, conv)
+    };
+
+    const steps = this.buildCheckSteps(checkId);
+    let convHtml = '';
+    
+    for (let i = 0; i <= stepIndex; i++) {
+      const step = steps[i];
+      const stepKey = `${this.currentBeat}-${checkId}-${i}`;
+      const isNew = (i === stepIndex) && (this._renderedStep !== null) && (this._renderedStep !== stepKey);
+      const isNewLineClass = isNew ? 'is-new-line' : '';
+      
+      if (step.type === 'prompt' || step.type === 'response') {
+        convHtml += `
+          <div class="act2-check-tech-line ${isNewLineClass}" data-editor-id="act2-check-tech-line-${i}">
+            <div class="speech-bubble-speaker comic-radio-speaker">
+              
+              <span>Dana · Lakeside Emergency (Phone)</span>
+            </div>
+            <p class="speech-bubble-text comic-radio-text">"${step.text}"</p>
+          </div>
+        `;
+      } else if (step.type === 'report') {
+        convHtml += `
+          <div class="act2-check-callie-line ${isNewLineClass}" data-editor-id="act2-check-callie-line-${i}">
+            <div class="speech-bubble-speaker">
+              
+              <span>Callie</span>
+            </div>
+            <p class="speech-bubble-text">
+              <span class="callie-dialogue">"${this.getCallieReportLine(checkId, v)}"</span>
+            </p>
+          </div>
+        `;
+      }
+    }
+    
+    return artByCheck[checkId](convHtml);
+  }
+
+  getCheckDotsHtml(steps, idx) {
+    return steps.map((s, i) => `
+      <span class="act2-beat-dot ${i === idx ? 'current' : ''} ${i < idx ? 'seen' : ''}"></span>
+    `).join('');
+  }
+
+  getCheckNavButtonState(isLast) {
+    if (isLast) {
+      return {
+        id: 'act2-btn-check-nav',
+        className: 'act2-hud-btn btn-action-primary pulse-btn',
+        html: 'Report it ➔'
+      };
+    }
+    return {
+      id: 'act2-btn-check-nav',
+      className: 'act2-hud-btn',
+      html: 'Next ▶'
+    };
   }
 
   renderCheckActive() {
     const check = this.checksData[this.activeCheckId];
     if (!check) return '';
 
-    const v = this.getVitals();
     const steps = this.buildCheckSteps(this.activeCheckId);
     const idx = Math.min(this.checkStepIndex, steps.length - 1);
     const step = steps[idx];
     const isLast = idx === steps.length - 1;
-
-    const artByCheck = {
-      gums: () => this.renderGumArt(v),
-      ears: () => this.renderEarArt(v),
-      panting: () => this.renderPantingArt(v),
-      name: () => this.renderNameArt(v)
-    };
-
-    let bodyHtml = '';
-    if (step.type === 'prompt' || step.type === 'response') {
-      bodyHtml = `
-        <div class="act2-check-tech-line" data-editor-id="act2-check-tech-line">
-          <span class="act2-phone-line-who">Dana · Vet Tech</span>
-          <p class="act2-phone-line-text">"${step.text}"</p>
-        </div>
-        ${step.type === 'response' ? artByCheck[this.activeCheckId]() : ''}
-      `;
-    } else if (step.type === 'observe') {
-      bodyHtml = artByCheck[this.activeCheckId]();
-    } else if (step.type === 'flashback') {
-      bodyHtml = this.renderFlashback(check.flashback);
-    }
+    const btnState = this.getCheckNavButtonState(isLast);
 
     // Modal semantics per docs/design-language.md §7.4: role="dialog", aria-modal,
     // aria-labelledby pointing at the title, Escape closes (see handleKeyDown), and focus
@@ -1287,7 +1326,6 @@ export class Act2Screen {
 
           <div class="act2-check-header">
             <div class="act2-check-badge" id="act2-check-title">
-              <span aria-hidden="true">${check.icon}</span>
               <span>${check.label.toUpperCase()}</span>
             </div>
             <button id="act2-btn-check-close" class="act2-check-close"
@@ -1296,79 +1334,19 @@ export class Act2Screen {
           </div>
 
           <div class="act2-check-body" data-editor-id="act2-check-body">
-            ${bodyHtml}
+            ${this.getCheckBodyHtml(this.activeCheckId, idx)}
           </div>
 
           <nav class="act2-check-nav">
             <div class="act2-beat-dots" aria-hidden="true">
-              ${steps.map((s, i) => `
-                <span class="act2-beat-dot ${i === idx ? 'current' : ''} ${i < idx ? 'seen' : ''}"></span>
-              `).join('')}
+              ${this.getCheckDotsHtml(steps, idx)}
             </div>
-            ${isLast ? `
-              <button id="act2-btn-report-check" class="act2-hud-btn btn-action-primary pulse-btn"
-                      data-editor-id="act2-btn-report-check">Report it ➔</button>
-            ` : `
-              <button id="act2-btn-check-next" class="act2-hud-btn btn-action-primary"
-                      data-editor-id="act2-btn-check-next">Next ▶</button>
-            `}
+            <button id="${btnState.id}" class="${btnState.className}"
+                    data-editor-id="${btnState.id}">${btnState.html}</button>
           </nav>
 
         </div>
       </div>
-    `;
-  }
-
-  // Each check flashes back to the Act 1 lead the learner clicked themselves.
-  renderFlashback(fb) {
-    return `
-      <div class="act2-flashback" data-editor-id="act2-flashback-${fb.leadId}">
-        <div class="act2-flashback-header">
-          <span class="act2-flashback-tag">Act 1 · you clicked this</span>
-          <span class="act2-flashback-name">${fb.leadName}</span>
-        </div>
-        <div class="act2-flashback-body">
-          ${this.renderFlashbackArt(fb.leadId)}
-          <div class="act2-flashback-copy">
-            <p class="act2-flashback-tay">She called it “${fb.tayName}”.</p>
-            <p class="act2-flashback-recall">${fb.recall}</p>
-            <p class="act2-flashback-link">${fb.link}</p>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  // PLACEHOLDER ART — thumbnail recalls of the four Act 1 leads.
-  renderFlashbackArt(leadId) {
-    const art = {
-      cooler: `
-        <rect x="10" y="34" width="100" height="46" rx="8" fill="#3E7C93" />
-        <rect x="6" y="22" width="108" height="16" rx="5" fill="#F3EDE4" />
-        <circle cx="92" cy="18" r="14" fill="#F2C879" />`,
-      dock: `
-        <rect width="120" height="46" y="0" fill="#8FB6C4" />
-        <rect y="46" width="120" height="54" fill="#3E7C93" />
-        <polygon points="42,20 78,20 106,96 14,96" fill="#8A5C3F" />
-        <polygon points="46,30 74,30 78,46 42,46" fill="#C98A4B" />
-        <polygon points="42,50 78,50 84,70 36,70" fill="#A9702F" />`,
-      bowl: `
-        <ellipse cx="60" cy="86" rx="42" ry="10" fill="rgba(30,41,30,0.28)" />
-        <path d="M20,40 L28,76 C31,82 89,82 92,76 L100,40 Z" fill="#94A3B8" />
-        <ellipse cx="60" cy="40" rx="40" ry="13" fill="#CBD5E1" />
-        <ellipse cx="60" cy="62" rx="20" ry="6" fill="#5E9BB0" />`,
-      shade: `
-        <rect width="120" height="100" fill="#C8D9A8" />
-        <polygon points="18,44 102,44 110,30 10,30" fill="#E2D4C3" />
-        <rect x="16" y="44" width="6" height="46" fill="#7A5236" />
-        <rect x="98" y="44" width="6" height="46" fill="#7A5236" />
-        <ellipse cx="86" cy="82" rx="30" ry="10" fill="rgba(36,52,36,0.3)" />
-        <circle cx="26" cy="16" r="12" fill="#F2C879" />`
-    };
-    return `
-      <svg class="act2-flashback-art" viewBox="0 0 120 100" data-editor-id="act2-flashback-art-${leadId}" aria-hidden="true">
-        ${art[leadId] || ''}
-      </svg>
     `;
   }
 
@@ -1388,7 +1366,7 @@ export class Act2Screen {
       <ul class="act2-triage-list" data-editor-id="act2-gate-list">
         ${missing.map(m => `
           <li class="act2-triage-item is-missing">
-            <span class="act2-triage-mark" aria-hidden="true">○</span>
+            
             <span class="act2-triage-label">${m}</span>
             <span class="act2-triage-state">still needed</span>
           </li>
@@ -1431,7 +1409,6 @@ export class Act2Screen {
           ${this.hintsTimeline.map(item => `
             <li class="act2-payoff-item">
               <span class="act2-payoff-time">${item.time}</span>
-              <span class="act2-payoff-icon" aria-hidden="true">${item.icon}</span>
               <span class="act2-payoff-copy">
                 <strong>${item.title}</strong>
                 <span>${item.line}</span>
@@ -1441,7 +1418,7 @@ export class Act2Screen {
         </ol>
         <p class="act2-payoff-tech">
           <span class="act2-phone-line-who">Dana · Vet Tech</span>
-          "Ninety-five minutes of build-up, and everything you just described to me. I'm not
+          "95 minutes of build-up, and everything you just described to me. I'm not
           going to make you wait for a number. Bring her in — and start cooling her before you drive."
         </p>
         <div class="act2-payoff-footer">
@@ -1456,11 +1433,11 @@ export class Act2Screen {
   renderDecision() {
     return `
       <div class="act2-decision-card" data-editor-id="act2-decision-card" role="group"
-           aria-label="The decision: act now, or give her five minutes">
+           aria-label="The decision: act now, or give her 5 minutes">
         <span class="act2-decision-badge">Beat 2B · Your call</span>
         <h2 class="act2-decision-title">She's flat on the grass and she isn't answering you.</h2>
         <p class="act2-decision-sub">
-          The lake is twenty feet away. The car is forty. Dana is still on the line.
+          The lake is 20 feet away. The car is 40. Dana is still on the line.
         </p>
         <div class="act2-decision-options">
           <button id="act2-choice-act-now" class="act2-decision-option is-act"
@@ -1471,8 +1448,8 @@ export class Act2Screen {
           </button>
           <button id="act2-choice-wait" class="act2-decision-option is-wait"
                   data-editor-id="act2-decision-wait"
-                  aria-label="Give her five minutes to settle">
-            <span class="act2-decision-option-title">Give her five minutes to settle</span>
+                  aria-label="Give her 5 minutes to settle">
+            <span class="act2-decision-option-title">Give her 5 minutes to settle</span>
             <span class="act2-decision-option-sub">She's been hot before. Let her rest and see if she comes round.</span>
           </button>
         </div>
@@ -1492,7 +1469,7 @@ export class Act2Screen {
           <h2 class="act2-waiting-title">3:05 PM ➔ 3:10 PM</h2>
           <p class="act2-waiting-line">
             You sit down next to her and put your hand on her side. The lake carries on
-            behind you without noticing. Nothing about the five minutes feels like it's
+            behind you without noticing. Nothing about the 5 minutes feels like it's
             helping, and you watch all of it.
           </p>
           <div class="act2-waiting-delta" data-editor-id="act2-waiting-delta">
@@ -1517,7 +1494,7 @@ export class Act2Screen {
           </div>
           <p class="act2-waiting-note">
             Nothing here is a game over. She is still in front of you and you can still do
-            every single thing you were going to do. It is just five minutes worse.
+            every single thing you were going to do. It is just 5 minutes worse.
           </p>
         </div>
       `;
@@ -1581,100 +1558,149 @@ export class Act2Screen {
     `;
   }
 
+  getTransportStateStrings() {
+    const ready = this.acOn && this.windowsOpen;
+    return {
+      ready,
+      sceneClass: `act2-transport-scene ${this.acOn ? 'ac-on' : ''} ${this.windowsOpen ? 'windows-open' : ''}`,
+      acAria: this.acOn ? 'Air conditioning, currently on' : 'Air conditioning, currently off',
+      acPillText: `AC · ${this.acOn ? 'ON' : 'OFF'}`,
+      acChecked: this.acOn ? 'true' : 'false',
+      winAria: this.windowsOpen ? 'Rear windows, currently cracked' : 'Rear windows, currently shut',
+      winPillText: `WINDOWS · ${this.windowsOpen ? 'CRACKED' : 'SHUT'}`,
+      winChecked: this.windowsOpen ? 'true' : 'false',
+      hintText: ready
+        ? 'Air is moving over her, she is on the cool towel, and they are expecting you.'
+        : 'She is on the cool towel. Now get air moving over her.'
+    };
+  }
+
   // ---- Beat 2D: transport micro-sim -------------------------------------
   renderTransport() {
-    const warm = Math.round(this.towelWarmth);
-    const warmState = warm >= 70 ? 'critical' : warm >= 40 ? 'warming' : 'cool';
-    const warmWord = warm >= 70 ? 'Trapping heat' : warm >= 40 ? 'Warming up' : 'Cool and working';
-    const ready = this.rewetCount >= 2 && this.acOn && this.windowsOpen;
+    const s = this.getTransportStateStrings();
+    const acInviteClass = !this.acInteracted && !this.arriving ? 'needs-invite' : '';
+    const winInviteClass = !this.winInteracted && !this.arriving ? 'needs-invite' : '';
 
     return `
-      <div class="act2-transport-panel" data-editor-id="act2-transport-panel">
-        <div class="act2-transport-head">
-          <span class="act2-transport-badge">Beat 2D · The drive in</span>
-          <h2 class="act2-transport-title">Cool her on the way. Don't just drive.</h2>
+      <div class="${s.sceneClass}" data-editor-id="act2-transport-scene">
+        
+        <div class="act2-car-sway-container">
+          <img src="Assets/Image/Car-FPV-Interior.jpg" alt="" class="act2-scene-img act2-car-plate" style="z-index: 1;" />
+          <div class="act2-exterior-motion" style="z-index: 2;">
+            <div class="act2-lane-dashes">
+              <div class="act2-dash"></div>
+              <div class="act2-dash" style="animation-delay: calc(var(--road-dash-cadence) * -0.33)"></div>
+              <div class="act2-dash" style="animation-delay: calc(var(--road-dash-cadence) * -0.66)"></div>
+            </div>
+            <div class="act2-roadside-drift">
+              <div class="act2-drift act2-drift-left"></div>
+              <div class="act2-drift act2-drift-right"></div>
+            </div>
+            <img src="Assets/Image/Clinic-Exterior-Approach.png" alt="" class="act2-clinic-approach" />
+          </div>
+          
+          <div class="act2-car-overlays" aria-hidden="true" style="pointer-events: none; z-index: 3;">
+            <img src="Assets/Image/Car-Mirror-Tay.png" alt="Tay lying on her side on the back seat on a cool wet towel spread flat underneath her, panting" class="act2-rear-view-mirror" />
+            
+            <div class="act2-window-aperture">
+              <div class="act2-wind-gap"></div>
+              <div class="act2-window-pane"></div>
+            </div>
+
+            <div class="act2-ac-knob-well">
+              <svg class="act2-ac-knob-svg" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="#1A1C1A" />
+                <line x1="50" y1="50" x2="50" y2="15" stroke="#E2E8F0" stroke-width="6" stroke-linecap="round" />
+              </svg>
+            </div>
+
+            <div class="act2-airflow-layer">
+              <div class="act2-stream act2-stream-1"></div>
+              <div class="act2-stream act2-stream-2"></div>
+              <div class="act2-stream act2-stream-3"></div>
+            </div>
+            <div class="act2-ac-tint"></div>
+          </div>
         </div>
 
-        <div class="act2-transport-grid">
+        <button id="act2-toggle-ac" class="act2-diegetic-btn ${acInviteClass}" role="switch" aria-checked="${s.acChecked}" aria-label="${s.acAria}" ${this.arriving ? 'disabled="true"' : ''}>
+           <span class="act2-diegetic-pill" id="act2-ac-pill">${s.acPillText}</span>
+        </button>
 
-          <!-- The towel micro-sim -->
-          <section class="act2-towel-sim state-${warmState}" data-editor-id="act2-towel-sim"
-                   aria-label="Wet towel temperature">
-            <div class="act2-towel-art-wrap" data-editor-id="act2-towel-art-wrap">
-              ${this.renderTowelArt(this.towelWarmth)}
-            </div>
-            <div class="act2-towel-meter">
-              <div class="act2-towel-meter-head">
-                <span>Towel</span>
-                <span id="act2-towel-word" class="act2-towel-word">${warmWord}</span>
-              </div>
-              <div class="act2-towel-track">
-                <span id="act2-towel-fill" class="act2-towel-fill" style="width: ${warm}%"></span>
-                <span class="act2-towel-limit" aria-hidden="true"></span>
-              </div>
-              <p class="act2-towel-note">
-                A towel only cools while it is cooler than she is. Once it reaches her
-                temperature it starts holding heat in.
-              </p>
-              <button id="act2-btn-rewet" class="act2-hud-btn btn-action-primary"
-                      data-editor-id="act2-btn-rewet"
-                      aria-label="Re-wet the towel with cool water. Re-wet ${this.rewetCount} times so far.">
-                💧 Re-wet the towel <span class="act2-rewet-count">(${this.rewetCount})</span>
-              </button>
-            </div>
-          </section>
+        <button id="act2-toggle-windows" class="act2-diegetic-btn ${winInviteClass}" role="switch" aria-checked="${s.winChecked}" aria-label="${s.winAria}" ${this.arriving ? 'disabled="true"' : ''}>
+           <span class="act2-diegetic-pill" id="act2-win-pill">${s.winPillText}</span>
+        </button>
 
-          <!-- Airflow + the call-ahead that Beat 2A already paid for -->
-          <section class="act2-transport-controls" data-editor-id="act2-transport-controls">
-            <button id="act2-toggle-ac" class="act2-toggle ${this.acOn ? 'is-on' : ''}"
-                    data-editor-id="act2-toggle-ac" role="switch"
-                    aria-checked="${this.acOn ? 'true' : 'false'}"
-                    aria-label="Air conditioning">
-              <span class="act2-toggle-icon" aria-hidden="true">❄️</span>
-              <span class="act2-toggle-copy">
-                <strong>Air conditioning</strong>
-                <span>${this.acOn ? 'On, aimed low at the back seat' : 'Off'}</span>
-              </span>
-              <span class="act2-toggle-state">${this.acOn ? 'ON' : 'OFF'}</span>
-            </button>
-
-            <button id="act2-toggle-windows" class="act2-toggle ${this.windowsOpen ? 'is-on' : ''}"
-                    data-editor-id="act2-toggle-windows" role="switch"
-                    aria-checked="${this.windowsOpen ? 'true' : 'false'}"
-                    aria-label="Rear windows">
-              <span class="act2-toggle-icon" aria-hidden="true">🪟</span>
-              <span class="act2-toggle-copy">
-                <strong>Rear windows</strong>
-                <span>${this.windowsOpen ? 'Cracked — air moving across her' : 'Shut'}</span>
-              </span>
-              <span class="act2-toggle-state">${this.windowsOpen ? 'OPEN' : 'SHUT'}</span>
-            </button>
-
-            <div class="act2-toggle is-prepaid" data-editor-id="act2-callahead-row">
-              <span class="act2-toggle-icon" aria-hidden="true">📞</span>
-              <span class="act2-toggle-copy">
-                <strong>Clinic called ahead</strong>
-                <span>Already done — Dana has been on the line since the lake.</span>
-              </span>
-              <span class="act2-toggle-state is-done">✓ DONE</span>
-            </div>
-
-            <p class="act2-transport-hint" data-editor-id="act2-transport-hint">
-              ${ready
-                ? 'Airflow is on her, the towel is cool, and they are expecting you.'
-                : 'Keep the towel cool and get air moving before you pull in.'}
-            </p>
-          </section>
-
+        <div class="act2-transport-hud">
+          <div class="act2-transport-hud-msg">Cool her on the way. Don't just drive.</div>
+          <div class="act2-transport-hud-hint" id="act2-transport-hint">${s.hintText}</div>
+          <div class="act2-transport-hud-prepaid">
+            Clinic called ahead — already done, Dana has been on the line since the lake
+          </div>
         </div>
 
         <div class="act2-transport-footer">
-          <button id="act2-btn-arrive" class="act2-hud-btn btn-action-primary ${ready ? 'pulse-btn' : ''}"
-                  data-editor-id="act2-btn-arrive" ${ready ? '' : 'disabled'}
-                  aria-label="Arrive at the clinic">🏥 Pull in at the clinic ➔</button>
+          <button id="act2-btn-arrive" class="act2-hud-btn btn-action-primary ${s.ready && !this.arriving ? 'pulse-btn' : ''}" data-editor-id="act2-btn-arrive" ${s.ready && !this.arriving ? '' : 'disabled="true"'}>
+            Pull in at the clinic ➔
+          </button>
         </div>
       </div>
     `;
+  }
+
+  patchTransportControls() {
+    const s = this.getTransportStateStrings();
+    const scene = this.container.querySelector('.act2-transport-scene');
+    if (scene) {
+      scene.className = s.sceneClass;
+      if (this.arriving) scene.classList.add('is-arriving');
+    }
+    
+    const ac = this.container.querySelector('#act2-toggle-ac');
+    if (ac) {
+      ac.setAttribute('aria-checked', s.acChecked);
+      ac.setAttribute('aria-label', s.acAria);
+      if (this.arriving) {
+        ac.setAttribute('disabled', 'true');
+        ac.classList.remove('needs-invite');
+      } else {
+        ac.removeAttribute('disabled');
+        if (!this.acInteracted) ac.classList.add('needs-invite');
+        else ac.classList.remove('needs-invite');
+      }
+    }
+    const acPill = this.container.querySelector('#act2-ac-pill');
+    if (acPill) acPill.textContent = s.acPillText;
+    
+    const win = this.container.querySelector('#act2-toggle-windows');
+    if (win) {
+      win.setAttribute('aria-checked', s.winChecked);
+      win.setAttribute('aria-label', s.winAria);
+      if (this.arriving) {
+        win.setAttribute('disabled', 'true');
+        win.classList.remove('needs-invite');
+      } else {
+        win.removeAttribute('disabled');
+        if (!this.winInteracted) win.classList.add('needs-invite');
+        else win.classList.remove('needs-invite');
+      }
+    }
+    const winPill = this.container.querySelector('#act2-win-pill');
+    if (winPill) winPill.textContent = s.winPillText;
+    
+    const hint = this.container.querySelector('#act2-transport-hint');
+    if (hint) hint.textContent = s.hintText;
+    
+    const arrive = this.container.querySelector('#act2-btn-arrive');
+    if (arrive) {
+      if (s.ready && !this.arriving) {
+        arrive.removeAttribute('disabled');
+        arrive.classList.add('pulse-btn');
+      } else {
+        arrive.setAttribute('disabled', 'true');
+        arrive.classList.remove('pulse-btn');
+      }
+    }
   }
 
   renderHandoff() {
@@ -1697,16 +1723,16 @@ export class Act2Screen {
   renderBottomLeftControls() {
     if (this.currentBeat === 'checks' && this.checksDone.size > 0) {
       return `
-        <div class="act2-hud-pill act2-nudge-pill" data-editor-id="act2-nudge-pill">
-          <span aria-hidden="true">👆</span>
+        <div class="act2-nudge-pill" data-editor-id="act2-nudge-pill">
+          
           <span>Click Tay to take the next observation</span>
         </div>
       `;
     }
     if (this.currentBeat === 'cooling' && !this.coolingFeedback) {
       return `
-        <div class="act2-hud-pill act2-nudge-pill" data-editor-id="act2-nudge-pill">
-          <span aria-hidden="true">🐾</span>
+        <div class="act2-nudge-pill" data-editor-id="act2-nudge-pill">
+          
           <span>You choose. Callie does it.</span>
         </div>
       `;
@@ -1720,7 +1746,7 @@ export class Act2Screen {
         const isLast = this.stepIndex === this.arrivalSteps.length - 1;
         return isLast ? `
           <button id="act2-btn-start-call" class="act2-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act2-btn-start-call">📞 Call the clinic ➔</button>
+                  data-editor-id="act2-btn-start-call">Call the clinic ➔</button>
         ` : `
           <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step">Next ▶</button>
         `;
@@ -1741,7 +1767,7 @@ export class Act2Screen {
         return `
           <button id="act2-btn-report-all" class="act2-hud-btn ${all ? 'btn-action-primary pulse-btn' : ''}"
                   data-editor-id="act2-btn-report-all">
-            ${all ? "That's everything ➔" : "Tell him that's everything ▶"}
+            ${all ? "That's everything ➔" : "Tell her that's everything ▶"}
           </button>
         `;
       }
@@ -1755,7 +1781,7 @@ export class Act2Screen {
       case 'payoff':
         return this.stepIndex === 0 ? `
           <button id="act2-btn-next-step" class="act2-hud-btn btn-action-primary"
-                  data-editor-id="act2-btn-next-step">Tell him ▶</button>
+                  data-editor-id="act2-btn-next-step">Tell her ▶</button>
         ` : '';
 
       case 'waiting':
@@ -1820,8 +1846,15 @@ export class Act2Screen {
     });
 
     on('#act2-btn-check-close', () => this.closeCheck());
-    on('#act2-btn-check-next', () => this.nextCheckStep());
-    on('#act2-btn-report-check', () => this.reportCheck());
+    on('#act2-btn-check-nav', () => {
+      const steps = this.buildCheckSteps(this.activeCheckId);
+      const isLast = this.checkStepIndex >= steps.length - 1;
+      if (isLast) {
+        this.reportCheck();
+      } else {
+        this.nextCheckStep();
+      }
+    });
 
     // --- Beat 2A: the gate ---
     on('#act2-btn-report-all', () => {
@@ -1880,14 +1913,17 @@ export class Act2Screen {
     });
 
     // --- Beat 2D: transport ---
-    on('#act2-btn-rewet', () => this.rewetTowel());
-    on('#act2-toggle-ac', () => { this.acOn = !this.acOn; this.render(); });
-    on('#act2-toggle-windows', () => { this.windowsOpen = !this.windowsOpen; this.render(); });
-    on('#act2-btn-arrive', () => {
-      this.currentBeat = 'handoff';
-      this.stopTowelTimer();
-      this.render();
+    on('#act2-toggle-ac', () => { 
+      this.acOn = !this.acOn; 
+      this.acInteracted = true;
+      this.patchTransportControls(); 
     });
+    on('#act2-toggle-windows', () => { 
+      this.windowsOpen = !this.windowsOpen; 
+      this.winInteracted = true;
+      this.patchTransportControls(); 
+    });
+    on('#act2-btn-arrive', () => this.handleArriveClick());
     // Act 3's central claim is that every number lands on a decision the learner already
     // made, so the playthrough travels with them. Without this the survival payoff has to
     // fall back to its neutral variant. See Act3Screen.applyHandoff().
@@ -1897,6 +1933,57 @@ export class Act2Screen {
   // =======================================================================
   // BEAT TRANSITIONS
   // =======================================================================
+
+  handleArriveClick() {
+    if (this.arriving) {
+      this.skipArrival();
+      return;
+    }
+    this.arriving = true;
+    
+    this.patchTransportControls();
+
+    this.skipListener = (ev) => {
+      ev.stopPropagation();
+      this.skipArrival();
+    };
+    // Attached on the NEXT frame, not now. The click that started the arrival is still
+    // bubbling toward the container, so binding synchronously lets that same event hit
+    // this listener and skip the sequence it just began.
+    if (this.container) {
+      window.requestAnimationFrame(() => {
+        if (this.arriving && this.container && this.skipListener) {
+          this.container.addEventListener('click', this.skipListener);
+        }
+      });
+    }
+
+    this.arriveTimeout = setTimeout(() => {
+      this.finishArrival();
+    }, 2500);
+  }
+
+  skipArrival() {
+    this.finishArrival();
+  }
+
+  finishArrival() {
+    if (!this.arriving) return;   // idempotent: skip and the timer both land here
+    if (this.arriveTimeout) {
+      clearTimeout(this.arriveTimeout);
+      this.arriveTimeout = null;
+    }
+    if (this.skipListener && this.container) {
+      this.container.removeEventListener('click', this.skipListener);
+      this.skipListener = null;
+    }
+    // MUST clear. While this is true the beat renders with the AC, the windows and the
+    // arrive button all disabled — so stepping Back into transport after arriving left
+    // the learner on a dead screen with nothing clickable and no way forward.
+    this.arriving = false;
+    this.currentBeat = 'handoff';
+    this.render();
+  }
 
   nextSubStep() {
     if (this.currentBeat === 'arrival') {
@@ -1945,15 +2032,50 @@ export class Act2Screen {
   // Move focus into the dialog on open and on every step advance, so a keyboard or
   // screen-reader user lands on the control that moves the beat forward.
   focusInModal() {
-    focusInto(this.container, ['#act2-btn-check-next', '#act2-btn-report-check', '#act2-btn-check-close']);
+    // The nav button keeps ONE stable id and swaps its label between Next and Report it,
+    // so there is a single selector to aim at. Close is the fallback only when the modal
+    // has no advancing control at all.
+    focusInto(this.container, ['#act2-btn-check-nav', '#act2-btn-check-close']);
   }
 
   nextCheckStep() {
     const steps = this.buildCheckSteps(this.activeCheckId);
     if (this.checkStepIndex < steps.length - 1) {
       this.checkStepIndex++;
-      this.render();
+      
+      const step = steps[this.checkStepIndex];
+      const isLast = this.checkStepIndex === steps.length - 1;
+
+      // Patch the body
+      const body = this.container.querySelector('.act2-check-body');
+      if (body) body.innerHTML = this.getCheckBodyHtml(this.activeCheckId, this.checkStepIndex);
+
+      // Scroll the conversation to the bottom so the newest line is in view
+      const conv = this.container.querySelector('.act2-check-conversation');
+      if (conv) {
+        // Use requestAnimationFrame to ensure the DOM has updated and rendered
+        requestAnimationFrame(() => {
+          conv.scrollTop = conv.scrollHeight;
+        });
+      }
+
+      // Patch the beat dots
+      const dots = this.container.querySelector('.act2-beat-dots');
+      if (dots) dots.innerHTML = this.getCheckDotsHtml(steps, this.checkStepIndex);
+
+      // Patch the nav button
+      const { id, className, html } = this.getCheckNavButtonState(isLast);
+      const btn = this.container.querySelector('.act2-check-nav .act2-hud-btn');
+      if (btn) {
+        btn.id = id;
+        btn.className = className;
+        btn.innerHTML = html;
+        btn.setAttribute('data-editor-id', id);
+      }
+
       this.focusInModal();
+    } else {
+      this.reportCheck();
     }
   }
 
@@ -2059,7 +2181,7 @@ export class Act2Screen {
                 </button>
               ` : `
                 <button class="act2-hud-btn btn-action-primary act2-btn-cool-retry"
-                        data-editor-id="act2-btn-cool-retry-${opt.id}">Try that again ◀</button>
+                        data-editor-id="act2-btn-cool-retry-${opt.id}">Try that again</button>
               `}
             </div>
           </div>
@@ -2147,52 +2269,10 @@ export class Act2Screen {
       return;
     }
     this.currentBeat = 'transport';
-    this.towelWarmth = 0;
     this.render();
   }
 
-  // ---- Towel micro-sim --------------------------------------------------
 
-  startTowelTimer() {
-    if (this.towelTimer) return;
-    this.towelTimer = window.setInterval(this.tickTowel, 900);
-  }
-
-  stopTowelTimer() {
-    if (this.towelTimer) {
-      window.clearInterval(this.towelTimer);
-      this.towelTimer = null;
-    }
-  }
-
-  // Like the elapsed clock, this mutates only the meter's own nodes — a full re-render on
-  // an interval would fight Edit Mode's drag/selection state.
-  tickTowel() {
-    if (this.isEditModeActive() || this.currentBeat !== 'transport') return;
-    this.towelWarmth = Math.min(100, this.towelWarmth + 6);
-    this.paintTowel();
-  }
-
-  paintTowel() {
-    const warm = Math.round(this.towelWarmth);
-    const sim = this.container?.querySelector('.act2-towel-sim');
-    const fill = this.container?.querySelector('#act2-towel-fill');
-    const word = this.container?.querySelector('#act2-towel-word');
-    const wrap = this.container?.querySelector('.act2-towel-art-wrap');
-    if (fill) fill.style.width = `${warm}%`;
-    if (word) word.textContent = warm >= 70 ? 'Trapping heat' : warm >= 40 ? 'Warming up' : 'Cool and working';
-    if (sim) {
-      sim.classList.remove('state-cool', 'state-warming', 'state-critical');
-      sim.classList.add(warm >= 70 ? 'state-critical' : warm >= 40 ? 'state-warming' : 'state-cool');
-    }
-    if (wrap) wrap.innerHTML = this.renderTowelArt(this.towelWarmth);
-  }
-
-  rewetTowel() {
-    this.towelWarmth = 0;
-    this.rewetCount += 1;
-    this.render();
-  }
 
   // =======================================================================
   // KEYBOARD (matches Act 1: ArrowRight / Space advance, Escape / ArrowLeft back out)

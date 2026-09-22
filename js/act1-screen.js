@@ -72,7 +72,6 @@ export class Act1Screen {
         id: 'cooler',
         tayName: 'The Vault',
         realName: 'The Cooler',
-        icon: '🥪',
         clockAdvance: 18,
         lines: [
           "The vault. I know the vault.",
@@ -94,7 +93,6 @@ export class Act1Screen {
         id: 'dock',
         tayName: 'High Ground',
         realName: 'The Dock',
-        icon: '☀️',
         clockAdvance: 15,
         lines: [
           "High ground. Good for seeing.",
@@ -115,7 +113,6 @@ export class Act1Screen {
         id: 'bowl',
         tayName: 'The Water One',
         realName: 'Her Water Bowl',
-        icon: '🥣',
         clockAdvance: 20,
         lines: [
           "My bowl! …It's the water one.",
@@ -134,7 +131,6 @@ export class Act1Screen {
         id: 'lake',
         tayName: 'The Biggest Bowl',
         realName: 'The Lake',
-        icon: '🌊',
         clockAdvance: 15,
         lines: [
           "That's the biggest bowl ever.",
@@ -378,7 +374,7 @@ export class Act1Screen {
                 title="Return to Title"
                 aria-label="Return to the title screen"
               >
-                🏠 Title
+                Title
               </button>
             </div>
 
@@ -386,7 +382,6 @@ export class Act1Screen {
               <!-- Clock HUD -->
               <div class="act1-hud-pill clock-pill" data-editor-id="act1-hud-clock" title="Lake Time"
                    role="status" aria-live="polite" aria-label="Lake time ${timeStr}">
-                <span aria-hidden="true">🕒</span>
                 <span id="act1-clock-text">${timeStr}</span>
               </div>
 
@@ -394,13 +389,11 @@ export class Act1Screen {
               ${isPovRaised ? `
                 <div class="act1-hud-pill hints-dropped-pill" data-editor-id="act1-hud-hints"
                      role="status" aria-live="polite">
-                  <span aria-hidden="true">⚠️</span>
                   <span class="hud-label-full">HINTS DROPPED: 4</span>
                   <span class="hud-label-short">HINTS: 4</span>
                 </div>
               ` : `
                 <div class="act1-hud-pill leads-pill ${allLeadsVisited ? 'all-done' : ''}" data-editor-id="act1-hud-leads">
-                  <span aria-hidden="true">🐾</span>
                   <span class="hud-label-full">LEADS INVESTIGATED: ${leadsCount}/4</span>
                   <span class="hud-label-short">LEADS: ${leadsCount}/4</span>
                 </div>
@@ -419,7 +412,6 @@ export class Act1Screen {
                     role="img"
                     aria-label="Tay's body temperature ${t.value} degrees Fahrenheit, ${t.label}"
                   >
-                    <span class="temp-gauge-icon">🌡️</span>
                     <div class="temp-gauge-readout">
                       <span class="temp-gauge-value">${t.value}°F</span>
                       <span class="temp-gauge-label">${t.label}</span>
@@ -482,7 +474,7 @@ export class Act1Screen {
         aria-pressed="${visited}"
       >
         <span class="interactable-art">${artHtml}</span>
-        <span class="interactable-tooltip" aria-hidden="true">${lead.icon} ${lead.tayName}</span>
+        <span class="interactable-tooltip" aria-hidden="true">${lead.tayName}</span>
         ${visited ? '<span class="interactable-check" aria-hidden="true">✓</span>' : ''}
       </button>
     `;
@@ -664,6 +656,30 @@ export class Act1Screen {
       <!-- Redrawn Scene Layer on Lake-Blank.jpg from Tay's Low First-Person Dog Eyeline -->
       <div class="act1-scene-layer" data-editor-id="act1-scene-layer">
 
+        <!-- The lake's surface motion. This is scene-wide, not part of the lake hit area:
+             the ripples used to live inside the interactable, so they only ever animated
+             across the leftmost 13% of a body of water that runs to x=57%. The layer is
+             clipped to the water's real outline, sampled column-by-column from
+             Lake-Blank.jpg — far shore flat at y=48.5%, near shore running 65.6% down at
+             the left edge up to 50.6% where the tree occludes it. -->
+        <div class="act1-water-layer" data-editor-id="act1-water-layer" aria-hidden="true">
+          <svg class="act1-water-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <defs>
+              <!-- Traced from that same sand/water boundary, so every wavefront runs
+                   parallel to the shore across the lake's full visible width. -->
+              <path id="act1-shore-wave"
+                    d="M-2,65.6 C9,63.3 19.3,61.3 29.5,58.1 C39.8,54 50,51.7 57.2,50.6" />
+            </defs>
+            <g fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.1"
+               stroke-linecap="round" vector-effect="non-scaling-stroke">
+              <use href="#act1-shore-wave" class="lake-wave lake-wave-1" />
+              <use href="#act1-shore-wave" class="lake-wave lake-wave-2" />
+              <use href="#act1-shore-wave" class="lake-wave lake-wave-3" />
+              <use href="#act1-shore-wave" class="lake-wave lake-wave-4" />
+            </g>
+          </svg>
+        </div>
+
         <!-- Persistent shade-drift wash: opacity driven by --act1-drift-opacity (see getEscalation()) -->
         <div class="shade-drift-overlay" data-editor-id="act1-shade-drift-overlay"></div>
 
@@ -675,21 +691,11 @@ export class Act1Screen {
           data-editor-id="act1-asset-canopy"
           ${canopyArmed ? 'role="button" tabindex="0" aria-label="Rest in the shade"' : ''}
         >
-          <svg class="canopy-shade-svg" viewBox="0 0 350 260" aria-hidden="true">
-            <polygon points="10,240 330,240 345,190 25,190" fill="rgba(36, 52, 36, 0.38)" />
-          </svg>
-          <svg class="canopy-frame-svg" viewBox="0 0 350 260" aria-hidden="true">
-            <rect x="35" y="60" width="8" height="145" fill="#5E3D2A" rx="2" />
-            <rect x="305" y="60" width="8" height="145" fill="#5E3D2A" rx="2" />
-            <rect x="15" y="70" width="10" height="165" fill="#784E34" rx="2" />
-            <rect x="325" y="70" width="10" height="165" fill="#784E34" rx="2" />
-            <polygon points="170,5 5,75 170,75" fill="#E2D4C3" />
-            <polygon points="170,5 170,75 335,75" fill="#CFC2AC" />
-            <polygon points="170,5 150,75 190,75" fill="#DDD0BC" />
-            <polygon points="5,75 335,75 335,90 5,90" fill="#C8BAA4" />
-            <polygon points="5,90 335,90 330,95 10,95" fill="#B3A58F" />
-          </svg>
-          ${canopyArmed ? '<span class="canopy-tooltip">😴 Rest in the shade</span>' : ''}
+          <img class="canopy-shade-layer" src="Assets/Image/Lake-Prop-Canopy-Shadow.png"
+               alt="" draggable="false" aria-hidden="true" />
+          <img class="canopy-frame-layer" src="Assets/Image/Lake-Prop-Canopy.png"
+               alt="" draggable="false" />
+          ${canopyArmed ? '<span class="canopy-tooltip">Rest in the shade</span>' : ''}
         </div>
 
         <!-- Tay, standing & investigating in the hub/cold open/gate beats -->
@@ -716,80 +722,27 @@ export class Act1Screen {
 
         <!-- 1. The Cooler ("The Vault") — out in open sun, off the tree roots -->
         ${this.renderInteractable('cooler', `
-          <svg viewBox="0 0 130 90">
-            <ellipse cx="65" cy="80" rx="55" ry="9" fill="rgba(36, 52, 36, 0.45)" />
-            <rect x="15" y="24" width="100" height="50" rx="8" fill="#0284C7" />
-            <rect x="25" y="40" width="80" height="28" rx="4" fill="#0369A1" />
-            <circle cx="28" cy="74" r="10" fill="#1E293B" />
-            <circle cx="28" cy="74" r="4" fill="#64748B" />
-            <circle cx="102" cy="74" r="10" fill="#1E293B" />
-            <circle cx="102" cy="74" r="4" fill="#64748B" />
-            <rect x="10" y="12" width="110" height="16" rx="5" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5" />
-            <rect x="58" y="22" width="14" height="12" rx="2" fill="#DC2626" />
-            <rect x="6" y="32" width="8" height="14" rx="3" fill="#64748B" />
-            <rect x="116" y="32" width="8" height="14" rx="3" fill="#64748B" />
-          </svg>
+          <img class="interactable-img" src="Assets/Image/Lake-Prop-Cooler.png" alt="" draggable="false" />
         `)}
 
         <!-- 2. The Wooden Dock ("High Ground") — drawn in receding perspective so it runs
              out from the beach into the water; the near (short) end meets the shoreline
              square-on, and the whole asset is rotated to the shore normal in CSS. -->
         ${this.renderInteractable('dock', `
-          <svg viewBox="0 0 200 150">
-            <!-- Pilings, far pair first -->
-            <rect x="80" y="44" width="7" height="30" rx="2" fill="#452A1D" />
-            <rect x="114" y="44" width="7" height="30" rx="2" fill="#452A1D" />
-            <ellipse cx="83" cy="74" rx="9" ry="3" fill="rgba(24, 62, 74, 0.5)" />
-            <ellipse cx="118" cy="74" rx="9" ry="3" fill="rgba(24, 62, 74, 0.5)" />
-            <rect x="52" y="96" width="9" height="42" rx="2" fill="#3A2317" />
-            <rect x="140" y="96" width="9" height="42" rx="2" fill="#3A2317" />
-
-            <!-- Deck: wide near end, narrow far end -->
-            <polygon points="78,40 122,40 160,140 40,140" fill="#5E3D2A" />
-            <!-- Cross planks, alternating, converging with perspective -->
-            <polygon points="79,44 121,44 123,58 77,58" fill="#D97706" />
-            <polygon points="77,60 123,60 126,76 74,76" fill="#B45309" />
-            <polygon points="74,78 126,78 130,95 70,95" fill="#D97706" />
-            <polygon points="70,97 130,97 134,115 66,115" fill="#B45309" />
-            <polygon points="66,117 134,117 139,136 61,136" fill="#D97706" />
-            <!-- Side rails -->
-            <polygon points="78,40 82,40 44,140 38,140" fill="#4A2E1E" />
-            <polygon points="118,40 122,40 162,140 156,140" fill="#4A2E1E" />
-          </svg>
+          <img class="interactable-img" src="Assets/Image/Lake-Prop-Dock.png" alt="" draggable="false" />
         `)}
 
         <!-- 3. Her Water Bowl ("The Water One") — larger, and well down from full:
              it has been evaporating in the sun since noon. -->
         ${this.renderInteractable('bowl', `
-          <svg viewBox="0 0 80 60">
-            <ellipse cx="40" cy="48" rx="35" ry="11" fill="rgba(36, 52, 36, 0.45)" />
-            <path d="M12,22 L20,46 C22,50 58,50 60,46 L68,22 Z" fill="#94A3B8" />
-            <ellipse cx="40" cy="22" rx="28" ry="11" fill="#CBD5E1" />
-            <!-- Dry inner wall above the waterline -->
-            <ellipse cx="40" cy="23" rx="24" ry="9.5" fill="#64748B" />
-            <path d="M18,26 C20,36 24,40 40,40 C56,40 60,36 62,26 C58,32 52,35 40,35 C28,35 22,32 18,26 Z" fill="#556173" />
-            <!-- Low, warm waterline sitting well below the rim -->
-            <ellipse cx="40" cy="37" rx="15" ry="4.6" fill="#38BDF8" opacity="0.85" />
-            <ellipse cx="45" cy="36.2" rx="5" ry="1.5" fill="rgba(255, 255, 255, 0.7)" />
-          </svg>
+          <img class="interactable-img" src="Assets/Image/Lake-Prop-Bowl.png" alt="" draggable="false" />
         `)}
 
         <!-- 4. The Lake ("The Biggest Bowl") — open water is already painted in the
-             background plate, so the affordance is a set of shore-parallel wavefronts. -->
-        ${this.renderInteractable('lake', `
-          <svg class="lake-ripple-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <defs>
-              <!-- Wavefront traced from the actual sand/water boundary of Lake-Blank.jpg,
-                   so the ripples run parallel to the shore instead of radiating. -->
-              <path id="act1-shore-wave" d="M-8,99 C18,97 38,91 60,85 S86,80 108,77" />
-            </defs>
-            <g fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1.6" stroke-linecap="round">
-              <use href="#act1-shore-wave" class="lake-wave lake-wave-1" />
-              <use href="#act1-shore-wave" class="lake-wave lake-wave-2" />
-              <use href="#act1-shore-wave" class="lake-wave lake-wave-3" />
-            </g>
-          </svg>
-        `)}
+             background plate, so the interactable itself carries no art: just the hit
+             area and its ring token. The water's motion is a separate scene-wide layer
+             (below), because the ripples belong to the whole lake, not to this hit box. -->
+        ${this.renderInteractable('lake', '')}
 
       </div>
     `;
@@ -832,7 +785,7 @@ export class Act1Screen {
         <div class="act1-mission-card ${isNewLineClass}" data-editor-id="act1-mission-card"
              role="dialog" aria-modal="true" aria-labelledby="act1-mission-card-title">
           <div class="mission-card-header">
-            <span class="mission-card-badge">🐾 Tay's Detective Mission</span>
+            <span class="mission-card-badge">Tay's Detective Mission</span>
             <span style="font-size: 0.85rem; color: #94A3B8; font-weight: 700;">Lake Shore Hub</span>
           </div>
           <h2 class="mission-card-title" id="act1-mission-card-title">Mission: Find Real Food (No Kibble)</h2>
@@ -842,7 +795,7 @@ export class Act1Screen {
             <!-- Tay's names only. The real labels are the Case File's reveal (Beat 1G). -->
             <div class="mission-leads-grid">
               ${Object.values(this.leadsData).map(l => `
-                <div class="mission-lead-item"><span aria-hidden="true">${l.icon}</span> <span>${l.tayName}</span></div>
+                <div class="mission-lead-item"><span>${l.tayName}</span></div>
               `).join('')}
             </div>
           </div>
@@ -863,7 +816,6 @@ export class Act1Screen {
           data-editor-id="act1-coldopen-callie"
         >
           <div class="speech-bubble-speaker">
-            <span aria-hidden="true">👩</span>
             <span>Callie (Off-screen)</span>
           </div>
           <p class="speech-bubble-text">
@@ -884,7 +836,6 @@ export class Act1Screen {
         data-editor-id="act1-coldopen-bubble-${this.stepIndex}"
       >
         <div class="speech-bubble-speaker">
-          <span aria-hidden="true">🐶</span>
           <span>Tay</span>
         </div>
         <p class="speech-bubble-text">
@@ -910,7 +861,6 @@ export class Act1Screen {
         data-editor-id="act1-hub-speech"
       >
         <div class="speech-bubble-speaker">
-          <span>🐶</span>
           <span>Tay</span>
         </div>
         <p class="speech-bubble-text">
@@ -923,110 +873,30 @@ export class Act1Screen {
     `;
   }
 
+  // Each lead's close-up. These were four hand-coded SVG scenes — roughly 16 flat
+  // primitives apiece, which made them the lowest-fidelity art anywhere in the module
+  // while also being full-bleed and on screen for the whole investigation beat. They are
+  // rendered plates now, at the same 1376x768 as every other background in the project.
   renderPovScene(leadId) {
-    if (leadId === 'cooler') {
-      return `
-        <svg class="pov-scene-illustration" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" data-editor-id="act1-pov-scene-cooler">
-          <!-- Sky -->
-          <rect width="800" height="450" fill="#BAE6FD" />
-          <circle cx="680" cy="80" r="70" fill="#FEF08A" opacity="0.9" />
-          <circle cx="680" cy="80" r="130" fill="#FEF08A" opacity="0.3" />
-          <polygon points="680,80 0,450 800,450" fill="rgba(254, 240, 138, 0.15)" />
-          <!-- Canopy frame -->
-          <polygon points="400,0 800,0 800,140 460,80" fill="#E2D4C3" opacity="0.8" />
-          <rect x="760" y="80" width="14" height="280" fill="#78350F" opacity="0.7" />
-          <!-- Grass ground -->
-          <polygon points="0,220 800,240 800,450 0,450" fill="#65A30D" />
-          <ellipse cx="400" cy="380" rx="300" ry="60" fill="#4D7C0F" />
-          <!-- Giant Cooler (Low 4-inch vantage) -->
-          <ellipse cx="400" cy="395" rx="220" ry="35" fill="rgba(30, 41, 59, 0.5)" />
-          <rect x="220" y="200" width="360" height="180" rx="16" fill="#0284C7" />
-          <rect x="240" y="220" width="320" height="140" rx="8" fill="#0369A1" />
-          <circle cx="250" cy="380" r="28" fill="#1E293B" />
-          <circle cx="250" cy="380" r="14" fill="#64748B" />
-          <circle cx="550" cy="380" r="28" fill="#1E293B" />
-          <circle cx="550" cy="380" r="14" fill="#64748B" />
-          <rect x="200" y="165" width="400" height="48" rx="12" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="3" />
-          <rect x="380" y="195" width="40" height="35" rx="6" fill="#DC2626" />
-          <rect x="388" y="202" width="24" height="14" rx="3" fill="#FFFFFF" />
-          <!-- Heat wave lines -->
-          <path d="M180,320 Q190,290 180,260" stroke="#F59E0B" stroke-width="3" fill="none" opacity="0.6" stroke-linecap="round" />
-          <path d="M620,320 Q630,290 620,260" stroke="#F59E0B" stroke-width="3" fill="none" opacity="0.6" stroke-linecap="round" />
-        </svg>
-      `;
-    }
-
-    if (leadId === 'dock') {
-      return `
-        <svg class="pov-scene-illustration" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" data-editor-id="act1-pov-scene-dock">
-          <rect width="800" height="450" fill="#0284C7" />
-          <rect width="800" height="160" fill="#BAE6FD" />
-          <circle cx="400" cy="50" r="50" fill="#FDE047" opacity="0.85" />
-          <polygon points="0,160 800,160 800,130 500,100 200,120 0,140" fill="#15803D" />
-          <ellipse cx="140" cy="240" rx="120" ry="12" fill="#0369A1" />
-          <ellipse cx="660" cy="250" rx="120" ry="12" fill="#0369A1" />
-          <!-- Scorching dock planks in 4-inch perspective -->
-          <polygon points="120,450 680,450 490,160 310,160" fill="#78350F" />
-          <polygon points="125,445 675,445 650,400 150,400" fill="#B45309" />
-          <polygon points="155,395 645,395 620,355 180,355" fill="#D97706" />
-          <polygon points="185,350 615,350 590,315 210,315" fill="#B45309" />
-          <polygon points="215,310 585,310 565,280 235,280" fill="#D97706" />
-          <polygon points="240,275 560,275 540,245 260,245" fill="#B45309" />
-          <polygon points="265,240 535,240 520,215 280,215" fill="#D97706" />
-          <polygon points="285,210 515,210 500,185 300,185" fill="#B45309" />
-          <polygon points="305,180 495,180 485,160 315,160" fill="#D97706" />
-          <line x1="280" y1="450" x2="360" y2="160" stroke="#451A03" stroke-width="3" />
-          <line x1="520" y1="450" x2="440" y2="160" stroke="#451A03" stroke-width="3" />
-        </svg>
-        <div class="heat-haze-layer"></div>
-      `;
-    }
-
-    if (leadId === 'bowl') {
-      return `
-        <svg class="pov-scene-illustration" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" data-editor-id="act1-pov-scene-bowl">
-          <rect width="800" height="450" fill="#BAE6FD" />
-          <circle cx="700" cy="70" r="80" fill="#FEF08A" />
-          <rect y="120" width="800" height="330" fill="#65A30D" />
-          <ellipse cx="400" cy="360" rx="280" ry="70" fill="rgba(30, 41, 59, 0.45)" />
-          <path d="M160,220 L220,360 C240,390 560,390 580,360 L640,220 Z" fill="#94A3B8" />
-          <ellipse cx="400" cy="220" rx="240" ry="70" fill="#E2E8F0" />
-          <ellipse cx="400" cy="225" rx="210" ry="58" fill="#64748B" />
-          <ellipse cx="400" cy="240" rx="180" ry="46" fill="#38BDF8" />
-          <ellipse cx="470" cy="235" rx="55" ry="14" fill="rgba(255, 255, 255, 0.75)" />
-          <path d="M300,180 Q310,150 300,120" stroke="#F59E0B" stroke-width="3" fill="none" opacity="0.6" stroke-linecap="round" />
-          <path d="M500,180 Q510,150 500,120" stroke="#F59E0B" stroke-width="3" fill="none" opacity="0.6" stroke-linecap="round" />
-        </svg>
-      `;
-    }
-
-    if (leadId === 'lake') {
-      return `
-        <svg class="pov-scene-illustration" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" data-editor-id="act1-pov-scene-lake">
-          <rect width="800" height="450" fill="#BAE6FD" />
-          <circle cx="150" cy="70" r="55" fill="#FEF08A" />
-          <polygon points="0,180 250,130 500,160 800,120 800,220 0,220" fill="#15803D" />
-          <polygon points="120,190 380,150 650,180 800,160 800,230 0,230" fill="#166534" />
-          <rect y="210" width="800" height="240" fill="#0284C7" />
-          <ellipse cx="400" cy="250" rx="380" ry="25" fill="#0369A1" />
-          <ellipse cx="400" cy="300" rx="420" ry="30" fill="#0284C7" />
-          <ellipse cx="400" cy="360" rx="450" ry="35" fill="#0369A1" />
-          <polygon points="0,420 800,410 800,450 0,450" fill="#D97706" opacity="0.8" />
-          <path d="M0,418 Q200,408 400,418 T800,418" stroke="#E0F2FE" stroke-width="6" fill="none" />
-          <circle cx="120" cy="435" r="8" fill="#78350F" />
-          <circle cx="280" cy="438" r="6" fill="#78350F" />
-          <circle cx="560" cy="436" r="10" fill="#78350F" />
-          <circle cx="710" cy="437" r="7" fill="#78350F" />
-        </svg>
-      `;
-    }
-
-    return '';
+    const scenes = {
+      cooler: { src: 'Lake-POV-Cooler.png', alt: 'A closed cooler standing in open grass in full sun' },
+      dock:   { src: 'Lake-POV-Dock.png',   alt: 'Sun-bleached planks running out over still water' },
+      bowl:   { src: 'Lake-POV-Bowl.png',   alt: 'A steel water bowl in the grass, well below half full' },
+      lake:   { src: 'Lake-POV-Lake.png',   alt: 'Flat, glaring open water running to a far shore' }
+    };
+    const scene = scenes[leadId];
+    if (!scene) return '';
+    return `
+      <img
+        class="pov-scene-illustration"
+        src="Assets/Image/${scene.src}"
+        alt="${scene.alt}"
+        data-editor-id="act1-pov-scene-${leadId}"
+        draggable="false"
+      />
+    `;
   }
 
-  // The active lead's exchange, as a list of click-through beats.
-  // Narration decay (Craft rule): at lead slot N, play the first (5 − N) lines; the 4th
-  // lead investigated drops to its single short, muddled alternate.
   buildPovSteps() {
     const lead = this.leadsData[this.activeLeadId];
     if (!lead) return [];
@@ -1093,7 +963,7 @@ export class Act1Screen {
           <!-- Top Header with Location Tag & Return Button -->
           <div class="pov-viewport-header">
             <div class="pov-tag-badge">
-              <span><span aria-hidden="true">📍</span> TAY'S POV: ${lead.tayName.toUpperCase()}</span>
+              <span>TAY'S POV: ${lead.tayName.toUpperCase()}</span>
             </div>
             <button id="pov-btn-close" class="pov-close-btn" data-editor-id="act1-pov-close" title="Return to Lake Hub" aria-label="Close this close-up and return to the lake hub">
               ✕ Lake Hub
@@ -1111,7 +981,6 @@ export class Act1Screen {
                 data-editor-id="act1-lead-tay-speech"
               >
                 <div class="speech-bubble-speaker">
-                  <span>🐶</span>
                   <span>Tay</span>
                 </div>
                 <p class="speech-bubble-text">
@@ -1125,7 +994,6 @@ export class Act1Screen {
                 data-editor-id="act1-lead-callie-speech"
               >
                 <div class="speech-bubble-speaker">
-                  <span>👩</span>
                   <span>Callie</span>
                 </div>
                 <p class="speech-bubble-text">
@@ -1176,7 +1044,6 @@ export class Act1Screen {
         data-editor-id="act1-gate-bubble"
       >
         <div class="speech-bubble-speaker">
-          <span>🐶</span>
           <span>Tay</span>
         </div>
         <p class="speech-bubble-text">
@@ -1201,7 +1068,6 @@ export class Act1Screen {
         data-editor-id="act1-nap-tay-bubble"
       >
         <div class="speech-bubble-speaker">
-          <span>🐶</span>
           <span>Tay</span>
         </div>
         <p class="speech-bubble-text">
@@ -1218,7 +1084,7 @@ export class Act1Screen {
     // through the whole act instead of snapping on only for this beat.
     return `
       <div class="shade-drift-timelapse-banner" data-editor-id="act1-drift-timelapse">
-        ☀️ 2:38 PM ➔ 3:05 PM
+        2:38 PM ➔ 3:05 PM
       </div>
     `;
   }
@@ -1230,7 +1096,7 @@ export class Act1Screen {
     const isLast = this.stepIndex === this.alarmSteps.length - 1;
     return `
       <div class="callie-offscreen-banner" style="top: 4.5rem; right: 2rem; border-color: ${isLast ? '#DC2626' : 'var(--palette-teal-dark)'};" data-editor-id="act1-alarm-callie">
-        <div class="callie-offscreen-label" style="color: ${isLast ? '#DC2626' : 'var(--palette-teal-dark)'};">👩 Callie</div>
+        <div class="callie-offscreen-label" style="color: ${isLast ? '#DC2626' : 'var(--palette-teal-dark)'};">Callie</div>
         <div style="font-size: 1.15rem; font-weight: 800;">"${step.text}"</div>
       </div>
     `;
@@ -1257,20 +1123,20 @@ export class Act1Screen {
           </thead>
           <tbody>
             <tr>
-              <td class="tay-term">🥪 The Vault</td>
+              <td class="tay-term">The Vault</td>
               <td>Full sun, no shade, 90 minutes — extreme trapped heat</td>
             </tr>
             <tr>
-              <td class="tay-term">☀️ High Ground</td>
+              <td class="tay-term">High Ground</td>
               <td>137°F dock wood surface — radiant heat at 4 inches</td>
             </tr>
             <tr>
-              <td class="tay-term">🥣 The Water One</td>
+              <td class="tay-term">The Water One</td>
               <td>Warm sun-baked water — zero hydration since car ride</td>
             </tr>
             <tr class="lake-row">
-              <td class="tay-term">🌊 The Biggest Bowl</td>
-              <td class="reality-term">⭐ The immediate cooling source she never used</td>
+              <td class="tay-term">The Biggest Bowl</td>
+              <td class="reality-term">The immediate cooling source she never used</td>
             </tr>
           </tbody>
         </table>
@@ -1298,7 +1164,6 @@ export class Act1Screen {
         data-editor-id="act1-pov-callie-bubble"
       >
         <div class="speech-bubble-speaker">
-          <span>👩</span>
           <span>Callie</span>
         </div>
         <p class="speech-bubble-text" style="font-size: 1.35rem; font-weight: 800; color: #DC2626;">
@@ -1314,7 +1179,6 @@ export class Act1Screen {
       if (isMissionCardStep) return '';
       return `
         <div class="act1-hud-pill act1-nudge-pill" data-editor-id="act1-coldopen-prompt">
-          <span aria-hidden="true">👆</span>
           <span>Click anywhere or press Space to continue</span>
         </div>
       `;
@@ -1329,7 +1193,7 @@ export class Act1Screen {
           title="Review Cold Open"
           aria-label="Replay the intro"
         >
-          ⏮ Replay Intro
+          Replay Intro
         </button>
       `;
     }
@@ -1385,7 +1249,6 @@ export class Act1Screen {
         return allVisited ? `
           <div class="act1-hud-pill canopy-prompt-pill" data-editor-id="act1-canopy-prompt"
                role="status" aria-live="polite">
-            <span aria-hidden="true">😴</span>
             <span>All four leads worked — click the canopy to rest</span>
           </div>
         ` : `
@@ -1474,7 +1337,7 @@ export class Act1Screen {
             class="act1-hud-btn btn-action-primary pulse-btn" 
             data-editor-id="act1-btn-start-act2" aria-label="Continue to Act 2: Emergency Response"
           >
-            🚨 Act 2: Emergency Response ➔
+            Act 2: Emergency Response ➔
           </button>
         `;
 

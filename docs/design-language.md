@@ -236,6 +236,30 @@ labels. All-caps runs must always carry positive tracking.
 **Minimum sizes.** Nothing below `0.62rem`. Anything under `0.8rem` must be ≥700 weight and must
 clear 4.5:1 — small type is where this codebase's contrast failures clustered.
 
+### 3.3 No decorative emoji in copy
+
+Decorative or pictorial emoji are not used anywhere in UI copy, labels, ARIA text, or character dialogue anywhere in the module. The subject is a medical emergency; pictorial emoji undercut the tone and read as unserious.
+
+Icons that genuinely aid recognition belong in the art or as SVG, not as emoji in a text node.
+
+**The narrow exception:** a small closed set of typographic UI glyphs is permitted where it
+carries affordance or state. These four, and no near-variants of them:
+
+| Glyph | Codepoint | Used for |
+|---|---|---|
+| `➔` | U+2794 | Advance to the next beat — "Report it ➔" |
+| `▶` | U+25B6 | Advance within a beat — "Next ▶" |
+| `✓` | U+2713 | A completed or correct state |
+| `✕` | U+2715 | Dismiss or close — "✕ Back to Tay" |
+
+The codepoints are listed because the near-variants are the trap: `➡` U+27A1, `✔` U+2714 and
+`✖` U+2716 look almost identical in a proof and are **not** permitted. Copy the glyph from this
+table rather than typing a lookalike, or the module ends up with two visually inconsistent sets.
+
+Nothing beyond these four without a deliberate decision recorded here.
+
+> **Note:** this rule applies module-wide, but Acts 0, 1 and 3 have not yet been swept. It is a forward commitment for those acts rather than a description of current state.
+
 ---
 
 ## 4. Spacing, radius, elevation

@@ -12,3 +12,6 @@ Thumbs.db
 !.claude/skills/verify-in-browser/
 .agents/skills/*
 
+
+# Playwright MCP verification artifacts (screenshots + a11y snapshots), never shipped.
+.playwright-mcp/

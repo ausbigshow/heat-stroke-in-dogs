@@ -189,10 +189,6 @@
   transition: border-color 0.6s ease, box-shadow 0.6s ease;
 }
 
-.temp-gauge-icon {
-  font-size: 1.05rem;
-  line-height: 1;
-}
 
 .temp-gauge-readout {
   display: flex;
@@ -284,6 +280,17 @@
   outline: var(--focus-ring-width) solid var(--focus-ring-on-dark);
   outline-offset: 4px;
   border-radius: var(--radius-sm);
+}
+
+.interactable-img,
+.canopy-shade-layer,
+.canopy-frame-layer {
+  width: 100%;
+  height: 100%;
+  /* contain, not cover: these are objects with real silhouettes, and cropping one
+     would cut a leg or a wheel off rather than just trimming background. */
+  object-fit: contain;
+  display: block;
 }
 
 .interactable-art {
@@ -393,14 +400,14 @@
   top: 27%;
   left: 60%;
   width: 35%;
-  height: 52%;
+  height: 53.5%;
   pointer-events: none;
   z-index: 11;
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
 }
 
-.canopy-frame-svg,
-.canopy-shade-svg {
+.canopy-frame-layer,
+.canopy-shade-layer {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -410,7 +417,7 @@
 
 /* The ground shadow slides east and shortens as the afternoon runs on — by the Shade
    Drift beat it has crept off the patch of grass Tay chose. Driven by getEscalation(). */
-.canopy-shade-svg {
+.canopy-shade-layer {
   transform: translateX(var(--act1-shade-shift, 0%)) scaleY(var(--act1-shade-scale-y, 1));
   transform-origin: 50% 92%;
   transition: transform 2.5s ease-in-out;
@@ -678,22 +685,24 @@
 /* 1. The Cooler ("The Vault") — out in open sun, clear of the tree's root flare and
    the fallen log. The script is explicit that it sits in full sun with no shade near it. */
 .interactable-cooler {
-  top: 63%;
-  left: 38%;
-  width: 11%;
+  top: 60%;
+  left: 39%;
+  width: 7.4%;
   height: 13%;
 }
 
-/* 2. The Dock ("High Ground") — the art is drawn in receding perspective (wide near
-   end on the sand, narrow far end in the water). The shoreline of Lake-Blank.jpg runs
-   at about -9° from horizontal, so rotating the asset by that much puts its short near
-   end square to the shore, with the deck running perpendicular out over the water. */
+/* 2. The Dock ("High Ground") — drawn broadside, running along the shore rather than
+   out from it. The box is no longer rotated: the shoreline's -9° is built into the art's
+   own long edges, which keeps the check badge and the hover lift on the same axes as
+   every other interactable. Short and wide because we see the dock's length, not its
+   depth — height dropped from 22% to 8.5% when it turned side-on. */
 .interactable-dock {
-  top: 46%;
+  /* Box spans card x 15->34%, y 51->64.5%, and the art's own coordinates are tenths of
+     a card-% inside it, so these four numbers and the SVG have to move together. */
+  top: 52%;
   left: 14%;
-  width: 20%;
-  height: 22%;
-  transform: rotate(-9deg);
+  width: 16%;
+  height: 12.4%;
 }
 
 .interactable-dock:hover .interactable-art,
@@ -704,8 +713,9 @@
 /* The deck art is an inset trapezoid, so the default top-right corner badge floats well
    clear of it and reads as unrelated. Pull the tick onto the deck itself. */
 .interactable-dock .interactable-check {
-  top: 26%;
-  right: 34%;
+  /* Rides the deck's far (right-hand) end, which is the box's top-right corner. */
+  top: -10%;
+  right: -2%;
 }
 
 /* 3. Water Bowl ("The Water One") — open grass, clear of everything else */
@@ -713,7 +723,7 @@
   top: 79%;
   left: 45%;
   width: 9.5%;
-  height: 10%;
+  height: 9.7%;
 }
 
 /* 4. The Lake ("The Biggest Bowl") — the open water left of the dock. No drawn icon,
@@ -726,39 +736,61 @@
   height: 19%;
 }
 
-/* The lake has no drawn object of its own, so without help it reads as background.
-   It gets a visible outlined patch of water that breathes, plus the shore-parallel
-   ripples, so it announces itself as clickable as clearly as the solid objects do. */
+/* The lake has no drawn object of its own. It used to advertise itself as a tinted,
+   hard-bordered rectangle of water — which is a raw hit target, not art, and on a painted
+   plate it read as unfinished. Act 2's pattern is the right one: the affordance is a
+   discrete ring token sitting ON the art, and the art itself is left alone. The water's
+   own motion (the shore-parallel ripples below) carries the rest of the invitation. */
 .interactable-lake .interactable-art {
   position: relative;
   overflow: hidden;
-  border-radius: var(--radius-sm);
-  background: var(--color-water);
-  box-shadow: inset 0 0 0 2px var(--color-water-edge);
-  animation: lakeInvite 2.8s infinite ease-in-out;
-  transition: background 0.25s ease, box-shadow 0.25s ease;
+  /* No drop-shadow or pulse: there is no object here to lift off the plate. */
+  filter: none;
+  animation: none;
+}
+
+/* The ring token, centred in the water patch. Mirrors .act2-hotspot so the two acts
+   teach the learner the same "this is clickable" vocabulary. */
+.interactable-lake::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  border-radius: 50%;
+  border: 2.5px solid var(--focus-ring-on-dark);
+  background: var(--surface-hud);
+  box-shadow: var(--elev-4);
+  pointer-events: none;
+  animation: lakeInvite 2.2s infinite ease-in-out;
 }
 
 @keyframes lakeInvite {
-  0%, 100% {
-    background: rgba(56, 189, 248, 0.1);
-    box-shadow: inset 0 0 0 2px rgba(224, 242, 254, 0.4), 0 0 0 rgba(125, 211, 252, 0);
-  }
-  50% {
-    background: rgba(56, 189, 248, 0.2);
-    box-shadow: inset 0 0 0 2px rgba(224, 242, 254, 0.75), 0 0 20px rgba(125, 211, 252, 0.55);
-  }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+/* Once the lead is worked, the corner check badge is the status signal — the ring has
+   done its job and would otherwise keep inviting a click that no longer does anything new. */
+.interactable-lake.visited::after {
+  animation: none;
+  opacity: 0;
 }
 
 .interactable-lake:hover .interactable-art,
 .interactable-lake:focus-visible .interactable-art {
-  background: rgba(56, 189, 248, 0.26);
-  box-shadow: inset 0 0 0 2px rgba(224, 242, 254, 0.95), 0 0 26px rgba(125, 211, 252, 0.8);
-  animation-play-state: paused;
-  /* Water shouldn't lift/pop like a solid object, and its glow should read as
-     water (blue), not the shared orange "food" invitation color. */
+  /* Water shouldn't lift or pop the way a solid object does. */
   transform: none;
   filter: none;
+}
+
+.interactable-lake:hover::after,
+.interactable-lake:focus-visible::after {
+  animation: none;
+  transform: scale(1.14);
+  border-color: var(--palette-warm-white);
 }
 
 /* The lake's tooltip is its main "this is a thing" signal, so it stays visible. */
@@ -767,7 +799,23 @@
   transform: translate(-50%, 0);
 }
 
-.lake-ripple-svg {
+/* Scene-wide water surface. Sits under everything else in the scene layer and takes no
+   clicks — the lake's hit area is still .interactable-lake, this is only its motion.
+   The clip path is the water's measured outline (see the JS comment on the layer), so
+   ripples run the full width of the lake and stop exactly at both shores. */
+.act1-water-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  clip-path: polygon(
+    -2% 48.5%, 57.2% 48.5%,
+    57.2% 50.6%, 50% 51.7%, 39.8% 54%, 29.5% 58.1%,
+    19.3% 61.3%, 9% 63.3%, -2% 65.6%
+  );
+}
+
+.act1-water-svg {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -776,30 +824,42 @@
   overflow: visible;
 }
 
-/* Each wave is the same shore-traced path, released from further out in the lake and
-   sliding shoreward. The parent's overflow:hidden clips them to the water's bounds. */
+/* Each wave is the same shore-traced path, released out near the far bank and sliding
+   shoreward. The layer's clip-path is what stops them at the water's edge. The lake
+   narrows toward the tree, so a single travel distance reads as correct perspective:
+   the wave crosses the wide near water slowly and the thin far water in a moment. */
 .lake-wave {
   opacity: 0;
   animation: lakeShoreWave 5.4s linear infinite;
 }
 
-.lake-wave-2 { animation-delay: 1.8s; }
-.lake-wave-3 { animation-delay: 3.6s; }
+.lake-wave-2 { animation-delay: 1.35s; }
+.lake-wave-3 { animation-delay: 2.7s; }
+.lake-wave-4 { animation-delay: 4.05s; }
 
 @keyframes lakeShoreWave {
-  0% { transform: translateY(-46px) scaleX(0.9); opacity: 0; }
-  22% { opacity: 0.5; }
-  75% { opacity: 0.32; }
-  100% { transform: translateY(6px) scaleX(1.06); opacity: 0; }
+  0% { transform: translateY(-15px) scaleX(0.94); opacity: 0; }
+  22% { opacity: 0.32; }
+  75% { opacity: 0.18; }
+  100% { transform: translateY(2px) scaleX(1.04); opacity: 0; }
 }
 
-.interactable-lake:hover .lake-wave,
-.interactable-lake:focus-visible .lake-wave {
+/* Hovering the lake quickens its water. The waves are no longer inside the button, so
+   the relationship has to be expressed from the card down. */
+.act1-viewport-card:has(.interactable-lake:hover) .lake-wave,
+.act1-viewport-card:has(.interactable-lake:focus-visible) .lake-wave {
   animation-duration: 2.9s;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lake-wave { animation: none; opacity: 0.35; }
+  /* Still water, but still four wavefronts: with the animation off they would all stack
+     on the traced shoreline and read as one hard line drawn on the sand. Spread them
+     back out across the water so the lake keeps its texture without moving. */
+  .lake-wave { animation: none; opacity: 0.2; }
+  .lake-wave-1 { transform: translateY(-12px) scaleX(0.95); }
+  .lake-wave-2 { transform: translateY(-8px) scaleX(0.97); }
+  .lake-wave-3 { transform: translateY(-4px) scaleX(0.99); }
+  .lake-wave-4 { transform: translateY(0); }
 }
 
 /* ==========================================================
@@ -999,6 +1059,9 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  /* An <img> now, not an <svg> with preserveAspectRatio="slice" — object-fit carries
+     the same crop behaviour across the card's 16:9 at every width. */
+  object-fit: cover;
   overflow: hidden;
   z-index: 10;
 }
@@ -1738,10 +1801,9 @@
     filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 10px var(--color-food-glow));
   }
 
-  .interactable-lake .interactable-art {
+  /* The ring is the affordance, so it stays — it just holds still instead of pulsing. */
+  .interactable-lake::after {
     animation: none;
-    background: rgba(56, 189, 248, 0.2);
-    box-shadow: inset 0 0 0 2px rgba(224, 242, 254, 0.75);
   }
 
   /* 2. Entrances — shortened, not removed. */
@@ -1758,7 +1820,7 @@
 
   /* 3. Escalation transitions stay, but resolve immediately. */
   .act1-scene-img,
-  .canopy-shade-svg,
+  .canopy-shade-layer,
   .shade-drift-overlay,
   .temp-gauge-fill,
   .act1-viewport-card,
@@ -1847,9 +1909,6 @@
     gap: 0.35rem;
   }
 
-  .temp-gauge-icon {
-    font-size: 0.88rem;
-  }
 
   .temp-gauge-value {
     font-size: 0.88rem;

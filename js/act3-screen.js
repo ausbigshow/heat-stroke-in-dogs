@@ -65,7 +65,6 @@ export class Act3Screen {
     this.decisionChoice = null;   // 'act_now' | 'wait' | null
     this.checkReportOrder = [];   // the four Act 2 checks, in the order the learner took them
     this.hintsDropped = 4;        // carried from Act 1's HUD
-    this.rewetCount = 0;          // Act 2's towel micro-sim
     this.coolingWrongCount = 0;
     // The raw payload Act 2 sent, carried unmodified so it can be handed straight back.
     this.handoff = {};
@@ -438,7 +437,6 @@ export class Act3Screen {
     }
     if (Array.isArray(handoff.checkReportOrder)) this.checkReportOrder = [...handoff.checkReportOrder];
     if (Number.isFinite(handoff.hintsDropped)) this.hintsDropped = handoff.hintsDropped;
-    if (Number.isFinite(handoff.rewetCount)) this.rewetCount = handoff.rewetCount;
     if (Number.isFinite(handoff.coolingWrongCount)) this.coolingWrongCount = handoff.coolingWrongCount;
   }
 
@@ -1503,7 +1501,6 @@ export class Act3Screen {
       decisionChoice: this.decisionChoice,
       checkReportOrder: [...this.checkReportOrder],
       hintsDropped: this.hintsDropped,
-      rewetCount: this.rewetCount,
       coolingWrongCount: this.coolingWrongCount
     };
   }
