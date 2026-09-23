@@ -1088,8 +1088,8 @@ export class Act1Screen {
 
     const isLast = this.stepIndex === this.alarmSteps.length - 1;
     return `
-      <div class="callie-offscreen-banner" style="top: 4.5rem; right: 2rem; border-color: ${isLast ? '#DC2626' : 'var(--palette-teal-dark)'};" data-editor-id="act1-alarm-callie">
-        <div class="callie-offscreen-label" style="color: ${isLast ? '#DC2626' : 'var(--palette-teal-dark)'};">Callie</div>
+      <div class="callie-offscreen-banner" style="top: 4.5rem; right: 2rem; border-color: ${isLast ? 'var(--color-danger)' : 'var(--palette-teal-dark)'};" data-editor-id="act1-alarm-callie">
+        <div class="callie-offscreen-label" style="color: ${isLast ? 'var(--color-danger)' : 'var(--palette-teal-dark)'};">Callie</div>
         <div style="font-size: 1.15rem; font-weight: 800;">"${step.text}"</div>
       </div>
     `;
