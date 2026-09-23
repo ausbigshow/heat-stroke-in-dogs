@@ -92,6 +92,28 @@
   </main>
 
   <!-- JavaScript Modules -->
+  <!-- Shown only on a phone held upright (js/rotate-prompt.js). A suggestion, never a lock:
+       "Continue anyway" dismisses it for the session (WCAG 1.3.4). -->
+  <div id="rotate-prompt" class="rotate-prompt" role="dialog" aria-modal="true"
+       aria-labelledby="rotate-prompt-title" aria-describedby="rotate-prompt-text" hidden>
+    <div class="rotate-prompt-card">
+      <svg class="rotate-prompt-icon" viewBox="0 0 64 64" aria-hidden="true">
+        <g class="rotate-prompt-phone">
+          <rect x="21" y="8" width="22" height="40" rx="4" />
+          <line x1="29" y1="43" x2="35" y2="43" />
+        </g>
+        <path class="rotate-prompt-arrow" d="M48 40a18 18 0 0 1-12 14" />
+        <path class="rotate-prompt-arrow" d="M34 51l2 3.5 3.5-2" />
+      </svg>
+      <h2 id="rotate-prompt-title" class="rotate-prompt-title">Turn your phone sideways</h2>
+      <p id="rotate-prompt-text" class="rotate-prompt-text">
+        This story is drawn for a wide screen. Holding your phone sideways gives every scene
+        room, so the conversations and cards are easier to read.
+      </p>
+      <button id="rotate-prompt-continue" class="rotate-prompt-btn" type="button">Continue anyway</button>
+    </div>
+  </div>
+
   <script type="module" src="js/app.js"></script>
 
 </body>

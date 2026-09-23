@@ -9,6 +9,7 @@ import { Act1Screen } from './act1-screen.js';
 import { Act2Screen } from './act2-screen.js';
 import { Act3Screen } from './act3-screen.js';
 import { progressStore } from './progress-store.js';
+import { initRotatePrompt } from './rotate-prompt.js';
 
 /**
  * Edit Mode is the AUTHORING tool, not part of the course.
@@ -228,6 +229,7 @@ function bootstrap() {
   const app = new CourseApp();
   app.init();
   window.__courseApp = app;
+  initRotatePrompt();
 }
 
 if (document.readyState === 'loading') {

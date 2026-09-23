@@ -190,3 +190,95 @@
 @media (prefers-reduced-motion: reduce) {
   .bubble-click-hint .hint-arrow { animation: none; }
 }
+
+/* ---- "Turn your phone sideways" (js/rotate-prompt.js) --------------------------------
+   §6.4 light system card over the §2.2 scrim; the primary button per §6.2. Only ever shown
+   on a phone held upright, and always dismissible. */
+.rotate-prompt {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: var(--surface-scrim);
+  backdrop-filter: blur(8px);
+}
+.rotate-prompt[hidden] {
+  display: none;
+}
+.rotate-prompt-card {
+  width: min(100%, 360px);
+  padding: 1.5rem 1.5rem 1.35rem;
+  background: var(--palette-warm-white);
+  border: 3px solid var(--palette-teal-dark);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-modal);
+  text-align: center;
+  /* grid-centred, so not stampSlamCentered (that one carries a translate(-50%,-50%)) */
+  animation: bubblePop 0.3s var(--ease-back) both;
+}
+.rotate-prompt-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 0.5rem;
+  display: block;
+  fill: none;
+  stroke: var(--palette-teal-dark);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rotate-prompt-phone {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rotatePromptTurn 2.4s var(--ease-out-expo) infinite;
+}
+.rotate-prompt-arrow {
+  stroke: var(--color-heat);
+}
+@keyframes rotatePromptTurn {
+  0%, 20% { transform: rotate(0deg); }
+  55%, 85% { transform: rotate(-90deg); }
+  100% { transform: rotate(0deg); }
+}
+.rotate-prompt-title {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-family-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--palette-brown-dark);
+}
+.rotate-prompt-text {
+  margin: 0 0 1.1rem;
+  font-family: var(--font-family-body);
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--palette-text-muted);
+}
+.rotate-prompt-btn {
+  min-height: 44px;
+  padding: 0 1.4rem;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--color-amber-tint);
+  background: var(--color-heat);
+  color: var(--text-inverse);
+  font-family: var(--font-family-display);
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.rotate-prompt-btn:hover,
+.rotate-prompt-btn:focus-visible {
+  background: var(--color-heat-hover);
+  border-color: var(--text-inverse);
+}
+.rotate-prompt-btn:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-on-light);
+  outline-offset: var(--focus-ring-offset);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rotate-prompt-card { animation-duration: 0.01s; }
+  .rotate-prompt-phone { animation: none; transform: rotate(-90deg); }
+}
