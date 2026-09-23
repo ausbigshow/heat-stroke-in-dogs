@@ -2291,6 +2291,12 @@
   scrollbar-width: thin;
 }
 
+/* More below: the foot of the scroll area fades, over the row that peeks out. */
+.act3-takeaway-body.has-more {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), rgba(0, 0, 0, 0.3));
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), rgba(0, 0, 0, 0.3));
+}
+
 .act3-takeaway-body::-webkit-scrollbar {
   width: 6px;
 }

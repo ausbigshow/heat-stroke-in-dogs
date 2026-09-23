@@ -465,6 +465,8 @@ export class Act3Screen {
       advanceBtn.click();
     };
     this.container.addEventListener('click', this.handleClickAdvance);
+    this.handleResizeFold = () => { if (this.takeawayOpen) this.fitTakeawayFold(); };
+    window.addEventListener('resize', this.handleResizeFold);
 
     this.render();
     window.addEventListener('keydown', this.handleKeyDown);
@@ -476,6 +478,7 @@ export class Act3Screen {
     if (this.container && this.handleClickAdvance) {
       this.container.removeEventListener('click', this.handleClickAdvance);
     }
+    if (this.handleResizeFold) window.removeEventListener('resize', this.handleResizeFold);
     releaseFocusContainment(this.container || document);
   }
 
@@ -1408,6 +1411,37 @@ export class Act3Screen {
     return src.slice(0, m.index) + link + src.slice(m.index + shown.length);
   }
 
+  // The sheet scrolls, and when its fold landed in the gap between two bands it looked
+  // finished: only the scrollbar said otherwise. If the fold isn't already cutting through a
+  // tile, shorten the scroll area so it cuts through the last tile that fits, leaving the
+  // next row of information visibly peeking out. .has-more adds a soft fade at the foot
+  // while there is more below.
+  fitTakeawayFold() {
+    const body = this.container?.querySelector('.act3-takeaway-body');
+    if (!body) return;
+    body.style.maxHeight = '';
+    const syncFade = () => body.classList.toggle('has-more',
+      body.scrollTop + body.clientHeight < body.scrollHeight - 4);
+    if (!body.dataset.foldBound) {
+      body.addEventListener('scroll', syncFade, { passive: true });
+      body.dataset.foldBound = '1';
+    }
+    if (body.scrollHeight > body.clientHeight + 4) {
+      const fold = body.clientHeight;
+      const origin = body.getBoundingClientRect().top - body.scrollTop;
+      const tiles = [...body.querySelectorAll('.act3-tk-stat, .act3-tk-habit, .act3-tk-stage, .act3-tk-step, .act3-tk-footer-line')]
+        .map((el) => { const r = el.getBoundingClientRect(); return { top: r.top - origin, bottom: r.bottom - origin }; });
+      const cutting = tiles.some((t) => t.top < fold - 24 && t.bottom > fold + 24);
+      if (!cutting) {
+        const last = tiles
+          .filter((t) => t.bottom <= fold + 24 && t.bottom - t.top > 50)
+          .sort((a, b) => b.top - a.top)[0];
+        if (last) body.style.maxHeight = `${Math.round(last.top + (last.bottom - last.top) * 0.55)}px`;
+      }
+    }
+    syncFade();
+  }
+
   // Small flat line icons for the take-home sheet (decorative; the label carries the meaning).
   takeawayIcon(name) {
     const paths = {
@@ -1649,6 +1683,7 @@ export class Act3Screen {
     on('#act3-btn-takeaway', () => {
       this.takeawayOpen = true;
       this.render();
+      this.fitTakeawayFold();
       focusInto(this.container, ['#act3-btn-takeaway-close']);
     });
     on('#act3-btn-takeaway-close', () => {
@@ -1670,6 +1705,10 @@ export class Act3Screen {
       root.innerHTML = card.querySelector('.act3-takeaway-header').outerHTML
         + card.querySelector('.act3-takeaway-body').outerHTML
         + '<p class="act3-tk-print-credit">From Callie &amp; Tay: Heat Stroke in Dogs. Facts drawn from the sources listed at the end of the course. This sheet does not replace advice from your vet.</p>';
+      // The on-screen fold fit and fade are for scrolling; the page prints whole.
+      const printBody = root.querySelector('.act3-takeaway-body');
+      printBody?.removeAttribute('style');
+      printBody?.classList.remove('has-more');
       document.body.appendChild(root);
       window.addEventListener('afterprint', () => root.remove(), { once: true });
       window.print();

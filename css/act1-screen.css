@@ -809,10 +809,12 @@
 /* 4. The Lake ("The Biggest Bowl") — the open water left of the dock. No drawn icon,
    so the affordance is the water's own motion: wavefronts that run parallel to the
    shoreline and travel across the water toward the beach. */
+/* Open water between the dock's far end and the near shore; it sat on the far shoreline.
+   Kept right of the dock's hit box (which ends at 30.3%). */
 .interactable-lake {
-  top: 44%;
-  left: 31%;
-  width: 24%;
+  top: 48%;
+  left: 30.5%;
+  width: 20%;
   height: 8%;
 }
 
