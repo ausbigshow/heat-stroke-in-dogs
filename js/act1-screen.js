@@ -238,6 +238,7 @@ export class Act1Screen {
 
     this._enteredBeat = null;
     this._renderedStep = null;
+    this._mounted = false;
     this.render();
     window.addEventListener('keydown', this.handleKeyDown);
   }
@@ -245,10 +246,13 @@ export class Act1Screen {
   unmount() {
     clearTimeout(this.walkTimeout);
     window.removeEventListener('keydown', this.handleKeyDown);
+    if (this.container && this.handleClick) {
+      this.container.removeEventListener('click', this.handleClick);
+    }
+    this._mounted = false;
   }
 
   getFormattedTime() {
-    // 90 mins -> 1:30 PM, 108 mins -> 1:48 PM, etc.
     const startHour = 1;
     const totalMinutes = this.clockMinutes;
     const hour = startHour + Math.floor(totalMinutes / 60) - 1;
@@ -257,8 +261,6 @@ export class Act1Screen {
     return `${hour}:${paddedMin} PM`;
   }
 
-  // Visual Escalation System (per Craft doc "Visual Asset Brief"): time of day and
-  // learner clicking continuously drain the palette and drift the shade off Tay.
   getEscalation() {
     const t = Math.max(0, Math.min(1, (this.clockMinutes - 90) / (185 - 90)));
     let driftOpacity = t;
@@ -274,19 +276,12 @@ export class Act1Screen {
       saturationDrop = Math.max(saturationDrop, 40);
     }
 
-    // The canopy's cast shadow tracks the sun: it starts west of the poles at 1:30 PM and
-    // slides east/short as the afternoon runs on, so by the Shade Drift beat it has crept
-    // off the spot Tay picked. Percentages are of the canopy's own box.
     const shadeShiftX = -14 + t * 46;
     const shadeScaleY = 1 - t * 0.34;
 
     return { driftOpacity, saturationDrop, shadeShiftX, shadeScaleY };
   }
 
-  // Tay's core temperature, driven by the same clock as the rest of the escalation.
-  // Reference points (Craft overview doc): a dog's normal range is 100.5–102.5°F,
-  // above 103 is hyperthermia, 105–106 is where heat stroke is recognised, and
-  // 107–109 is the organ-failure range. She starts normal and ends in trouble.
   getBodyTemp() {
     const t = Math.max(0, Math.min(1, (this.clockMinutes - 90) / (185 - 90)));
     let temp = 101.8 + t * 4.6;
@@ -298,195 +293,159 @@ export class Act1Screen {
     else if (temp >= 105) { stage = 'danger'; label = 'Heat stroke range'; }
     else if (temp >= 103) { stage = 'elevated'; label = 'Hyperthermic'; }
 
-    // Fill spans the meaningful clinical band, 100.5 → 108.
     const fillPct = Math.max(0, Math.min(100, ((temp - 100.5) / (108 - 100.5)) * 100));
 
     return { value: temp.toFixed(1), stage, label, fillPct: fillPct.toFixed(1) };
   }
 
-  /**
-   * Re-render the beat, keeping the keyboard learner on the control they were using
-   * (see js/a11y-focus.js). Dialog focus containment is applied afterwards, because the
-   * dialog element only exists once the new markup is in the DOM.
-   */
   render() {
+    if (!this.container) return;
+    
     releaseFocusContainment(this.container || document);
+    
+    if (!this._mounted) {
+      this.mountScene();
+    }
+    
     renderPreservingFocus(
       this.container,
-      () => this.renderNow(),
+      () => {
+        this._enteredBeat = this.currentBeat;
+        this.syncSceneState();
+        this.syncHud();
+        this.renderBeatContent();
+        this.renderNav();
+        
+        if (this.currentBeat === 'nap' || this.currentBeat === 'drift') {
+          this.tayHasEnteredScene = true;
+        }
+        
+        this._renderedStep = this.currentBeat === 'lead_active' 
+          ? `${this.currentBeat}-${this.activeLeadId}-${this.povStepIndex}`
+          : `${this.currentBeat}-${this.stepIndex}`;
+      },
       ['#act1-btn-pov-next', '#act1-btn-finish-lead', '#act1-btn-next-step', '#act1-btn-check-gate']
     );
-    const dialog = this.container?.querySelector('[role="dialog"]');
+    
+    const dialog = this.container.querySelector('[role="dialog"]');
     if (dialog) containFocusIn(dialog);
   }
 
-  renderNow() {
-    if (!this.container) return;
-
-    const timeStr = this.getFormattedTime();
-    const leadsCount = this.visitedLeads.size;
-    const allLeadsVisited = leadsCount === 4;
-    const isPovRaised = this.currentBeat === 'pov_rise';
-    const { driftOpacity, saturationDrop, shadeShiftX, shadeScaleY } = this.getEscalation();
-    // Beats 1D/1E/1F push in on the canopy so the nap, shade drift, and alarm read at close range.
-    const isCanopyFocus = this.currentBeat === 'nap' || this.currentBeat === 'drift' || this.currentBeat === 'alarm';
-    const isColdOpenClickable = this.currentBeat === 'cold_open' && this.coldOpenSteps[this.stepIndex]?.type !== 'mission_card';
-
-    const entering = this._enteredBeat !== this.currentBeat;
-    this._enteredBeat = this.currentBeat;
+  mountScene() {
+    if (!this.container || this._mounted) return;
 
     this.container.innerHTML = `
       <div class="act1-container" data-editor-id="act1-screen-container">
+        <div id="act1-card" class="act1-viewport-card" data-beat="" data-editor-id="act1-viewport-card">
+          <img src="Assets/Image/Lake-Blank.jpg" alt="Lakeside park landscape" class="act1-scene-img" data-editor-id="act1-lake-img" />
 
-        <!-- Main 16:9 Viewport Stage -->
-        <div
-          id="act1-card"
-          class="act1-viewport-card ${isPovRaised ? 'pov-raised' : 'low-cam'} ${isCanopyFocus ? 'canopy-focus' : ''} ${isColdOpenClickable ? 'is-cold-open-active' : ''} ${entering ? 'is-entering' : ''}"
-          data-beat="${this.currentBeat}"
-          data-editor-id="act1-viewport-card"
-          style="--act1-drift-opacity: ${driftOpacity}; --act1-saturation-drop: ${saturationDrop}%; --act1-shade-shift: ${shadeShiftX}%; --act1-shade-scale-y: ${shadeScaleY};"
-          ${isColdOpenClickable ? 'title="Click anywhere to continue (or press Space)"' : ''}
-        >
-          <!-- Background Scene Illustration -->
-          <img
-            src="Assets/Image/Lake-Blank.jpg"
-            alt="Lakeside park landscape"
-            class="act1-scene-img"
-            data-editor-id="act1-lake-img"
-          />
-
-          <!-- Persistent Top HUD Bar -->
           <header class="act1-hud-bar" data-editor-id="act1-hud-bar">
             <div class="act1-hud-group">
-              <button 
-                id="act1-btn-back-act0" 
-                class="act1-hud-btn" 
-                data-editor-id="act1-btn-back-act0"
-                title="Return to Act 0"
-                aria-label="Return to Act 0"
-              >
-                ◀ Act 0
-              </button>
-              <button 
-                id="act1-btn-title" 
-                class="act1-hud-btn" 
-                data-editor-id="act1-btn-title"
-                title="Return to Title"
-                aria-label="Return to the title screen"
-              >
-                Title
-              </button>
+              <button id="act1-btn-back-act0" class="act1-hud-btn" data-editor-id="act1-btn-back-act0" title="Return to Act 0" aria-label="Return to Act 0">◀ Act 0</button>
+              <button id="act1-btn-title" class="act1-hud-btn" data-editor-id="act1-btn-title" title="Return to Title" aria-label="Return to the title screen">Title</button>
             </div>
 
             <div class="act1-hud-group">
-              <!-- Clock HUD -->
-              <div class="act1-hud-pill clock-pill" data-editor-id="act1-hud-clock" title="Lake Time"
-                   role="status" aria-live="polite" aria-label="Lake time ${timeStr}">
-                <span id="act1-clock-text">${timeStr}</span>
+              <div class="act1-hud-pill clock-pill" data-editor-id="act1-hud-clock" title="Lake Time" role="status" aria-live="polite">
+                <span id="act1-clock-text"></span>
+              </div>
+              
+              <div class="act1-hud-pill hints-dropped-pill" id="act1-hud-hints-pill" data-editor-id="act1-hud-hints" role="status" aria-live="polite" hidden>
+                <span class="hud-label-full">HINTS DROPPED: 4</span>
+                <span class="hud-label-short">HINTS: 4</span>
+              </div>
+              <div class="act1-hud-pill leads-pill" id="act1-hud-leads-pill" data-editor-id="act1-hud-leads">
+                <span class="hud-label-full"></span>
+                <span class="hud-label-short"></span>
               </div>
 
-              <!-- Leads Counter or Relabeled Hints Dropped (Beat 1H) -->
-              ${isPovRaised ? `
-                <div class="act1-hud-pill hints-dropped-pill" data-editor-id="act1-hud-hints"
-                     role="status" aria-live="polite">
-                  <span class="hud-label-full">HINTS DROPPED: 4</span>
-                  <span class="hud-label-short">HINTS: 4</span>
+              <div class="act1-temp-gauge" data-editor-id="act1-hud-panting" role="img">
+                <div class="temp-gauge-readout">
+                  <span class="temp-gauge-value"></span>
+                  <span class="temp-gauge-label"></span>
                 </div>
-              ` : `
-                <div class="act1-hud-pill leads-pill ${allLeadsVisited ? 'all-done' : ''}" data-editor-id="act1-hud-leads">
-                  <span class="hud-label-full">LEADS INVESTIGATED: ${leadsCount}/4</span>
-                  <span class="hud-label-short">LEADS: ${leadsCount}/4</span>
-                </div>
-              `}
-
-              <!-- Tay's core body temperature — the one HUD element that is about HER,
-                   so it is styled apart from the neutral pills and reddens as she climbs. -->
-              ${(() => {
-                const t = this.getBodyTemp();
-                return `
-                  <div
-                    class="act1-temp-gauge stage-${t.stage}"
-                    data-editor-id="act1-hud-panting"
-                    style="--temp-fill: ${t.fillPct}%;"
-                    title="Tay's core body temperature — normal for a dog is 100.5–102.5°F"
-                    role="img"
-                    aria-label="Tay's body temperature ${t.value} degrees Fahrenheit, ${t.label}"
-                  >
-                    <div class="temp-gauge-readout">
-                      <span class="temp-gauge-value">${t.value}°F</span>
-                      <span class="temp-gauge-label">${t.label}</span>
-                    </div>
-                    <div class="temp-gauge-track"><span class="temp-gauge-fill"></span></div>
-                  </div>
-                `;
-              })()}
+                <div class="temp-gauge-track"><span class="temp-gauge-fill"></span></div>
+              </div>
             </div>
           </header>
 
-          <!-- Redrawn In-Scene Layer with Objects & Interactive Pins -->
-          ${this.renderSceneLayer()}
+          <div class="act1-scene-layer" data-editor-id="act1-scene-layer">
+            <div class="act1-water-layer" data-editor-id="act1-water-layer" aria-hidden="true">
+              <svg class="act1-water-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                  <path id="act1-shore-wave" d="M-2,65.6 C9,63.3 19.3,61.3 29.5,58.1 C39.8,54 50,51.7 57.2,50.6" />
+                </defs>
+                <g fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.1" stroke-linecap="round" vector-effect="non-scaling-stroke">
+                  <use href="#act1-shore-wave" class="lake-wave lake-wave-1" />
+                  <use href="#act1-shore-wave" class="lake-wave lake-wave-2" />
+                  <use href="#act1-shore-wave" class="lake-wave lake-wave-3" />
+                  <use href="#act1-shore-wave" class="lake-wave lake-wave-4" />
+                </g>
+              </svg>
+            </div>
+            <div class="shade-drift-overlay" data-editor-id="act1-shade-drift-overlay"></div>
+            
+            <div class="lake-scene-canopy" data-editor-id="act1-asset-canopy">
+              <img class="canopy-shade-layer" src="Assets/Image/Lake-Prop-Canopy-Shadow.png" alt="" draggable="false" aria-hidden="true" />
+              <img class="canopy-frame-layer" src="Assets/Image/Lake-Prop-Canopy.png" alt="" draggable="false" />
+            </div>
 
-          <!-- Speech Bubble & Dialogue Layer -->
-          <div class="act1-speech-layer" data-editor-id="act1-speech-layer">
-            ${this.renderActiveBeatContent()}
+            <div class="act1-avatar-tay" data-editor-id="act1-avatar-tay" aria-hidden="true">
+              <div class="act1-avatar-tay-sprite" data-editor-id="act1-avatar-tay-sprite">
+                <div class="tay-ground-shadow"></div>
+                <img class="tay-avatar-img tay-standing-img" draggable="false" />
+                <img class="tay-avatar-img tay-sniffing-img" draggable="false" />
+              </div>
+            </div>
+
+            <div class="lake-scene-tay" data-editor-id="act1-tay-sleeping" hidden>
+              ${this.renderTayLyingDown()}
+            </div>
+
+            ${this.renderInteractable('cooler', `<img class="interactable-img" src="Assets/Image/Lake-Prop-Cooler.png" alt="" draggable="false" />`)}
+            ${this.renderInteractable('dock', `<img class="interactable-img" src="Assets/Image/Lake-Prop-Dock.png" alt="" draggable="false" />`)}
+            ${this.renderInteractable('bowl', `<img class="interactable-img" src="Assets/Image/Lake-Prop-Bowl.png" alt="" draggable="false" />`)}
+            ${this.renderInteractable('lake', `
+              <svg class="lake-touch-svg" viewBox="0 0 100 100" aria-hidden="true">
+                <g class="lake-touch-rings">
+                  <ellipse class="lake-touch-ring ring-1" cx="50" cy="50" rx="38" ry="13.3" />
+                  <ellipse class="lake-touch-ring ring-2" cx="50" cy="50" rx="38" ry="13.3" />
+                  <ellipse class="lake-touch-ring ring-3" cx="50" cy="50" rx="38" ry="13.3" />
+                </g>
+              </svg>
+            `)}
           </div>
 
-          <!-- Bottom Navigation HUD -->
+          <div class="act1-speech-layer" data-editor-id="act1-speech-layer"></div>
+
           <nav class="act1-nav-bar" data-editor-id="act1-nav-bar">
-            <div class="act1-hud-group">
-              ${this.renderBottomLeftControls()}
-            </div>
-            <div class="act1-hud-group">
-              ${this.renderBottomRightControls()}
-            </div>
+            <div class="act1-hud-group" id="act1-nav-left"></div>
+            <div class="act1-hud-group" id="act1-nav-right"></div>
           </nav>
-
         </div>
-
       </div>
     `;
 
     this.bindEvents();
-
-    // Tay's entrance is a one-shot: mark it spent once she's on screen, so subsequent
-    // re-renders within the nap/drift beats leave her settled where she is.
-    if (this.currentBeat === 'nap' || this.currentBeat === 'drift') {
-      this.tayHasEnteredScene = true;
-    }
-    
-    this._renderedStep = this.currentBeat === 'lead_active' 
-      ? `${this.currentBeat}-${this.activeLeadId}-${this.povStepIndex}`
-      : `${this.currentBeat}-${this.stepIndex}`;
+    this._mounted = true;
   }
 
-  // A single interactive lead object: no separate floating pin/badge — the drawn
-  // object itself glows to invite the click, and shows a checkmark once visited.
-  // Hover/focus reveals a small name tooltip anchored to the object.
   renderInteractable(leadId, artHtml) {
     const lead = this.leadsData[leadId];
-    const visited = this.visitedLeads.has(leadId);
     return `
       <button
-        class="act1-interactable interactable-${leadId} ${visited ? 'visited' : ''}"
+        class="act1-interactable interactable-${leadId}"
         data-lead="${leadId}"
         data-editor-id="act1-asset-${leadId}"
-        aria-label="Investigate ${lead.tayName}${visited ? ' (already investigated)' : ''}"
-        aria-pressed="${visited}"
+        aria-label="Investigate ${lead.tayName}"
+        aria-pressed="false"
       >
         <span class="interactable-art">${artHtml}</span>
         <span class="interactable-tooltip" aria-hidden="true">${lead.tayName}</span>
-        ${visited ? '<span class="interactable-check" aria-hidden="true">✓</span>' : ''}
       </button>
     `;
   }
 
-  // Tay, drawn to the character model sheet (coat #34383B, white blaze/chest, ear pink
-  // Calculate exhaustion stage based on unique leads visited:
-  // 0 leads visited: Neutral standing pose (Tay-StandingSideProfile.png)
-  // 1 lead visited: Stage 1 (Alert) (Tay-StandingStage1-Alert.png)
-  // 2 leads visited: Stage 2 (Warm) (Tay-StandingStage2-Warm.png)
-  // 3 leads visited: Stage 3 (Panting) (Tay-StandingStage3-Panting.png)
-  // 4 leads visited: Stage 4 (Distressed) (Tay-StandingStage4-Distressed.png)
   getTayStageInfo() {
     const visitedCount = this.visitedLeads ? this.visitedLeads.size : 0;
     if (visitedCount === 0) {
@@ -572,28 +531,8 @@ export class Act1Screen {
 
   // Tay, standing & trotting in the lake scene during investigation (Beats 1A, 1B, 1C).
   // Renders the flat-vector PNG assets with sequential exhaustion stages and ground sniffing while walking.
-  renderTayStanding() {
-    const info = this.getTayStageInfo();
-    return `
-      <div class="act1-avatar-tay-sprite" data-editor-id="act1-avatar-tay-sprite">
-        <div class="tay-ground-shadow"></div>
-        <img
-          class="tay-avatar-img tay-standing-img"
-          src="${info.standingSrc}"
-          alt="Tay standing (${info.label})"
-          draggable="false"
-        />
-        <img
-          class="tay-avatar-img tay-sniffing-img"
-          src="${info.sniffingSrc}"
-          alt="Tay sniffing the ground"
-          draggable="false"
-        />
-      </div>
-    `;
-  }
 
-  // Trigger Tay's trot to the clicked hotspot before opening its dialogue
+
   triggerWalkToLead(leadId) {
     if (this.isEditModeActive()) return;
     if (this.isTayWalking) return;
@@ -622,21 +561,12 @@ export class Act1Screen {
 
     this.isTayWalking = true;
     this.playBeep(320, 'triangle', 0.08);
-
-    const tayEl = this.container?.querySelector('.act1-avatar-tay');
-    if (tayEl) {
-      tayEl.classList.add('is-walking');
-      tayEl.classList.toggle('facing-left', movingLeft);
-      tayEl.classList.toggle('facing-right', !movingLeft);
-      tayEl.style.setProperty('--tay-scale', this.getDepthScale(targetCoords.top));
-      tayEl.style.top = `${targetCoords.top}%`;
-      tayEl.style.left = `${targetCoords.left}%`;
-    }
+    this.syncSceneState();
 
     clearTimeout(this.walkTimeout);
     this.walkTimeout = setTimeout(() => {
       this.isTayWalking = false;
-      if (tayEl) tayEl.classList.remove('is-walking');
+      this.syncSceneState();
       if (leadId === 'canopy') {
         this.startNap();
       } else {
@@ -645,118 +575,156 @@ export class Act1Screen {
     }, 3200);
   }
 
-  renderSceneLayer() {
-    // The canopy becomes the "take a break" trigger once every lead has been worked.
+  syncSceneState() {
+    const card = this.container.querySelector('#act1-card');
+    if (!card) return;
+    
+    const isPovRaised = this.currentBeat === 'pov_rise';
+    const isCanopyFocus = this.currentBeat === 'nap' || this.currentBeat === 'drift' || this.currentBeat === 'alarm';
+    const isColdOpenClickable = this.currentBeat === 'cold_open' && this.coldOpenSteps[this.stepIndex]?.type !== 'mission_card';
+    const escalation = this.getEscalation();
+    const entering = this._enteredBeat !== this.currentBeat;
+    
+    card.setAttribute('data-beat', this.currentBeat);
+    card.classList.toggle('pov-raised', isPovRaised);
+    card.classList.toggle('low-cam', !isPovRaised);
+    card.classList.toggle('canopy-focus', isCanopyFocus);
+    card.classList.toggle('is-cold-open-active', isColdOpenClickable);
+    card.classList.toggle('is-entering', entering);
+    
+    card.style.setProperty('--act1-drift-opacity', escalation.driftOpacity);
+    card.style.setProperty('--act1-saturation-drop', `${escalation.saturationDrop}%`);
+    card.style.setProperty('--act1-shade-shift', `${escalation.shadeShiftX}%`);
+    card.style.setProperty('--act1-shade-scale-y', escalation.shadeScaleY);
+    if (isColdOpenClickable) {
+      card.setAttribute('title', 'Click anywhere to continue (or press Space)');
+    } else {
+      card.removeAttribute('title');
+    }
+
+    ['cooler', 'dock', 'bowl', 'lake'].forEach(leadId => {
+      const el = this.container.querySelector(`.interactable-${leadId}`);
+      if (el) {
+        const visited = this.visitedLeads.has(leadId);
+        const lead = this.leadsData[leadId];
+        el.classList.toggle('visited', visited);
+        el.setAttribute('aria-pressed', visited.toString());
+        el.setAttribute('aria-label', `Investigate ${lead.tayName}${visited ? ' (already investigated)' : ''}`);
+        
+        let checkSpan = el.querySelector('.interactable-check');
+        if (visited && !checkSpan) {
+          el.insertAdjacentHTML('beforeend', '<span class="interactable-check" aria-hidden="true">✓</span>');
+        } else if (!visited && checkSpan) {
+          checkSpan.remove();
+        }
+      }
+    });
+
     const canopyArmed = this.currentBeat === 'hub' && this.visitedLeads.size === 4;
-    // Persist Tay lying under the canopy through nap, drift, alarm, case_file, and pov_rise beats
-    const isNapping = this.currentBeat === 'nap' || this.currentBeat === 'drift' || this.currentBeat === 'alarm' || this.currentBeat === 'case_file' || this.currentBeat === 'pov_rise';
+    const canopyEl = this.container.querySelector('.lake-scene-canopy');
+    if (canopyEl) {
+      canopyEl.classList.toggle('canopy-armed', canopyArmed);
+      if (canopyArmed) {
+        canopyEl.setAttribute('role', 'button');
+        canopyEl.setAttribute('tabindex', '0');
+        canopyEl.setAttribute('aria-label', 'Rest in the shade');
+        if (!canopyEl.querySelector('.canopy-tooltip')) {
+          canopyEl.insertAdjacentHTML('beforeend', '<span class="canopy-tooltip">Rest in the shade</span>');
+        }
+      } else {
+        canopyEl.removeAttribute('role');
+        canopyEl.removeAttribute('tabindex');
+        canopyEl.removeAttribute('aria-label');
+        const tooltip = canopyEl.querySelector('.canopy-tooltip');
+        if (tooltip) tooltip.remove();
+      }
+    }
+
     const showStandingTay = this.currentBeat === 'hub' || this.currentBeat === 'cold_open' || this.currentBeat === 'gate';
+    const tayEl = this.container.querySelector('.act1-avatar-tay');
+    if (tayEl) {
+      tayEl.hidden = !showStandingTay;
+      if (showStandingTay) {
+        const info = this.getTayStageInfo();
+        tayEl.className = `act1-avatar-tay stage-${info.stageNum} ${this.isTayWalking ? 'is-walking' : ''} ${this.tayFacingLeft ? 'facing-left' : 'facing-right'}`;
+        tayEl.style.top = `${this.tayPosition.top}%`;
+        tayEl.style.left = `${this.tayPosition.left}%`;
+        tayEl.style.setProperty('--tay-scale', this.getDepthScale(this.tayPosition.top));
+        
+        const standingImg = tayEl.querySelector('.tay-standing-img');
+        if (standingImg && standingImg.getAttribute('src') !== info.standingSrc) {
+          standingImg.setAttribute('src', info.standingSrc);
+          standingImg.setAttribute('alt', `Tay standing (${info.label})`);
+        }
+        const sniffingImg = tayEl.querySelector('.tay-sniffing-img');
+        if (sniffingImg && sniffingImg.getAttribute('src') !== info.sniffingSrc) {
+          sniffingImg.setAttribute('src', info.sniffingSrc);
+        }
+      }
+    }
 
-    return `
-      <!-- Redrawn Scene Layer on Lake-Blank.jpg from Tay's Low First-Person Dog Eyeline -->
-      <div class="act1-scene-layer" data-editor-id="act1-scene-layer">
+    const isNapping = this.currentBeat === 'nap' || this.currentBeat === 'drift' || this.currentBeat === 'alarm' || this.currentBeat === 'case_file' || this.currentBeat === 'pov_rise';
+    const taySleepEl = this.container.querySelector('.lake-scene-tay');
+    if (taySleepEl) {
+      taySleepEl.hidden = !isNapping;
+      if (isNapping) {
+        taySleepEl.classList.toggle('tay-entering', !this.tayHasEnteredScene);
+        taySleepEl.classList.toggle('tay-drifting', this.currentBeat !== 'nap');
+      }
+    }
+  }
 
-        <!-- The lake's surface motion. This is scene-wide, not part of the lake hit area:
-             the ripples used to live inside the interactable, so they only ever animated
-             across the leftmost 13% of a body of water that runs to x=57%. The layer is
-             clipped to the water's real outline, sampled column-by-column from
-             Lake-Blank.jpg — far shore flat at y=48.5%, near shore running 65.6% down at
-             the left edge up to 50.6% where the tree occludes it. -->
-        <div class="act1-water-layer" data-editor-id="act1-water-layer" aria-hidden="true">
-          <svg class="act1-water-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <defs>
-              <!-- Traced from that same sand/water boundary, so every wavefront runs
-                   parallel to the shore across the lake's full visible width. -->
-              <path id="act1-shore-wave"
-                    d="M-2,65.6 C9,63.3 19.3,61.3 29.5,58.1 C39.8,54 50,51.7 57.2,50.6" />
-            </defs>
-            <g fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.1"
-               stroke-linecap="round" vector-effect="non-scaling-stroke">
-              <use href="#act1-shore-wave" class="lake-wave lake-wave-1" />
-              <use href="#act1-shore-wave" class="lake-wave lake-wave-2" />
-              <use href="#act1-shore-wave" class="lake-wave lake-wave-3" />
-              <use href="#act1-shore-wave" class="lake-wave lake-wave-4" />
-            </g>
-          </svg>
-        </div>
+  syncHud() {
+    const timeStr = this.getFormattedTime();
+    const clockText = this.container.querySelector('#act1-clock-text');
+    if (clockText) clockText.textContent = timeStr;
+    const clockPill = this.container.querySelector('.clock-pill');
+    if (clockPill) clockPill.setAttribute('aria-label', `Lake time ${timeStr}`);
 
-        <!-- Persistent shade-drift wash: opacity driven by --act1-drift-opacity (see getEscalation()) -->
-        <div class="shade-drift-overlay" data-editor-id="act1-shade-drift-overlay"></div>
+    const isPovRaised = this.currentBeat === 'pov_rise';
+    const hintsPill = this.container.querySelector('#act1-hud-hints-pill');
+    const leadsPill = this.container.querySelector('#act1-hud-leads-pill');
+    
+    if (hintsPill) hintsPill.hidden = !isPovRaised;
+    if (leadsPill) {
+      leadsPill.hidden = isPovRaised;
+      if (!isPovRaised) {
+        const leadsCount = this.visitedLeads.size;
+        const allLeadsVisited = leadsCount === 4;
+        leadsPill.classList.toggle('all-done', allLeadsVisited);
+        const full = leadsPill.querySelector('.hud-label-full');
+        const short = leadsPill.querySelector('.hud-label-short');
+        if (full) full.textContent = `LEADS INVESTIGATED: ${leadsCount}/4`;
+        if (short) short.textContent = `LEADS: ${leadsCount}/4`;
+      }
+    }
 
-        <!-- Pop-Up Shade Canopy. Scenery until all four leads are worked, then it becomes
-             the break trigger. Its cast shadow is a separate element so it can slide as the
-             sun moves (--act1-shade-shift), independently of the canopy structure. -->
-        <div
-          class="lake-scene-canopy ${canopyArmed ? 'canopy-armed' : ''}"
-          data-editor-id="act1-asset-canopy"
-          ${canopyArmed ? 'role="button" tabindex="0" aria-label="Rest in the shade"' : ''}
-        >
-          <img class="canopy-shade-layer" src="Assets/Image/Lake-Prop-Canopy-Shadow.png"
-               alt="" draggable="false" aria-hidden="true" />
-          <img class="canopy-frame-layer" src="Assets/Image/Lake-Prop-Canopy.png"
-               alt="" draggable="false" />
-          ${canopyArmed ? '<span class="canopy-tooltip">Rest in the shade</span>' : ''}
-        </div>
+    const t = this.getBodyTemp();
+    const gauge = this.container.querySelector('.act1-temp-gauge');
+    if (gauge) {
+      gauge.className = `act1-temp-gauge stage-${t.stage}`;
+      gauge.style.setProperty('--temp-fill', `${t.fillPct}%`);
+      gauge.setAttribute('aria-label', `Tay's body temperature ${t.value} degrees Fahrenheit, ${t.label}`);
+      
+      const valEl = gauge.querySelector('.temp-gauge-value');
+      const labelEl = gauge.querySelector('.temp-gauge-label');
+      if (valEl) valEl.textContent = `${t.value}°F`;
+      if (labelEl) labelEl.textContent = t.label;
+    }
+  }
 
-        <!-- Tay, standing & investigating in the hub/cold open/gate beats -->
-        ${showStandingTay ? `
-          <div
-            class="act1-avatar-tay stage-${this.getTayStageInfo().stageNum} ${this.isTayWalking ? 'is-walking' : ''} ${this.tayFacingLeft ? 'facing-left' : 'facing-right'}"
-            data-editor-id="act1-avatar-tay"
-            style="top: ${this.tayPosition.top}%; left: ${this.tayPosition.left}%; --tay-scale: ${this.getDepthScale(this.tayPosition.top)};"
-            aria-hidden="true"
-          >
-            ${this.renderTayStanding()}
-          </div>
-        ` : ''}
+  renderBeatContent() {
+    const speechLayer = this.container.querySelector('.act1-speech-layer');
+    if (speechLayer) {
+      speechLayer.innerHTML = this.renderActiveBeatContent();
+    }
+  }
 
-        <!-- Tay, asleep under the canopy (Beats 1D/1E/1F/1G/1H) -->
-        ${isNapping ? `
-          <div
-            class="lake-scene-tay ${this.tayHasEnteredScene ? '' : 'tay-entering'} ${this.currentBeat !== 'nap' ? 'tay-drifting' : ''}"
-            data-editor-id="act1-tay-sleeping"
-          >
-            ${this.renderTayLyingDown()}
-          </div>
-        ` : ''}
-
-        <!-- 1. The Cooler ("The Vault") — out in open sun, off the tree roots -->
-        ${this.renderInteractable('cooler', `
-          <img class="interactable-img" src="Assets/Image/Lake-Prop-Cooler.png" alt="" draggable="false" />
-        `)}
-
-        <!-- 2. The Wooden Dock ("High Ground") — drawn in receding perspective so it runs
-             out from the beach into the water; the near (short) end meets the shoreline
-             square-on, and the whole asset is rotated to the shore normal in CSS. -->
-        ${this.renderInteractable('dock', `
-          <img class="interactable-img" src="Assets/Image/Lake-Prop-Dock.png" alt="" draggable="false" />
-        `)}
-
-        <!-- 3. Her Water Bowl ("The Water One") — larger, and well down from full:
-             it has been evaporating in the sun since noon. -->
-        ${this.renderInteractable('bowl', `
-          <img class="interactable-img" src="Assets/Image/Lake-Prop-Bowl.png" alt="" draggable="false" />
-        `)}
-
-        <!-- 4. The Lake ("The Biggest Bowl") — open water is already painted in the
-             background plate, so the interactable itself carries no art: just the hit
-             area and its ring token. The water's motion is a separate scene-wide layer
-             (below), because the ripples belong to the whole lake, not to this hit box. -->
-        ${this.renderInteractable('lake', `
-          <svg class="lake-touch-svg" viewBox="0 0 100 100" aria-hidden="true">
-            <!-- Rings spreading from a point on the water, the way a drop reads. They are
-                 flattened to ry/rx = 0.35 because this is a receding plane seen from a low
-                 eyeline — true circles would sit up out of the water like a decal. -->
-            <g class="lake-touch-rings">
-              <ellipse class="lake-touch-ring ring-1" cx="50" cy="50" rx="38" ry="13.3" />
-              <ellipse class="lake-touch-ring ring-2" cx="50" cy="50" rx="38" ry="13.3" />
-              <ellipse class="lake-touch-ring ring-3" cx="50" cy="50" rx="38" ry="13.3" />
-            </g>
-          </svg>
-        `)}
-
-      </div>
-    `;
+  renderNav() {
+    const leftNav = this.container.querySelector('#act1-nav-left');
+    const rightNav = this.container.querySelector('#act1-nav-right');
+    if (leftNav) leftNav.innerHTML = this.renderBottomLeftControls();
+    if (rightNav) rightNav.innerHTML = this.renderBottomRightControls();
   }
 
   renderActiveBeatContent() {
@@ -1358,215 +1326,98 @@ export class Act1Screen {
   }
 
   bindEvents() {
-    if (!this.container) return;
+    this.handleClick = this.handleClick || ((e) => {
+      if (this.isEditModeActive()) return;
 
-    // 1. Navigation Buttons (Back & Title)
-    const backAct0Btn = this.container.querySelector('#act1-btn-back-act0');
-    if (backAct0Btn) {
-      backAct0Btn.addEventListener('click', (e) => {
+      const target = e.target;
+
+      if (target.closest('#act1-btn-back-act0')) {
         e.stopPropagation();
-        if (this.isEditModeActive()) return;
         this.app?.navigateTo('act0');
-      });
-    }
-
-    const titleBtn = this.container.querySelector('#act1-btn-title');
-    if (titleBtn) {
-      titleBtn.addEventListener('click', (e) => {
+        return;
+      }
+      if (target.closest('#act1-btn-title')) {
         e.stopPropagation();
-        if (this.isEditModeActive()) return;
         this.app?.navigateTo('opening');
-      });
-    }
+        return;
+      }
 
-    // Card click-through: clicking anywhere on the scene advances during cold_open dialogue
-    const card = this.container.querySelector('#act1-card');
-    if (card) {
-      card.addEventListener('click', (e) => {
-        if (this.isEditModeActive()) return;
-        if (e.target.closest('.act1-nav-bar, .act1-hud-bar, .act1-mission-card, .act1-interactable, .act1-pov-card')) return;
-        if (this.currentBeat === 'cold_open') {
-          if (this.coldOpenSteps[this.stepIndex]?.type === 'mission_card') return;
-          this.nextSubStep();
-        }
-      });
-    }
-
-    // 2. Generic "Next Step" Button
-    const nextStepBtn = this.container.querySelector('#act1-btn-next-step');
-    if (nextStepBtn) {
-      nextStepBtn.addEventListener('click', (e) => {
+      const interactable = target.closest('.act1-interactable');
+      if (interactable) {
         e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        this.nextSubStep();
-      });
-    }
+        if (this.currentBeat !== 'hub' || this.isTayWalking) return;
+        this.triggerWalkToLead(interactable.getAttribute('data-lead'));
+        return;
+      }
 
-    // 3. Start Hub from Cold Open
-    const startHubBtn = this.container.querySelector('#act1-btn-start-hub');
-    if (startHubBtn) {
-      startHubBtn.addEventListener('click', (e) => {
+      const canopyEl = target.closest('.lake-scene-canopy.canopy-armed');
+      if (canopyEl) {
         e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        this.currentBeat = 'hub';
-        this.stepIndex = 0;
-        this.playBeep(520, 'triangle', 0.15);
-        this.render();
-      });
-    }
-
-    const startHubModalBtn = this.container.querySelector('#act1-btn-start-hub-modal');
-    if (startHubModalBtn) {
-      startHubModalBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        this.currentBeat = 'hub';
-        this.stepIndex = 0;
-        this.playBeep(520, 'triangle', 0.15);
-        this.render();
-      });
-    }
-
-    // 4. In-Scene Interactable Clicks (cooler, dock, bowl, lake) — only live during the hub
-    this.container.querySelectorAll('.act1-interactable').forEach(el => {
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive() || this.currentBeat !== 'hub' || this.isTayWalking) return;
-        this.triggerWalkToLead(el.getAttribute('data-lead'));
-      });
-    });
-
-    // 4b. The canopy is the break trigger once all four leads are worked
-    const canopyEl = this.container.querySelector('.lake-scene-canopy.canopy-armed');
-    if (canopyEl) {
-      const triggerBreak = (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive() || this.currentBeat !== 'hub' || this.isTayWalking) return;
+        if (this.currentBeat !== 'hub' || this.isTayWalking) return;
         if (this.visitedLeads.size < 4) return;
         this.triggerWalkToLead('canopy');
-      };
-      canopyEl.addEventListener('click', triggerBreak);
-      canopyEl.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          triggerBreak(e);
+        return;
+      }
+
+      if (this.currentBeat === 'cold_open') {
+        const isMissionCardStep = this.coldOpenSteps[this.stepIndex]?.type === 'mission_card';
+        if (!isMissionCardStep && !target.closest('.act1-nav-bar, .act1-hud-bar, .act1-mission-card, .act1-interactable, .act1-pov-card')) {
+          this.nextSubStep();
+          return;
         }
-      });
-    }
+      }
 
-    // 5. POV Viewport Close / Done Investigating Button
-    const povCloseBtn = this.container.querySelector('#pov-btn-close');
-    if (povCloseBtn) {
-      povCloseBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        this.returnToHub();
-      });
-    }
+      const buttonMap = {
+        '#act1-btn-next-step': () => this.nextSubStep(),
+        '#act1-btn-start-hub': () => {
+          this.currentBeat = 'hub';
+          this.stepIndex = 0;
+          this.playBeep(520, 'triangle', 0.15);
+          this.render();
+        },
+        '#act1-btn-start-hub-modal': () => {
+          this.currentBeat = 'hub';
+          this.stepIndex = 0;
+          this.playBeep(520, 'triangle', 0.15);
+          this.render();
+        },
+        '#pov-btn-close': () => this.returnToHub(),
+        '#act1-btn-pov-next': () => this.nextPovStep(),
+        '#act1-btn-finish-lead': () => this.returnToHub(),
+        '#act1-btn-return-hub': () => this.returnToHub(),
+        '#act1-btn-check-gate': () => {
+          this.currentBeat = 'gate';
+          this.render();
+        },
+        '#act1-btn-start-drift': () => this.startShadeDrift(),
+        '#act1-btn-start-alarm': () => this.startAlarm(),
+        '#act1-btn-start-case-file': () => {
+          this.currentBeat = 'case_file';
+          this.render();
+        },
+        '#act1-btn-proceed-pov': () => {
+          this.currentBeat = 'pov_rise';
+          this.pantingLevel = 4;
+          this.render();
+        },
+        '#act1-btn-start-act2': () => this.proceedToAct2(),
+        '#act1-btn-recap-coldopen': () => {
+          this.currentBeat = 'cold_open';
+          this.stepIndex = 0;
+          this.render();
+        }
+      };
 
-    const povNextBtn = this.container.querySelector('#act1-btn-pov-next');
-    if (povNextBtn) {
-      povNextBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        this.nextPovStep();
-      });
-    }
+      for (const [selector, handler] of Object.entries(buttonMap)) {
+        if (target.closest(selector)) {
+          e.stopPropagation();
+          handler();
+          return;
+        }
+      }
+    });
 
-    const finishLeadBtn = this.container.querySelector('#act1-btn-finish-lead');
-    if (finishLeadBtn) {
-      finishLeadBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        this.returnToHub();
-      });
-    }
-
-    const returnHubBtn = this.container.querySelector('#act1-btn-return-hub');
-    if (returnHubBtn) {
-      returnHubBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        this.returnToHub();
-      });
-    }
-
-    // 6. Gate Check — only rendered while leads remain, so it always shows the gate beat.
-    //    (Starting the nap is the canopy's job now; see 4b.)
-    const checkGateBtn = this.container.querySelector('#act1-btn-check-gate');
-    if (checkGateBtn) {
-      checkGateBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        this.currentBeat = 'gate';
-        this.render();
-      });
-    }
-
-    // 7. Start Shade Drift
-    const startDriftBtn = this.container.querySelector('#act1-btn-start-drift');
-    if (startDriftBtn) {
-      startDriftBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        this.startShadeDrift();
-      });
-    }
-
-    // 9. Start Alarm from Drift
-    const startAlarmBtn = this.container.querySelector('#act1-btn-start-alarm');
-    if (startAlarmBtn) {
-      startAlarmBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        this.startAlarm();
-      });
-    }
-
-    // 10. Start Case File
-    const startCaseFileBtn = this.container.querySelector('#act1-btn-start-case-file');
-    if (startCaseFileBtn) {
-      startCaseFileBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        this.currentBeat = 'case_file';
-        this.render();
-      });
-    }
-
-    // 11. Proceed to POV Rise
-    const proceedPovBtn = this.container.querySelector('#act1-btn-proceed-pov');
-    if (proceedPovBtn) {
-      proceedPovBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        this.currentBeat = 'pov_rise';
-        this.pantingLevel = 4;
-        this.render();
-      });
-    }
-
-    // 12. Proceed to Act 2
-    const startAct2Btn = this.container.querySelector('#act1-btn-start-act2');
-    if (startAct2Btn) {
-      startAct2Btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        this.proceedToAct2();
-      });
-    }
-
-    // 13. Replay Intro
-    const recapColdOpenBtn = this.container.querySelector('#act1-btn-recap-coldopen');
-    if (recapColdOpenBtn) {
-      recapColdOpenBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.isEditModeActive()) return;
-        this.currentBeat = 'cold_open';
-        this.stepIndex = 0;
-        this.render();
-      });
-    }
+    this.container.addEventListener('click', this.handleClick);
   }
 
   isEditModeActive() {
