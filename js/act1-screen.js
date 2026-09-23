@@ -1188,7 +1188,7 @@ export class Act1Screen {
             ${[
               { id: 'cooler', object: 'The cooler', risk: 'Full sun, no shade, 15 minutes pressed against it — trapped heat' },
               { id: 'dock', object: 'The dock', risk: '137°F dock wood surface — radiant heat at 4 inches' },
-              { id: 'bowl', object: 'The water bowl', risk: 'Warm sun-baked water — zero hydration since car ride' },
+              { id: 'bowl', object: 'The water bowl', risk: 'Warm sun-baked water — zero hydration since the car ride' },
               { id: 'lake', object: 'The lake', risk: 'The immediate cooling source she never used' }
             ].map(({ id, object, risk }) => {
               const lead = this.leadsData[id];

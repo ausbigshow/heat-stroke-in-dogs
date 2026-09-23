@@ -50,7 +50,7 @@ export class Act0Screen {
         id: 'step4',
         speaker: 'callie',
         name: 'Callie',
-        text: "She's a French Bulldog. She loves snacks, the lake, and me. In whatever order you want.",
+        text: "She's a French bulldog. She loves snacks, the lake, and me. In whatever order you want.",
         style: 'top: 7%; left: 11%; max-width: var(--bubble-max-w, 320px);'
       },
       {
@@ -305,7 +305,7 @@ export class Act0Screen {
                   class="act0-hud-btn" 
                   data-editor-id="act0-btn-next"
                   data-advance-line
-                  title="Next Line (Space / ArrowRight / Click Image)"
+                  title="Next line (Space, Right Arrow, or click the image)"
                   aria-label="Next line"
                 >
                   Next <span aria-hidden="true">▶</span>

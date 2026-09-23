@@ -185,11 +185,11 @@ class CourseApp {
         <!-- Main Body Area -->
         <div class="opening-body">
           <!-- Characters Container (Placed off-center to the left third of viewport) -->
-          <div class="characters-container" data-editor-id="opening-characters" aria-label="Illustration of Callie and her French Bulldog, Tay">
+          <div class="characters-container" data-editor-id="opening-characters" aria-label="Illustration of Callie and her French bulldog, Tay">
             <div class="character-card">
               <img 
                 src="Assets/Image/CallieAndTay.jpg" 
-                alt="Callie sitting on a couch with her French Bulldog Tay" 
+                alt="Callie sitting on a couch with her French bulldog, Tay" 
                 class="character-image"
                 data-editor-id="opening-character-img"
               >

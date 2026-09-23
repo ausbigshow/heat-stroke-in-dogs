@@ -120,9 +120,9 @@ export class Act3Screen {
       habitsTitle: 'Before and during the day',
       habits: [
         { icon: 'shade', label: 'Shade first', text: 'Set up real shade before anything else, and check it every 30 minutes. Shade moves. A sleeping dog doesn\'t.' },
-        { icon: 'water', label: 'Water in the shade', text: 'Top up your dog\'s water whenever you top up your own. Warm water in the sun doesn\'t get drunk.' },
+        { icon: 'water', label: 'Water in the shade', text: 'Top off your dog\'s water whenever you top off your own. Warm water in the sun doesn\'t get drunk.' },
         { icon: 'clock', label: 'Go early or late', text: 'Mornings and evenings. The middle of the afternoon is the hottest part of the day.' },
-        { icon: 'hand', label: 'The 5-second test', text: 'Palm flat on the sand, pavement or boards for 5 seconds. If you can\'t hold it there, your dog can\'t stand on it.' },
+        { icon: 'hand', label: 'The 5-second test', text: 'Palm flat on the sand, pavement, or boards for 5 seconds. If you can\'t hold it there, your dog can\'t stand on it.' },
         { icon: 'sun', label: 'Cooler in the shade', text: 'Put the cooler in the shade and keep your dog there with it. Cold on the outside is still an oven on the inside.' },
         { icon: 'home', label: 'Some days, stay in', text: 'Too hot or too humid? Air conditioning and a puzzle toy at home.' }
       ],
@@ -131,12 +131,12 @@ export class Act3Screen {
       stages: [
         { stage: 'Early', signs: ['Panting: fast, shallow, never pausing', 'Lethargy: just looks tired'] },
         { stage: 'Building', signs: ['Ears hot right through, with no cool spot'] },
-        { stage: 'Advanced', signs: ['Brick-red gums; press and let go, and the colour takes over 2 seconds to come back', 'Slow to respond to their name, then no response'] }
+        { stage: 'Advanced', signs: ['Brick-red gums; press and let go, and the color takes over 2 seconds to come back', 'Slow to respond to their name, then no response'] }
       ],
       actTitle: 'If you see them: cool first, then go',
       steps: [
         'Get them into shade and get air moving over them.',
-        'Wet the belly, armpits, groin and paws with cool water. Not ice, and never over the face.',
+        'Wet the belly, armpits, groin, and paws with cool water. Not ice, and never over the face.',
         'Offer small sips. Never force water.',
         'Call the vet and tell them you are coming.',
         'Drive with the AC on and the windows cracked, your dog lying on a flat cool wet towel. Never wrapped in it.'
@@ -198,7 +198,7 @@ export class Act3Screen {
         reported: 'Brick red · refill over 2 seconds',
         stageNo: 3,
         stage: 'Advanced',
-        note: 'Refill time is the measurement. Colour on its own can fool you.'
+        note: 'Refill time is the measurement. Color on its own can fool you.'
       },
       {
         id: 'name',
@@ -329,7 +329,7 @@ export class Act3Screen {
         id: 'timing',
         icon: '2',
         label: 'Go early or late, not one in the afternoon',
-        reply: "Mornings or evenings. 1 PM in July is the worst hour of the day, and it's the one everybody picks."
+        reply: "Mornings or evenings. In July, 1 PM is the worst hour of the day, and it's the one everybody picks."
       },
       {
         id: 'temp_humidity',
@@ -369,7 +369,7 @@ export class Act3Screen {
         cast: { reyes: 'serious' },
         stamp: {
           metric: '10–15 min break every 15–20',
-          line: 'Past 80°F: every 15–20 minutes of activity, 10–15 minutes of shade, water and stillness. Not a shorter walk — more stops.'
+          line: 'Past 80°F: every 15–20 minutes of activity, 10–15 minutes of shade, water, and stillness. Not a shorter walk — more stops.'
         }
       }
     ];
@@ -402,7 +402,7 @@ export class Act3Screen {
     // artifact, no takeaway PDF. The module ends on story.
     this.dischargeSheet = {
       title: 'Discharge instructions',
-      patient: 'TAY · French Bulldog · 4 yr · F/S',
+      patient: 'TAY · French bulldog · 4 yr · F/S',
       items: [
         { glyph: '1', label: "Bloodwork today: normal", sub: "Good. Not the whole story — this is a snapshot of right now." },
         { glyph: '2', label: 'Recheck in 24–48 hours', sub: 'Kidney and clotting problems surface late. Book it before you leave.' },
@@ -416,9 +416,9 @@ export class Act3Screen {
     // Evening light instead of afternoon. The frame closes itself.
     this.homeSteps = [
       { type: 'stage', text: 'Tay asleep on the cushion. Callie sitting next to her, not watching TV, watching the dog.', sceneCue: 'Tay asleep on the cushion. Callie sitting next to her, not watching TV, watching the dog.' },
-      { type: 'stage', text: 'She puts a hand on Tay’s side. Feels it rise. Leaves it there.', sceneCue: 'She puts a hand on Tay’s side. Feels it rise. Leaves it there.' },
+      { type: 'stage', text: 'She puts a hand on Tay\'s side. Feels it rise. Leaves it there.', sceneCue: 'She puts a hand on Tay\'s side. Feels it rise. Leaves it there.' },
       { speaker: 'callie', business: 'quiet', text: "You're okay." },
-      { type: 'stage', text: 'Tay’s ear moves. She doesn’t wake up. One sleepy exhale.', sceneCue: 'Tay’s ear moves. She doesn’t wake up. One sleepy exhale.' },
+      { type: 'stage', text: 'Tay\'s ear moves. She doesn\'t wake up. One sleepy exhale.', sceneCue: 'Tay\'s ear moves. She doesn\'t wake up. One sleepy exhale.' },
       { speaker: 'tay', onomatopoeia: 'Hhhff…', text: '…good day.' },
       { speaker: 'callie', business: 'a beat', text: "Yeah. Next one'll be better." }
     ];
@@ -739,7 +739,7 @@ export class Act3Screen {
       case 'recap':
         return 'A summary of what happened to Tay this afternoon.';
       default:
-        return 'The story is over. You can replay an act or return to the title screen.';
+        return 'The story is over. You can start over from the beginning.';
     }
   }
 

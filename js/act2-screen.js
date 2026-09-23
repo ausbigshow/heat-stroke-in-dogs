@@ -124,8 +124,8 @@ export class Act2Screen {
     this.callSteps = [
       { speaker: 'system', text: 'Calling Lakeside Emergency Clinic…' },
       { speaker: 'tech', text: "Lakeside Emergency, this is Dana." },
-      { speaker: 'callie', text: "My dog's down. French Bulldog, she's 4, she won't get up. We're out at the lake." },
-      { speaker: 'tech', text: "Okay. Is she breathing? Is she standing up? Alright, stay with me. I need you to look at 4 things and tell me what you see. Don't move her yet." },
+      { speaker: 'callie', text: "My dog's down. French bulldog, she's 4, she won't get up. We're out at the lake." },
+      { speaker: 'tech', text: "Okay. Is she breathing? Is she standing up? All right, stay with me. I need you to look at 4 things and tell me what you see. Don't move her yet." },
       { speaker: 'tech', text: "You're my eyes right now. Take them in whatever order you can get to. Start whenever you're ready." }
     ];
 
@@ -136,12 +136,12 @@ export class Act2Screen {
         id: 'gums',
         label: 'Lift her lip',
         hudLabel: 'Gums + refill',
-        hotspotAria: 'Lift Tay\'s lip and check her gum colour and capillary refill time',
-        techPrompt: "Lift her lip for me. 2 things — what colour are the gums, and when you press on them and let go, how many seconds until the colour comes back?",
+        hotspotAria: 'Lift Tay\'s lip and check her gum color and capillary refill time',
+        techPrompt: "Lift her lip for me. Two things — what color are the gums, and when you press on them and let go, how many seconds until the color comes back?",
         // Carries the "under two seconds" threshold in dialogue. It used to be printed in
         // the readout panel beside the art; with those panels gone, this spoken line is
         // the only place the learner meets the normal range, so it has to live here.
-        techResponse: "Both of those are outside normal — under 2 seconds is what I want to hear. Colour on its own can fool you; the refill time is the part I actually needed."
+        techResponse: "Both of those are outside normal — under 2 seconds is what I want to hear. Color on its own can fool you; the refill time is the part I actually needed."
       },
       ears: {
         id: 'ears',
@@ -164,7 +164,7 @@ export class Act2Screen {
         label: 'Say her name',
         hudLabel: 'Name response',
         hotspotAria: 'Say Tay\'s name and count how long she takes to respond',
-        techPrompt: "Say her name in your normal voice and count out loud until she reacts. I want the number, even if the number is 'she didn't'.",
+        techPrompt: "Say her name in your normal voice and count out loud until she reacts. I want the number, even if the number is \"she didn't.\"",
         techResponse: "A slow answer to her own name is not her being tired. That's heat reaching the brain, and it shows up before anything else looks wrong."
       }
     };
@@ -188,7 +188,7 @@ export class Act2Screen {
             id: 'shade_air',
             label: 'Get her out of the sun and get air moving over her',
             correct: true,
-            result: "You haul the canopy over her, drag the beach umbrella around to close the gap, and start fanning her with your shirt. It is a stupid-looking way to move air and it is moving air. She is out of the sun in about 8 seconds.",
+            result: "You haul the canopy over her, drag the beach umbrella around to close the gap, and start fanning her with your shirt. It is a stupid-looking way to move air, and it is moving air. She is out of the sun in about 8 seconds.",
             stamp: {
               metric: 'Shade first, then airflow',
               line: "Stop the heat going in before you start taking heat out. Moving air over a panting dog cools her, and it costs nothing."
@@ -299,7 +299,7 @@ export class Act2Screen {
             id: 'wrap_and_leave',
             label: 'Wrap her up tight in it for the drive',
             correct: false,
-            consequence: "12 minutes in, that towel is at her body temperature and wrapped around her. It has stopped taking heat away and started holding it in — you have insulated her, in a hot car, on the way to an emergency.",
+            consequence: "Twelve minutes in, that towel is at her body temperature and wrapped around her. It has stopped taking heat away and started holding it in — you have insulated her, in a hot car, on the way to an emergency.",
             correction: "Never wrap her. Lay the towel flat and put her on it, then get air moving over her. A towel around a dog stops cooling and starts trapping."
           }
         ]
@@ -561,7 +561,7 @@ export class Act2Screen {
       responseSeconds,
       // Colour is ALWAYS reported alongside the refill time and a written label —
       // never colour alone. See the colourblind-safety note in renderGumArt().
-      gumLabel: s < 0.72 ? 'Brick red, tacky to the touch' : 'Dull red, greying at the edges',
+      gumLabel: s < 0.72 ? 'Brick red, tacky to the touch' : 'Dull red, graying at the edges',
       gumSwatch: s < 0.72 ? '#B4443C' : '#9C6A66',
       gumPattern: s < 0.72 ? 'hatch' : 'dots',
       gumSeverityWord: s < 0.72 ? 'Abnormal' : 'Worse than abnormal',
@@ -1324,15 +1324,15 @@ export class Act2Screen {
   // once severity passes the threshold where that label becomes "Dull red, greying…".
   getCallieReportLine(checkId, v) {
     if (checkId === 'gums') {
-      const colour = v.gumLabel.charAt(0).toLowerCase() + v.gumLabel.slice(1);
+      const color = v.gumLabel.charAt(0).toLowerCase() + v.gumLabel.slice(1);
       // Whole seconds. Callie is counting out loud under pressure, not reading an
       // instrument — nobody counts "three point three". The underlying vitals keep the
       // decimal, so the gum refill animation still runs on the precise value.
       const counted = Math.round(parseFloat(v.refillSeconds));
-      return `Her gums are ${colour}. I pressed and counted — about ${counted} seconds before the colour came back.`;
+      return `Her gums are ${color}. I pressed and counted — about ${counted} seconds before the color came back.`;
     }
     if (checkId === 'ears') {
-      return `Hot. Really hot. I'm going right round the edges and there's no cool spot anywhere on her.`;
+      return `Hot. Really hot. I'm going all the way around the edges and there's no cool spot anywhere on her.`;
     }
     if (checkId === 'panting') {
       return `Fast. Fast and shallow — about ${v.pantRate} in a minute. And she never closes her mouth. Not once in 15 seconds.`;
@@ -1470,9 +1470,9 @@ export class Act2Screen {
     const body = `
       <div class="act2-phone-line line-tech">
         <span class="act2-phone-line-who">Dana · Vet Tech</span>
-        <p class="act2-phone-line-text">"Not yet. I still need ${missing.length === 1
+        <p class="act2-phone-line-text">Not yet. I still need ${missing.length === 1
           ? 'one more thing'
-          : `${missing.length} more`} before I can tell you anything useful."</p>
+          : `${missing.length} more`} before I can tell you anything useful.</p>
       </div>
       <ul class="act2-triage-list" data-editor-id="act2-gate-list">
         ${missing.map(m => `
@@ -1500,7 +1500,7 @@ export class Act2Screen {
       const body = `
         <div class="act2-phone-line line-tech">
           <span class="act2-phone-line-who">Dana · Vet Tech</span>
-          <p class="act2-phone-line-text">"One more question, and it's the one that matters. How long has this been going on?"</p>
+          <p class="act2-phone-line-text">One more question, and it's the one that matters. How long has this been going on?</p>
         </div>
       `;
       return `
@@ -1529,7 +1529,7 @@ export class Act2Screen {
         </ol>
         <p class="act2-payoff-tech">
           <span class="act2-phone-line-who">Dana · Vet Tech</span>
-          95 minutes of build-up, and everything you just described to me. I'm not
+          Ninety-five minutes of buildup, and everything you just described to me. I'm not
           going to make you wait for a number. Bring her in — and start cooling her before you drive.
         </p>
         <div class="act2-payoff-footer">
@@ -1561,7 +1561,7 @@ export class Act2Screen {
                   data-editor-id="act2-decision-wait"
                   aria-label="Give her 5 minutes to settle">
             <span class="act2-decision-option-title">Give her 5 minutes to settle</span>
-            <span class="act2-decision-option-sub">She's been hot before. Let her rest and see if she comes round.</span>
+            <span class="act2-decision-option-sub">She's been hot before. Let her rest and see if she comes around.</span>
           </button>
         </div>
       </div>
@@ -1604,7 +1604,7 @@ export class Act2Screen {
             </div>
           </div>
           <p class="act2-waiting-note">
-            Nothing here is a game over. She is still in front of you and you can still do
+            Nothing here is game over. She is still in front of you and you can still do
             every single thing you were going to do. It is just 5 minutes worse.
           </p>
         </div>
@@ -1616,7 +1616,7 @@ export class Act2Screen {
         ${this.renderPhoneUi(`
           <div class="act2-phone-line line-tech">
             <span class="act2-phone-line-who">Dana · Vet Tech</span>
-            <p class="act2-phone-line-text">"Callie. Are you cooling her? Start now, and keep me on speaker."</p>
+            <p class="act2-phone-line-text">Callie. Are you cooling her? Start now, and keep me on speaker.</p>
           </div>
         `)}
       </div>
@@ -1830,7 +1830,7 @@ export class Act2Screen {
           <div class="act2-transport-hud-hint" id="act2-transport-hint" aria-live="polite">${s.hintText}</div>
           <div class="act2-cool-meter" aria-hidden="true"><div class="act2-cool-meter-fill"></div></div>
           <div class="act2-transport-hud-prepaid">
-            Clinic called ahead — already done, Dana has been on the line since the lake
+            Clinic called ahead — already done; Dana has been on the line since the lake
           </div>
         </div>
 
