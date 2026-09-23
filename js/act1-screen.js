@@ -276,7 +276,8 @@ export class Act1Screen {
       saturationDrop = Math.max(saturationDrop, 40);
     }
 
-    const shadeShiftX = -14 + t * 46;
+    // 0% shift starts perfectly under footprint, 25% shift slides off Tay securely
+    const shadeShiftX = 0 + t * 25;
     const shadeScaleY = 1 - t * 0.34;
 
     return { driftOpacity, saturationDrop, shadeShiftX, shadeScaleY };
@@ -386,7 +387,8 @@ export class Act1Screen {
             <div class="shade-drift-overlay" data-editor-id="act1-shade-drift-overlay"></div>
             
             <div class="lake-scene-canopy" data-editor-id="act1-asset-canopy">
-              <img class="canopy-shade-layer" src="Assets/Image/Lake-Prop-Canopy-Shadow.png" alt="" draggable="false" aria-hidden="true" />
+              <!-- Hidden until the correct 900x400 transparent asset lands. -->
+              <img class="canopy-shade-layer" style="opacity: 0;" src="Assets/Image/Lake-Prop-Canopy-Shadow.png" alt="" draggable="false" aria-hidden="true" />
               <img class="canopy-frame-layer" src="Assets/Image/Lake-Prop-Canopy.png" alt="" draggable="false" />
             </div>
 
@@ -440,7 +442,8 @@ export class Act1Screen {
         aria-label="Investigate ${lead.tayName}"
         aria-pressed="false"
       >
-        <span class="interactable-art">${artHtml}</span>
+        <span class="interactable-art">
+        ${leadId !== 'lake' ? '<div class="prop-ground-shadow"></div><div class="prop-affordance-ring"></div>' : ''}${artHtml}</span>
         <span class="interactable-tooltip" aria-hidden="true">${lead.tayName}</span>
       </button>
     `;
@@ -540,7 +543,7 @@ export class Act1Screen {
     const targetCoords = {
       cooler: { top: 71, left: 47 },
       dock: { top: 60, left: 22 },
-      bowl: { top: 81, left: 48 },
+      bowl: { top: 76, left: 48 },
       lake: { top: 56, left: 11 },
       canopy: { top: 70, left: 74 }
     }[leadId] || { top: 70, left: 50 };
@@ -605,6 +608,9 @@ export class Act1Screen {
     ['cooler', 'dock', 'bowl', 'lake'].forEach(leadId => {
       const el = this.container.querySelector(`.interactable-${leadId}`);
       if (el) {
+        // Exact ground line = top + height from CSS
+        const depths = { cooler: 73, dock: 64.4, bowl: 79.6, lake: 63 };
+        el.style.zIndex = 10 + Math.round(depths[leadId]);
         const visited = this.visitedLeads.has(leadId);
         const lead = this.leadsData[leadId];
         el.classList.toggle('visited', visited);
@@ -623,6 +629,7 @@ export class Act1Screen {
     const canopyArmed = this.currentBeat === 'hub' && this.visitedLeads.size === 4;
     const canopyEl = this.container.querySelector('.lake-scene-canopy');
     if (canopyEl) {
+      canopyEl.style.zIndex = 10 + 78;
       canopyEl.classList.toggle('canopy-armed', canopyArmed);
       if (canopyArmed) {
         canopyEl.setAttribute('role', 'button');
@@ -649,6 +656,12 @@ export class Act1Screen {
         tayEl.className = `act1-avatar-tay stage-${info.stageNum} ${this.isTayWalking ? 'is-walking' : ''} ${this.tayFacingLeft ? 'facing-left' : 'facing-right'}`;
         tayEl.style.top = `${this.tayPosition.top}%`;
         tayEl.style.left = `${this.tayPosition.left}%`;
+        // Tay's ground line is offset from her bounding box `top` due to `translate: -73.2%`.
+        // Base offset = (0.985 ground contact - 0.732 translate) * 18.58 (height in container %) = 4.7%
+        const baseOffset = 4.7;
+        const tayScale = this.getDepthScale(this.tayPosition.top);
+        const tayGroundLine = this.tayPosition.top + (baseOffset * tayScale);
+        tayEl.style.zIndex = 10 + Math.round(tayGroundLine);
         tayEl.style.setProperty('--tay-scale', this.getDepthScale(this.tayPosition.top));
         
         const standingImg = tayEl.querySelector('.tay-standing-img');
@@ -666,6 +679,7 @@ export class Act1Screen {
     const isNapping = this.currentBeat === 'nap' || this.currentBeat === 'drift' || this.currentBeat === 'alarm' || this.currentBeat === 'case_file' || this.currentBeat === 'pov_rise';
     const taySleepEl = this.container.querySelector('.lake-scene-tay');
     if (taySleepEl) {
+      taySleepEl.style.zIndex = 10 + 75;
       taySleepEl.hidden = !isNapping;
       if (isNapping) {
         taySleepEl.classList.toggle('tay-entering', !this.tayHasEnteredScene);
