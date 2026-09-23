@@ -121,7 +121,7 @@ export class Act3Screen {
       habits: [
         { icon: 'shade', label: 'Shade first', text: 'Set up real shade before anything else, and check it every 30 minutes. Shade moves. A sleeping dog doesn\'t.' },
         { icon: 'water', label: 'Water in the shade', text: 'Top up your dog\'s water whenever you top up your own. Warm water in the sun doesn\'t get drunk.' },
-        { icon: 'clock', label: 'Go early or late', text: 'Mornings or evenings. 1 PM in July is the worst hour of the day, and it\'s the one everybody picks.' },
+        { icon: 'clock', label: 'Go early or late', text: 'Mornings and evenings. The middle of the afternoon is the hottest part of the day.' },
         { icon: 'hand', label: 'The 5-second test', text: 'Palm flat on the sand, pavement or boards for 5 seconds. If you can\'t hold it there, your dog can\'t stand on it.' },
         { icon: 'sun', label: 'Cooler in the shade', text: 'Put the cooler in the shade and keep your dog there with it. Cold on the outside is still an oven on the inside.' },
         { icon: 'home', label: 'Some days, stay in', text: 'Too hot or too humid? Air conditioning and a puzzle toy at home.' }
