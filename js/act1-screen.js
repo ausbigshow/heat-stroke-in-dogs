@@ -388,7 +388,7 @@ export class Act1Screen {
             
             <div class="lake-scene-canopy" data-editor-id="act1-asset-canopy">
               <!-- Hidden until the correct 900x400 transparent asset lands. -->
-              <img class="canopy-shade-layer" style="opacity: 0;" src="Assets/Image/Lake-Prop-Canopy-Shadow.png" alt="" draggable="false" aria-hidden="true" />
+              <img class="canopy-shade-layer" src="Assets/Image/Lake-Prop-Canopy-Shadow.png" alt="" draggable="false" aria-hidden="true" />
               <img class="canopy-frame-layer" src="Assets/Image/Lake-Prop-Canopy.png" alt="" draggable="false" />
             </div>
 

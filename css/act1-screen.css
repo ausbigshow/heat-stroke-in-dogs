@@ -470,8 +470,7 @@
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
 }
 
-.canopy-frame-layer,
-.canopy-shade-layer {
+.canopy-frame-layer {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -479,11 +478,25 @@
   display: block;
 }
 
-/* The ground shadow slides east and shortens as the afternoon runs on — by the Shade
-   Drift beat it has crept off the patch of grass Tay chose. Driven by getEscalation(). */
+/* The shade is a separate 900x400 plate (docs/act1-art-prompts.md §9) rather than part of
+   the canopy art, because the sun moves it independently as the act runs on.
+
+   It cannot share the frame layer's box. The canopy's own art fills that box top to bottom
+   with the legs landing on its lower edge, whereas the shade is a flat quad lying on the
+   ground: it has to be centred on the feet line, not on the canopy, and it is wider than
+   the structure because it falls away to the left. Hence its own geometry below — anchored
+   to the bottom of the canopy box and overhanging it on both sides. */
 .canopy-shade-layer {
+  position: absolute;
+  left: -40%;
+  bottom: -38%;
+  width: 150%;
+  height: auto;
+  display: block;
   transform: translateX(var(--act1-shade-shift, 0%)) scaleY(var(--act1-shade-scale-y, 1));
-  transform-origin: 50% 92%; 
+  /* Anchored at the feet: as the shade shortens through the afternoon it collapses toward
+     the legs, the way a real shadow does, rather than toward its own centre. */
+  transform-origin: 50% 92%;
   transition: transform 2.5s ease-in-out;
 }
 
