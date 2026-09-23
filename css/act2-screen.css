@@ -360,17 +360,20 @@
   max-width: min(380px, 32vw);
 }
 
+/* Stem sits near the left edge, but is placed from the right via --stem-right so Edit
+   Mode's stem handle (which writes --stem-right on .callie-bubble) still moves it (§6.3).
+   calc(100% - 58px) = the old left: 34px for a 24px-wide stem. */
 .act2-viewport-card.view-close-canopy .act2-callie-bubble::before {
-  left: 34px;
-  right: auto;
+  left: auto;
+  right: var(--stem-right, calc(100% - 58px));
   border-left: 6px solid transparent;
   border-right: 18px solid transparent;
   border-top: 22px solid var(--palette-brown-dark);
 }
 
 .act2-viewport-card.view-close-canopy .act2-callie-bubble::after {
-  left: 36px;
-  right: auto;
+  left: auto;
+  right: calc(var(--stem-right, calc(100% - 58px)) + 2px);
   border-left: 5px solid transparent;
   border-right: 15px solid transparent;
   border-top: 19px solid var(--palette-warm-white);
@@ -398,55 +401,53 @@
 
 .speech-bubble.phone-radio-bubble {
   position: absolute;
-  background: #08212C;
-  border: 3px solid #06B6D4;
-  color: #E0F2FE;
-  border-radius: 6px;
-  box-shadow: 0 0 18px rgba(6, 182, 212, 0.45), var(--elev-modal);
-  clip-path: polygon(
-    0 8px, 8px 0,
-    calc(100% - 8px) 0, 100% 8px,
-    100% calc(100% - 8px), calc(100% - 8px) 100%,
-    8px 100%, 0 calc(100% - 8px)
-  );
-  padding: 1.1rem 1.35rem 1.1rem;
+  background: var(--surface-radio);
+  border: 3px solid var(--color-radio);
+  color: var(--text-radio);
+  border-radius: var(--radius-xs);
+  box-shadow: 0 0 18px var(--color-radio-glow), var(--elev-modal);
+  padding: 1.1rem 1.4rem;
   pointer-events: auto;
   z-index: 35;
-  animation: act2SlideIn 0.3s var(--ease-out-expo) forwards;
+  animation: bubblePop 0.3s var(--ease-back) both;
 }
 
 .speech-bubble.phone-radio-bubble .comic-radio-speaker {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  color: #38BDF8;
+  color: var(--color-info);
   font-family: var(--font-family-display);
-  font-size: 0.78rem;
-  font-weight: 800;
+  font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 0.4rem;
 }
 
+/* Third voice, own colour treatment (design-language.md note, v1.1 pass) — but the same
+   §6.3.1 dialogue metrics as every other bubble: display family, clamp(1rem,1.25vw,1.2rem),
+   600, line-height 1.4. No documented reason to diverge, so it doesn't. */
 .speech-bubble.phone-radio-bubble .comic-radio-text {
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.06rem;
-  font-weight: 700;
-  line-height: 1.5;
+  font-family: var(--font-family-display);
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+  font-weight: 600;
+  line-height: 1.4;
   letter-spacing: 0.02em;
-  color: #FFFFFF;
+  color: var(--text-inverse);
   margin: 0;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
 }
 
 .speech-bubble.phone-radio-bubble .electric-lightning-tail {
+  /* No clip-path on the bubble: it used to chamfer the corners and silently cut this off. */
   position: absolute;
-  bottom: -25px;
-  left: 36px;
-  width: 26px;
-  height: 28px;
+  top: calc(100% - 3px); /* overlaps the 3px border so the join is seamless */
+  left: -14px;
+  width: 80px;
+  height: 60px;
   pointer-events: none;
-  filter: drop-shadow(0 2px 4px rgba(6, 182, 212, 0.5));
+  filter: drop-shadow(0 2px 4px var(--color-radio-glow));
 }
 
 .act2-call-calling-pill {
@@ -454,15 +455,15 @@
   top: 5rem;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(8, 33, 44, 0.92);
-  border: 2px solid #06B6D4;
-  color: #E0F2FE;
+  background: var(--surface-radio-pill);
+  border: 2px solid var(--color-radio);
+  color: var(--text-radio);
   font-family: var(--font-family-display);
   font-size: 0.95rem;
   font-weight: 700;
   padding: 0.6rem 1.4rem;
   border-radius: var(--radius-pill);
-  box-shadow: 0 0 15px rgba(6, 182, 212, 0.35);
+  box-shadow: 0 0 15px var(--color-radio-glow);
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
@@ -869,7 +870,7 @@
   align-items: center;
   gap: 0.35rem;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-success-pale);
 }
 
@@ -922,9 +923,10 @@
 }
 
 .act2-phone-line-text {
-  font-size: 1.02rem;
-  line-height: 1.55;
-  font-weight: 500;
+  font-family: var(--font-family-display);
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+  font-weight: 600;
+  line-height: 1.4;
   color: var(--text-on-dark);
 }
 
@@ -982,8 +984,9 @@
 .act2-triage-state {
   margin-left: auto;
   font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   opacity: 0.85;
 }
 
@@ -1073,7 +1076,7 @@
   background: color-mix(in srgb, var(--palette-teal) 10%, var(--palette-warm-white));
   color: var(--palette-text-dark);
   border-radius: var(--radius-xl);
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: var(--radius-xs);
   padding: 0.8rem 1.1rem;
   max-width: 85%;
   align-self: flex-start;
@@ -1087,7 +1090,7 @@
   background: var(--palette-peach-light);
   color: var(--palette-text-dark);
   border-radius: var(--radius-xl);
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: var(--radius-xs);
   padding: 0.8rem 1.1rem;
   max-width: 85%;
   align-self: flex-end;
@@ -1099,7 +1102,9 @@
 
 .act2-check-art {
   display: grid;
-  grid-template-columns: minmax(240px, 1.3fr) minmax(220px, 1fr);
+  /* Conversation gets the wider column: at the §6.3.1 dialogue size the old 1.3fr/1fr split
+     made the three-line exchange scroll while empty space sat under the art. */
+  grid-template-columns: minmax(220px, 1fr) minmax(240px, 1.15fr);
   gap: 1rem;
   /* start, not stretch: the right column sizes to its OWN content and the row grows to
      whichever column is taller. Stretching it to the image height is what squeezed the
@@ -1122,7 +1127,7 @@
   border-radius: var(--radius-sm);
   overflow: hidden;
   box-shadow: var(--elev-2);
-  background: #F3E4DA;
+  background: var(--surface-art-mat);
   border: 2px solid rgba(56, 36, 24, 0.15);
 }
 
@@ -1157,7 +1162,7 @@
 }
 .act2-check-conversation::-webkit-scrollbar-thumb {
   background: var(--hairline-light-strong);
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
 }
 
 .act2-check-readout-wrap {
@@ -1233,7 +1238,7 @@
   overflow: hidden;
   box-shadow: var(--elev-2);
   grid-row: span 2;
-  background: #F3E4DA;
+  background: var(--surface-art-mat);
   border: 2px solid rgba(56, 36, 24, 0.15);
 }
 
@@ -1283,98 +1288,7 @@
   color: var(--palette-text-dark);
 }
 
-/* ---- The capillary-refill counter ----
-   This is the colourblind-safe half of the gum check. Colour is never the only
-   carrier of state: the seconds value, the normal-range marker, the written label
-   and the severity word all say the same thing without any hue at all. */
 
-.act2-refill-counter {
-  background: var(--palette-warm-white);
-  border: 2px solid var(--color-heat);
-  border-radius: var(--radius-sm);
-  padding: 0.7rem 0.85rem;
-}
-
-.act2-refill-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.act2-refill-title {
-  font-family: var(--font-family-display);
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--palette-brown-dark);
-}
-
-.act2-refill-normal {
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: var(--palette-text-muted); /* sage fails AA on light — §2.4 approved muted instead */
-}
-
-.act2-refill-track {
-  position: relative;
-  height: 12px;
-  border-radius: var(--radius-pill);
-  background: var(--palette-peach);
-  overflow: hidden;
-}
-
-.act2-refill-fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: var(--refill-pct, 50%);
-  border-radius: var(--radius-pill);
-  background: repeating-linear-gradient(
-    135deg,
-    var(--color-heat) 0 8px,
-    var(--color-heat-hover) 8px 16px
-  );
-}
-
-/* Where "normal" stops — 2 s on a 0–5 s track. A hard visual edge, not a hue change. */
-.act2-refill-normal-marker {
-  position: absolute;
-  left: 40%;
-  top: -2px;
-  bottom: -2px;
-  width: 3px;
-  background: var(--palette-text-dark);
-  z-index: 2;
-}
-
-.act2-refill-readout {
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
-  margin-top: 0.5rem;
-}
-
-.act2-refill-value {
-  font-family: var(--font-family-display);
-  font-size: 1.5rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-heat-hover);
-}
-
-.act2-refill-flag {
-  font-family: var(--font-family-display);
-  font-size: 0.74rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  background: var(--color-heat-hover);
-  color: var(--text-inverse);
-  padding: 0.2rem 0.5rem;
-  border-radius: var(--radius-xs);
-}
 
 
 
@@ -1436,30 +1350,15 @@
 .act2-check-nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 1rem;
   padding-top: 0.5rem;
   border-top: 1px solid rgba(56, 36, 24, 0.12);
 }
 
-.act2-beat-dots {
-  display: flex;
-  gap: 0.4rem;
-}
 
-.act2-beat-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: rgba(56, 36, 24, 0.18);
-}
 
-.act2-beat-dot.seen { background: rgba(194, 65, 12, 0.45); }
 
-.act2-beat-dot.current {
-  background: var(--color-heat);
-  transform: scale(1.25);
-}
 
 /* ==========================================================
    BEAT 2A: THE HINTS-DROPPED PAYOFF
@@ -1502,7 +1401,7 @@
   to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
-.act2-payoff-header { margin-bottom: 1rem; }
+.act2-payoff-header { margin-bottom: 0.75rem; }
 
 .act2-payoff-badge {
   display: inline-block;
@@ -1532,23 +1431,23 @@
 
 .act2-payoff-timeline {
   list-style: none;
-  margin: 0 0 1rem;
+  margin: 0 0 0.8rem;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .act2-payoff-item {
   display: grid;
-  grid-template-columns: 84px 32px 1fr;
+  grid-template-columns: 84px 1fr;
   gap: 0.7rem;
   align-items: center;
   background: var(--palette-warm-white);
   border: 1.5px solid rgba(56, 36, 24, 0.14);
   border-left: 5px solid var(--color-heat);
   border-radius: var(--radius-sm);
-  padding: 0.6rem 0.8rem;
+  padding: 0.45rem 0.8rem;
 }
 
 .act2-payoff-time {
@@ -1559,7 +1458,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.act2-payoff-icon { font-size: 1.2rem; text-align: center; }
 
 .act2-payoff-copy {
   display: flex;
@@ -1580,8 +1478,10 @@
   border-left: 5px solid var(--palette-teal);
   border-radius: var(--radius-sm);
   padding: 0.8rem 1rem;
-  font-size: 1rem;
-  line-height: 1.55;
+  font-family: var(--font-family-display);
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+  font-weight: 600;
+  line-height: 1.4;
   color: var(--palette-text-dark);
 }
 
@@ -1594,7 +1494,7 @@
 .act2-payoff-footer {
   display: flex;
   justify-content: center;
-  margin-top: 1.4rem;
+  margin-top: 1rem;
   pointer-events: auto;
 }
 
@@ -1766,8 +1666,10 @@
   border-left: 5px solid var(--palette-teal);
   border-radius: var(--radius-sm);
   padding: 0.75rem 0.95rem;
-  font-size: 1.02rem;
-  line-height: 1.55;
+  font-family: var(--font-family-display);
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+  font-weight: 600;
+  line-height: 1.4;
   color: var(--palette-text-dark);
   margin-bottom: 0.7rem;
 }
@@ -1933,27 +1835,38 @@
   --ac-top: 82.9%;
   --ac-size: 7%;
 
-  --mirror-left: 65.1%;
-  --mirror-top: 11.5%;
-  --mirror-width: 27.0%;
-  --mirror-height: 13.5%;
+  /* The painted mirror's glass, measured off Car-FPV-Interior.jpg (x 1257-1762,
+     y 118-266 of 1920x1080), inset a hair so the image never covers the frame. */
+  --mirror-left: 65.6%;
+  --mirror-top: 11.2%;
+  --mirror-width: 26.1%;
+  --mirror-height: 13.4%;
 
+  /* The driver's side window, measured off Car-FPV-Interior.jpg: the box is its bounding
+     rectangle, --win-shape its outline inside that box (frame edge, quarter-light post,
+     door sill). */
   --win-left: 0%;
-  --win-top: 5%;
-  --win-width: 26%;
-  --win-height: 60%;
+  --win-top: 0%;
+  --win-width: 21.6%;
+  --win-height: 78%;
+  --win-shape: polygon(0% 1.8%, 24.1% 5.7%, 45.8% 11.6%, 57.9% 17.6%, 67.5% 26.7%, 79.6% 37.7%,
+    91.6% 47.5%, 98.9% 56.4%, 99.6% 86.4%, 0% 99.1%);
+  --win-drop: 24%;          /* how far the glass slides down when cracked */
 
-  --vp-left: 64%;
-  --vp-top: 38%;
+  /* Where the road's two edge lines meet in the painting. */
+  --vp-left: 62.6%;
+  --vp-top: 34.5%;
 
-  --vent1-left: 27%;
-  --vent1-top: 70%;
-  --vent2-left: 64.5%;
-  --vent2-top: 69%;
-  --vent3-left: 88.5%;
-  --vent3-top: 69%;
+  /* Vent centres (the middle of each grille). */
+  --vent1-left: 30.6%;
+  --vent1-top: 76%;
+  --vent2-left: 66.9%;
+  --vent2-top: 76%;
+  --vent3-left: 92.2%;
+  --vent3-top: 76%;
 
-  --road-dash-cadence: 1.2s;
+  /* One dash-plus-gap of road passes under the car per cycle. */
+  --road-dash-cadence: 1.1s;
   
   position: absolute;
   inset: 0;
@@ -1967,7 +1880,11 @@
   top: var(--mirror-top);
   width: var(--mirror-width);
   height: var(--mirror-height);
-  object-fit: cover;
+  overflow: hidden;
+  /* the glass's corners: small at the top, the bottom-right sweeps round */
+  border-radius: 4% 4% 14% 5% / 14% 14% 30% 16%;
+  /* Clips everything drawn inside, Tay's heaving flank included, to the glass. */
+  clip-path: inset(0 round 4% 4% 14% 5% / 14% 14% 30% 16%);
   z-index: 10;
 }
 
@@ -1978,44 +1895,104 @@
 }
 
 /* --- Task B: Window rolls down --- */
+/* The aperture is cut to the painted window's outline, and the glass is the same outline,
+   so it fills the frame exactly when shut. Cracking it slides the glass straight down: its
+   top edge keeps the frame's shape, and the aperture hides whatever drops below the sill. */
 .act2-window-aperture {
   position: absolute;
   left: var(--win-left);
   top: var(--win-top);
   width: var(--win-width);
   height: var(--win-height);
-  overflow: hidden;
-  clip-path: polygon(0% 0%, 100% 15%, 100% 100%, 0% 100%);
+  clip-path: var(--win-shape);
   pointer-events: none;
 }
+/* Wind streaks in the gap the lowered glass opens (clipped to that band in the SVG).
+   They fade in once the glass is on its way down. */
 .act2-wind-gap {
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 22%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  background-size: 200% 100%;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   opacity: 0;
+  transition: opacity 0.3s ease;
 }
 .act2-transport-scene.windows-open .act2-wind-gap {
   opacity: 1;
-  animation: windSpeed 0.4s linear infinite;
+  transition-delay: 0.35s;
+}
+.act2-wind-line {
+  fill: none;
+  stroke: var(--hairline-light-strong);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 9 23;
+  stroke-dashoffset: 32;
+}
+.act2-transport-scene.windows-open .act2-wind-line {
+  animation: act2WindStreak 0.55s linear infinite;
+}
+@keyframes act2WindStreak {
+  from { stroke-dashoffset: 32; }
+  to   { stroke-dashoffset: 0; }
 }
 .act2-window-pane {
   position: absolute;
   inset: 0;
-  background-color: rgba(214, 236, 250, 0.38);
-  background-image: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 30%, rgba(255,255,255,0) 100%);
-  border-top: 3px solid rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(1px);
-  transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+  clip-path: var(--win-shape);
+  /* The glass's top rim: the pane is drawn in the rim colour, and the tinted glass
+     (::after, the same outline nudged down) covers all but a thin band along the top. */
+  background: var(--hairline-light-strong);
+  transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
   transform: translateY(0);
 }
-.act2-transport-scene.windows-open .act2-window-pane {
-  transform: translateY(22%);
+.act2-window-pane::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  clip-path: var(--win-shape);
+  transform: translateY(4px);
+  background-color: rgba(214, 236, 250, 0.38);
+  background-image: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 30%, rgba(255,255,255,0) 100%);
 }
-@keyframes windSpeed {
-  0% { background-position: 200% 0; }
-  100% { background-position: -100% 0; }
+.act2-transport-scene.windows-open .act2-window-pane {
+  transform: translateY(var(--win-drop));
+}
+
+/* Air coming in through the gap: drawn over the cabin (outside the window's clip) so it
+   visibly enters the car. Brightest at the gap, gone by the time it reaches the wheel. */
+.act2-window-inflow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  -webkit-mask-image: radial-gradient(ellipse 48% 75% at 8% 22%, #000 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 48% 75% at 8% 22%, #000 40%, transparent 100%);
+}
+.act2-transport-scene.windows-open .act2-window-inflow {
+  opacity: 1;
+  transition-delay: 0.45s;
+}
+.act2-inflow-line {
+  fill: none;
+  stroke: var(--text-inverse);
+  stroke-width: 3.5px;
+  /* a faint dark edge so white air still reads over the pale pillar and headliner */
+  filter: drop-shadow(0 0 1.5px rgba(56, 36, 24, 0.35));
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 12 28;
+  stroke-dashoffset: 40;
+}
+.act2-transport-scene.windows-open .act2-inflow-line {
+  animation: act2InflowStreak 0.9s linear infinite;
+}
+@keyframes act2InflowStreak {
+  from { stroke-dashoffset: 40; }
+  to   { stroke-dashoffset: 0; }
 }
 
 /* --- Task A: AC knob turns --- */
@@ -2034,72 +2011,54 @@
   transform-origin: center;
   transform-box: fill-box;
   transform: rotate(-135deg);
-  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
+/* On is full blast: the knob sweeps all the way round to max. */
 .act2-transport-scene.ac-on .act2-ac-knob-svg {
-  transform: rotate(-15deg);
+  transform: rotate(135deg);
 }
 
 /* --- Task C: Airflow --- */
+/* Wind streaks, not puffs: each vent fans three curved lines toward the cabin, and short
+   dashes run along them. Expanding soft circles read as fog or steam; thin fast dashes
+   following a line read as air moving. Two dashes per line, so the flow never empties. */
 .act2-airflow-layer {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
-/* Each vent is an anchor, not a puff. The visible air is TWO emitters per vent, offset by
-   half a cycle, so one is always at full strength while the other is fading — the air
-   reads as a continuous blow. A single emitter per vent dropped to opacity 0 at both ends
-   of its loop, and with only three of them the whole scene went empty between cycles,
-   which is what made the AC look like it was puffing rather than running. */
 .act2-stream {
   position: absolute;
-  width: 110px;
+  width: 14%;
   aspect-ratio: 1/1;
+  overflow: visible;
   z-index: 21;
-}
-
-.act2-stream::before,
-.act2-stream::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle, rgba(186, 230, 253, 1) 0%, transparent 60%);
-  border-radius: 50%;
   opacity: 0;
+  transition: opacity 0.4s ease;
+  /* Streaks are brightest at the grille and thin out as the air spreads. */
+  -webkit-mask-image: radial-gradient(ellipse 75% 95% at 50% 5%, #000 35%, transparent 95%);
+  mask-image: radial-gradient(ellipse 75% 95% at 50% 5%, #000 35%, transparent 95%);
 }
-.act2-stream-1 { left: var(--vent1-left); top: var(--vent1-top); }
-.act2-stream-2 { left: var(--vent2-left); top: var(--vent2-top); }
-.act2-stream-3 { left: var(--vent3-left); top: var(--vent3-top); }
+/* --ventN-* is the grille centre; the streaks start at the box's top centre. */
+.act2-stream-1 { left: calc(var(--vent1-left) - 7%); top: calc(var(--vent1-top) - 1.2%); transform: rotate(-28deg); transform-origin: 50% 5%; }
+.act2-stream-2 { left: calc(var(--vent2-left) - 7%); top: calc(var(--vent2-top) - 1.2%); transform: rotate(24deg); transform-origin: 50% 5%; }
+.act2-stream-3 { left: calc(var(--vent3-left) - 7%); top: calc(var(--vent3-top) - 1.2%); transform: rotate(-8deg); transform-origin: 50% 5%; }
+.act2-transport-scene.ac-on .act2-stream { opacity: 1; }
 
-/* linear, not ease-in: an eased travel bunches the air near the vent and then flings it,
-   which reads as a gust. The half-cycle offset on ::after is what keeps the flow constant. */
-.act2-transport-scene.ac-on .act2-stream-1::before { animation: act2AirFlow1 2.4s infinite linear; }
-.act2-transport-scene.ac-on .act2-stream-1::after  { animation: act2AirFlow1 2.4s infinite linear -1.2s; }
-.act2-transport-scene.ac-on .act2-stream-2::before { animation: act2AirFlow2 2.4s infinite linear -0.4s; }
-.act2-transport-scene.ac-on .act2-stream-2::after  { animation: act2AirFlow2 2.4s infinite linear -1.6s; }
-.act2-transport-scene.ac-on .act2-stream-3::before { animation: act2AirFlow3 2.4s infinite linear -0.8s; }
-.act2-transport-scene.ac-on .act2-stream-3::after  { animation: act2AirFlow3 2.4s infinite linear -2.0s; }
-
-/* Opacity ramps in fast and HOLDS across the middle of the travel, instead of spiking at
-   20% and decaying the rest of the way. Paired with the half-cycle offset emitter, there
-   is always air at strength somewhere in the stream. */
-@keyframes act2AirFlow1 {
-  0% { transform: scale(1) translate(0, 0); opacity: 0; }
-  12% { opacity: 0.34; }
-  65% { opacity: 0.24; }
-  100% { transform: scale(9) translate(-4vw, 12vh); opacity: 0; }
+.act2-air-line {
+  fill: none;
+  stroke: var(--color-info-pale);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-dasharray: 14 36;
+  stroke-dashoffset: 50;
 }
-@keyframes act2AirFlow2 {
-  0% { transform: scale(1) translate(0, 0); opacity: 0; }
-  12% { opacity: 0.34; }
-  65% { opacity: 0.24; }
-  100% { transform: scale(9) translate(-1vw, 12vh); opacity: 0; }
+.act2-transport-scene.ac-on .act2-air-line {
+  animation: act2AirStreak 1.1s linear infinite;
 }
-@keyframes act2AirFlow3 {
-  0% { transform: scale(1) translate(0, 0); opacity: 0; }
-  12% { opacity: 0.34; }
-  65% { opacity: 0.24; }
-  100% { transform: scale(9) translate(3vw, 12vh); opacity: 0; }
+@keyframes act2AirStreak {
+  from { stroke-dashoffset: 50; }
+  to   { stroke-dashoffset: 0; }
 }
 
 .act2-ac-tint {
@@ -2133,27 +2092,48 @@
   overflow: hidden;
   clip-path: var(--act2-windshield-clip);
 }
+/* The centre line lies flat on the road in CSS 3D. The plane's near end sits where the
+   centre line meets the bottom of the windshield; rotated flat, its far end converges on
+   the vanishing point (the perspective origin), so the dashes foreshorten exactly as the
+   painted road does. Sizes are in cqw so the look holds at every card width: the plane is
+   0.9cqw wide against a ~63cqw road there, dashes 30cqw long with 45cqw gaps — long,
+   highway-proportioned strokes that the eye can follow. */
+.act2-exterior-motion { container-type: inline-size; }
 .act2-lane-dashes {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  perspective: 60cqw;
+  perspective-origin: var(--vp-left) var(--vp-top);
 }
-.act2-dash {
+.act2-road-plane {
   position: absolute;
-  left: var(--vp-left);
-  top: var(--vp-top);
-  width: 0.4%;
-  height: 2%;
-  background: rgba(255, 255, 255, 0.4);
-  transform-origin: top center;
-  opacity: 0;
-  animation: act2DashAnim var(--road-dash-cadence) linear infinite;
+  top: 54%;
+  left: 55%;
+  width: 0.9cqw;
+  margin-left: -0.45cqw;
+  height: 1500cqw;
+  overflow: hidden;
+  transform-origin: 50% 0;
+  transform: rotateX(-90deg);
+  /* fades into the painted haze toward the horizon */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 12%, transparent 60%);
+  mask-image: linear-gradient(to bottom, #000 0, #000 12%, transparent 60%);
 }
-@keyframes act2DashAnim {
-  0% { transform: scale(0.1) translate(0, 0); opacity: 0; }
-  10% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { transform: scale(5) translate(-5vw, 60vh); opacity: 0; }
+.act2-road-stripe {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: calc(100% + 75cqw);
+  background: repeating-linear-gradient(to bottom,
+    var(--hairline-light-strong) 0 30cqw, transparent 30cqw 75cqw);
+  /* Moving toward the plane's near end (its top) is moving toward the car. */
+  animation: act2RoadRoll var(--road-dash-cadence) linear infinite;
+}
+@keyframes act2RoadRoll {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-75cqw); }
 }
 
 .act2-roadside-drift {
@@ -2193,7 +2173,7 @@
 .act2-transport-scene.is-arriving .act2-lane-dashes,
 .act2-transport-scene.is-arriving .act2-roadside-drift {
   opacity: 0;
-  transition: opacity 2.5s ease-out;
+  transition: opacity 4s ease-out;
 }
 
 .act2-clinic-approach {
@@ -2204,13 +2184,20 @@
   transform: translate(-50%, -50%) scale(0);
   opacity: 0;
 }
+/* The clinic is the road's destination: Clinic-RoadEnd.png (docs/clinic-road-end.py) sets
+   the building behind a paved lot that swallows the road, with verges and trees either
+   side. It grows out of the vanishing point and eases to a stop with the building's base
+   above the dashboard (~44% down) and the lot filling the bottom of the windshield, so the
+   road visibly runs out into the car park. Box is 10% wide at 2.4:1; the end translate puts
+   its centre at ~(60%, 30%) of the scene. Keep the duration in step with the arrive
+   timeout in act2-screen.js (5s + a short hold). */
 .act2-transport-scene.is-arriving .act2-clinic-approach {
-  animation: clinicApproach 2.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  animation: clinicApproach 5s cubic-bezier(0.45, 0, 0.35, 1) forwards;
 }
 @keyframes clinicApproach {
   0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-  10% { opacity: 1; }
-  100% { transform: translate(-50%, -30%) scale(15); opacity: 1; }
+  8% { opacity: 1; }
+  100% { transform: translate(-77%, -106%) scale(8.85); opacity: 1; }
 }
 
 .act2-diegetic-btn {
@@ -2225,14 +2212,46 @@
      .act2-hotspot and the HUD pills above. Without this the controls are inert. */
   pointer-events: auto;
 }
+/* Keyboard focus is shown on the traced ring (brightened below), not as a box around the
+   hit area, so the indicator follows the control's own shape. */
 .act2-diegetic-btn:focus-visible {
-  border-color: var(--palette-peach);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.4);
-  border-radius: var(--radius-sm);
+  border-color: transparent;
 }
 
-.act2-diegetic-btn.needs-invite {
-  animation: act2HotspotInvite 2.2s ease-in-out infinite;
+/* Each control carries a ring traced on the drawn control itself (the knob's dial, the
+   switch plate's outline), as an SVG in the painting's pixel space inside the button:
+   --color-food-glow at rest, brighter amber with a glow on hover and focus. The untouched
+   ring breathes (the invite) until first use. */
+.act2-control-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.act2-control-ring circle,
+.act2-control-ring path {
+  fill: none;
+  stroke: var(--color-food-glow);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  transition: stroke 0.2s ease, filter 0.2s ease;
+}
+.act2-diegetic-btn:hover .act2-control-ring :is(circle, path),
+.act2-diegetic-btn:focus-visible .act2-control-ring :is(circle, path) {
+  stroke: var(--color-amber-tint-2);
+  stroke-width: 4px;
+  filter: drop-shadow(0 0 6px var(--color-amber));
+}
+.act2-diegetic-btn:disabled .act2-control-ring { opacity: 0; }
+.act2-diegetic-btn.needs-invite .act2-control-ring {
+  animation: act2ControlInvite 2.2s ease-in-out infinite;
+}
+@keyframes act2ControlInvite {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
 }
 
 #act2-toggle-ac {
@@ -2247,10 +2266,11 @@
 }
 
 #act2-toggle-windows {
-  --win-left: 12.5%;
-  --win-top: 81.5%;
-  --win-width: 12.2%;
-  --win-height: 18.5%;
+  /* the switch plate's traced outline, plus its ring's 7px offset (175-466, 889-1080) */
+  --win-left: 9.11%;
+  --win-top: 82.31%;
+  --win-width: 15.16%;
+  --win-height: 17.69%;
   left: var(--win-left);
   top: var(--win-top);
   width: var(--win-width);
@@ -2300,6 +2320,42 @@
   margin-bottom: 0.8rem;
   line-height: 1.4;
 }
+/* Fills over the cooling delay (COOL_DELAY_MS in act2-screen.js) while the air runs. */
+.act2-transport-scene { --cool-delay: 6s; }
+.act2-cool-meter {
+  display: none;
+  height: 6px;
+  margin: -0.3rem 0 0.8rem;
+  border-radius: var(--radius-pill);
+  background: rgba(56, 36, 24, 0.12);
+  overflow: hidden;
+}
+.act2-cool-meter-fill {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--color-info-mid);
+}
+.act2-transport-scene.is-cooling .act2-cool-meter { display: block; }
+.act2-transport-scene.is-cooling .act2-cool-meter-fill {
+  animation: act2CoolFill var(--cool-delay) linear forwards;
+}
+@keyframes act2CoolFill {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+#act2-btn-arrive:not([hidden]) {
+  animation: act2ArriveIn 0.45s var(--ease-out-expo) both;
+}
+/* The id rule above outranks .pulse-btn, so the pulse is restated alongside the entrance. */
+#act2-btn-arrive.pulse-btn:not([hidden]) {
+  animation: act2ArriveIn 0.45s var(--ease-out-expo) both, act2PulseBtn 1.8s 0.45s infinite;
+}
+@keyframes act2ArriveIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .act2-transport-hud-prepaid {
   font-size: 0.8rem;
   color: var(--palette-text-muted);
@@ -2411,41 +2467,30 @@
   .act2-tay-tongue,
   .act2-gum-blanch,
   .act2-gum-hand,
-  /* The air now animates on ::before / ::after, so the element selectors alone would
-     stop nothing here. */
-  .act2-transport-scene.ac-on .act2-stream-1::before,
-  .act2-transport-scene.ac-on .act2-stream-1::after,
-  .act2-transport-scene.ac-on .act2-stream-2::before,
-  .act2-transport-scene.ac-on .act2-stream-2::after,
-  .act2-transport-scene.ac-on .act2-stream-3::before,
-  .act2-transport-scene.ac-on .act2-stream-3::after,
-  .act2-dash,
+  /* Stopped streaks still show two dashes per line, so AC-on still reads. */
+  .act2-transport-scene.ac-on .act2-air-line,
+  .act2-road-stripe,
   .act2-drift,
-  .act2-transport-scene.windows-open .act2-wind-gap,
+  .act2-transport-scene.windows-open .act2-wind-line,
+  .act2-transport-scene.windows-open .act2-inflow-line,
+  .act2-diegetic-btn.needs-invite .act2-control-ring,
   .act2-diegetic-btn.needs-invite {
     animation: none !important;
   }
   .act2-gum-blanch {
-    background-color: color-mix(in srgb, #F2DCD6 40%, var(--gum-color)) !important;
+    background-color: color-mix(in srgb, var(--gum-blanched) 40%, var(--gum-color)) !important;
   }
   .act2-gum-hand {
     transform: translate(var(--hand-offset-x, 8%), var(--hand-offset-y, 16%)) !important;
-  }
-
-  /* With the travel animation off, the emitters would sit at their base opacity of 0 and
-     AC-on would show no air whatsoever. Hold them at a visible, mid-travel size instead,
-     so the state still reads. The pills carry the words either way. */
-  .act2-transport-scene.ac-on .act2-stream-1::before,
-  .act2-transport-scene.ac-on .act2-stream-2::before,
-  .act2-transport-scene.ac-on .act2-stream-3::before {
-    opacity: 0.38 !important;
-    transform: scale(6) translate(0, 6vh) !important;
   }
 
   .act2-ac-knob-svg,
   .act2-window-pane {
     transition-duration: 0.01s !important;
   }
+
+  /* the meter carries the wait, so it keeps running (it is a progress bar, not motion) */
+  #act2-btn-arrive:not([hidden]) { animation: act2ArriveIn 0.01s both !important; }
 
   .act2-transport-scene.is-arriving .act2-clinic-approach {
     animation-duration: 0.01s !important;

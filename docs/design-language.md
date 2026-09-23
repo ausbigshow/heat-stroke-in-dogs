@@ -1,6 +1,6 @@
 # Design Language — Callie & Tay: Heat Stroke in Dogs
 
-**Status:** authoritative. Version 1.0, 2026-08-31.
+**Status:** authoritative. Version 1.1, 2026-09-22 (v1.0 2026-08-31).
 **Owner:** Workstream C (`design-systems`).
 **Audience:** every agent or human adding a screen, component, or asset to this module.
 
@@ -16,6 +16,13 @@ If you are building a new screen, read §1, §5, §6, §7, and the checklist in 
 reference.
 
 ---
+
+## 0. Naming in the product
+
+The course is an **intro and three parts**. "Act" is working vocabulary for the team and this
+document; the learner never sees or hears it. Everything learner-facing (visible text,
+`aria-label`, `title`, dialog copy) says "Part N" or "the intro". Code identifiers, screen keys
+(`act1`…) and `data-editor-id`s keep "act". There are no step counters on any screen.
 
 ## 1. Principles
 
@@ -134,6 +141,13 @@ warm ember "Tay / urgency" family, both hardcoded. They are now named.
 | `--color-water-edge` | `rgba(224,242,254,0.5)` | Lake interactable inset rule |  |
 | `--color-water-glow` | `rgba(125,211,252,0.75)` | Water / canopy invitation glow |  |
 | `--color-food-glow` | `rgba(245,158,11,0.65)` | Solid-object invitation glow |  |
+| `--surface-radio` | `#08212C` | Phone/radio bubble ground (Act 2 clinic call) |  |
+| `--surface-radio-pill` | `rgba(8,33,44,0.92)` | "Calling…" pill ground |  |
+| `--color-radio` | `#06B6D4` | **Non-text only** — radio bubble border, bolt tail |  |
+| `--color-radio-glow` | `rgba(6,182,212,0.45)` | Radio bubble bloom |  |
+| `--text-radio` | `#E0F2FE` | Text on `--surface-radio` | 14.48 ✓ |
+| `--surface-art-mat` | `#F3E4DA` | Warm mat behind a framed art plate (Act 2 checks) |  |
+| `--gum-blanched` | `#F2DCD6` | Capillary-refill blanch — illustration only |  |
 
 **Temperature ramp** (Tay's gauge, §6.8)
 
@@ -188,7 +202,6 @@ load-bearing for contrast (Appendix A composites against them).
 | `#1E293B` | `.act1-viewport-card` background | The card ground *behind* the scene image; only ever visible for one frame while the image decodes. |
 | `#FFEDD5` | `.clock-pill` text | Warm off-white chosen against `--surface-clock`; 9.99:1. |
 | `#FB923C` | `.leads-pill` border | Non-text hairline tuned to the pill's own brown ground. |
-| `#F1F5F9` | `.truth-stamp-line` text | One step darker than `--text-on-dark`; 16.45:1. |
 | `rgba(255,255,255,0.05 … 0.3)` | Hairlines and inner rules throughout Act 1 | Hand-tuned alphas on a photographic backdrop. The four `--hairline-*` tokens (`0.08 / 0.15 / 0.25 / 0.6`) are the rule for **new** work; these eight existing alphas are optical adjustments, same reasoning as the grandfathered spacing in §4.1. |
 | `rgba(185,28,28,0.95)` | `.hints-dropped-pill` ground | `--color-danger` at 95%. CSS cannot apply alpha to a hex token without `color-mix()`; composited it is `#BD2727` at 6.04:1. |
 
@@ -202,11 +215,13 @@ Everything else — every colour in every one of the three files — comes from 
 
 | Token | Stack | Use |
 |---|---|---|
-| `--font-family-display` | `'Outfit', 'Nunito', 'Segoe UI', system-ui, sans-serif` | Headings, all UI chrome (pills, buttons, badges, tooltips, labels), **Callie's dialogue**, table headers, `td.tay-term` |
-| `--font-family-body` | `'Plus Jakarta Sans', 'Inter', 'Segoe UI', system-ui, sans-serif` | Running prose, card bodies, table cells, truth-stamp lines, **Tay's dialogue** |
+| `--font-family-display` | `'Outfit', 'Nunito', 'Segoe UI', system-ui, sans-serif` | Headings, all UI chrome (pills, buttons, badges, tooltips, labels), **all speech-bubble dialogue** (§6.3.1), table headers, `td.tay-term` |
+| `--font-family-body` | `'Plus Jakarta Sans', 'Inter', 'Segoe UI', system-ui, sans-serif` | Running prose, card bodies, table cells, truth-stamp lines |
 
-The split is meaningful, not decorative: **Outfit is the module's voice** (systems, labels, Callie
-narrating) and **Plus Jakarta Sans is the read** (facts, body copy, Tay's interior monologue).
+The split is meaningful, not decorative: **Outfit is the module's voice** (systems, labels, every
+character speaking) and **Plus Jakarta Sans is the read** (facts, body copy). v1.1 resolved a
+conflict with §6.3.1: Tay's bubbles were body family in Acts 0–2 and display in Act 3. §6.3.1
+wins — speaker identity is carried by colour, border and stem, never by family.
 Loaded from Google Fonts in `index.html` — Outfit 500/600/700/800, Plus Jakarta Sans 400/500/600/700.
 Weights 800 and 900 render from the nearest available face; keep 900 to short all-caps runs.
 
@@ -220,7 +235,7 @@ Sizes are `rem` at a 16px root. Fluid entries use `clamp()` so a 16:9 card scale
 | Display L | `clamp(1.2rem, 2.2vw, 2rem)` | 500 | Opening subtitle (body family) |
 | Title | `1.5rem` | 800 | Modal titles |
 | Title S | `1.35rem` / `clamp(1rem,1.45vw,1.25rem)` | 800 | Card titles |
-| Dialogue | `clamp(1.02rem, 1.35vw, 1.28rem)` | 600–700 | Speech bubble text |
+| Dialogue | `clamp(1rem, 1.25vw, 1.2rem)` | 600 | Speech bubble text (§6.3.1) |
 | Body | `0.98rem`–`1rem` | 400–500 | Card body, prose |
 | Body S | `clamp(0.82rem, 1.1vw, 0.94rem)` | 400–500 | Table cells, truth-stamp line |
 | UI | `0.92rem`–`0.95rem` | 700 | HUD buttons |
@@ -243,12 +258,13 @@ Decorative or pictorial emoji are not used anywhere in UI copy, labels, ARIA tex
 Icons that genuinely aid recognition belong in the art or as SVG, not as emoji in a text node.
 
 **The narrow exception:** a small closed set of typographic UI glyphs is permitted where it
-carries affordance or state. These four, and no near-variants of them:
+carries affordance or state. These five, and no near-variants of them:
 
 | Glyph | Codepoint | Used for |
 |---|---|---|
 | `➔` | U+2794 | Advance to the next beat — "Report it ➔" |
 | `▶` | U+25B6 | Advance within a beat — "Next ▶" |
+| `◀` | U+25C0 | Go back — "◀ Act 1", "◀ Back" (added v1.1, the mirror of ▶) |
 | `✓` | U+2713 | A completed or correct state |
 | `✕` | U+2715 | Dismiss or close — "✕ Back to Tay" |
 
@@ -256,9 +272,17 @@ The codepoints are listed because the near-variants are the trap: `➡` U+27A1, 
 `✖` U+2716 look almost identical in a proof and are **not** permitted. Copy the glyph from this
 table rather than typing a lookalike, or the module ends up with two visually inconsistent sets.
 
-Nothing beyond these four without a deliberate decision recorded here.
+Nothing beyond these five without a deliberate decision recorded here. Emoji in `console.log`
+developer output are out of scope.
 
-> **Note:** this rule applies module-wide, but Acts 0, 1 and 3 have not yet been swept. It is a forward commitment for those acts rather than a description of current state.
+**Recorded exception (v1.1):** the plain text arrow `→` U+2192 is permitted *inside a measurement*
+— a truth-stamp metric chip that reports a change in a number (`95% → 43%`). There it is
+mathematical notation, not affordance, and it renders in the text face rather than as a symbol.
+It never appears on a button or in running copy.
+
+The v1.1 pass (2026-09-22) swept every act; the rule now describes current state. Where an
+emoji sat in an icon slot, it became a numeral or time in a §6.7 square badge. The mute toggle
+uses inline SVG.
 
 ---
 
@@ -332,7 +356,7 @@ shorthands pairing a duration with `--ease-out-expo`.
 - **Escalation is slow.** 1.8–2.5s eased, so the clock advancing feels like weather, not a state
   change.
 - **Infinite animation is an invitation or an alarm, never decoration.** Currently legitimate:
-  interactable pulse, lake invite, canopy invite, pill pulse, start-button pulse, temp-critical,
+  prop ground ring, lake invite, canopy invite, pill pulse, start-button pulse, temp-critical,
   heat haze, Tay's breathing/panting/ear rig, lake waves. If a new looping animation is not
   saying "click me" or "something is wrong," delete it.
 - **Hover pauses the invitation.** `animation-play-state: paused` on hover/focus — once the
@@ -379,9 +403,8 @@ metrics  height 38px, padding 0 1rem, --radius-pill, gap 0.45rem
 shadow   --elev-3
 ```
 
-> **Note.** `--hairline-light` is the rule for new work. The existing `.act1-hud-pill` still
-> carries a hand-tuned `rgba(255,255,255,0.22)` rather than the token's `0.25` — see §2.5.
-> Reconcile it only alongside a deliberate visual pass; do not copy the literal.
+> **Note.** Reconciled in v1.1: `.act1-hud-pill` now uses `--hairline-light` like every other
+> act's pill.
 
 Variants swap ground + border only: `.clock-pill` (`--surface-clock` / `--color-amber-tint` /
 `#FFEDD5` text), `.leads-pill` (`rgba(124,45,18,0.9)` / `#FB923C`), `.leads-pill.all-done` and
@@ -405,6 +428,15 @@ disabled opacity 0.4, cursor not-allowed
 
 **Primary variant** — `.btn-action-primary` (Act 1) / `.btn-start` (Act 0). One per screen, and
 only for the action that advances the story.
+
+**The glyph names the tier (v1.1).** A label ending in `▶` advances *within* a beat ("Next ▶",
+"Check Finished ▶") and is always the standard dark HUD button. A label ending in `➔` advances
+the *story* — starts or finishes a beat or an act — and is always the primary variant. A learner
+can tell how big a step a button takes before reading it.
+
+**Nav labels are identical in every act.** Previous act: `◀ Act N` (aria-label "Return to Act N").
+Step back inside an act: `◀ Back`. Title: `Title`, no glyph (aria-label "Return to the title
+screen").
 
 ```
 ground   --color-heat            /* NOT --color-heat-bright: that fails AA */
@@ -432,7 +464,7 @@ shadow   0 16px 36px -4px rgba(56,36,24,0.28), 0 4px 12px rgba(56,36,24,0.15)
 entrance bubblePop 0.3s --ease-back
 ```
 
-**Anatomy:** `.speech-bubble-speaker` (display, 0.8rem/800, uppercase, +0.06em, uppercase name)
+**Anatomy:** `.speech-bubble-speaker` (display, 0.7rem/700, uppercase, +0.08em — §6.3.1)
 then `.speech-bubble-text`.
 
 ### 6.3.1 Bubble typography (standard)
@@ -465,18 +497,36 @@ Edit Mode's stem handle writes `--stem-right` for `.callie-bubble` and `--stem-l
 other bubble (`js/editor/selection-manager.js`); a new bubble variant that hardcodes `left`/`right`
 will silently swallow the author's saved stem position.
 
-**Tay onomatopoeia format** — Tay does not talk. Her subtitles are a sound then a thought:
+**Tay onomatopoeia format** — Tay does not talk. Her subtitles are a sound, then her thought in
+parentheses (the Act 3 format, adopted module-wide in v1.1):
 
 ```html
 <p class="speech-bubble-text">
-  <span class="tay-onomatopoeia">SNFF SNFF.</span><span class="tay-sub-dialogue">Cold box. Definitely food in there.</span>
+  <span class="tay-onomatopoeia">Sniff!</span> <span class="tay-sub-dialogue">(Cold box. Definitely food in there.)</span>
 </p>
 ```
 
-`.tay-onomatopoeia` is weight 800, `--color-heat`, upright, all-caps, trailing period, one
-`0.2rem` right margin. `.tay-sub-dialogue` is italic, `--color-heat-deep`, inline. Both inline —
+`.tay-onomatopoeia` is weight 800, `--color-heat`, upright, and `text-transform: uppercase` — the
+casing is enforced by CSS so the script can be written naturally. The parentheses are added by
+the template, never typed into the data. `.tay-sub-dialogue` is italic, `--color-heat-deep`, inline. Both inline —
 never a line break between them. On an exit line, add `.is-exit-line` to the bubble: the sub
 dialogue goes italic at 0.9 opacity, reading as trailing off.
+
+**Phone / radio voice** — `.phone-radio-bubble` (Act 2, Dana on the phone): `--surface-radio`
+ground, `3px solid --color-radio`, `--text-radio` text, `--radius-xs`, same §6.3.1 type as every
+other bubble. Its tail is a comic-book zig-zag bolt (`.electric-lightning-tail`, inline SVG)
+running to the phone in the speaker's hand — filled like the bubble, outlined on its outer edges
+only, overlapping the border by 3px for a seamless join. **Never put `clip-path` on a bubble:** it
+clips the tail (this is how the bolt went missing before v1.1). Every line Dana speaks — bubble,
+phone panel, symptom cards, cooling card — uses the §6.3.1 dialogue size, without quote marks.
+
+**Dr. Reyes** — `.reyes-bubble` (Act 3): white ground, `3px solid --palette-teal-dark`,
+teal-dark text, `--color-info-strong` label, stem via `--stem-left` like Tay's. Same §6.3.1 type,
+padding, radius, shadow and `bubblePop` entrance as every other bubble. Her stage direction
+rides the label as `.act3-business`.
+
+**Every bubble** (all speakers, all acts) enters with `bubblePop 0.3s --ease-back`, and no
+dialogue line is ever wrapped in quote marks — in a bubble, a card or a heading (v1.1 audit).
 
 ### 6.4 Modal card
 
@@ -532,6 +582,11 @@ Two children: `.truth-stamp-metric` — a hard number in an `--color-amber-deep`
 wrapping — and `.truth-stamp-line`, body family, one sentence, in `#F1F5F9` (a grandfathered
 literal one step darker than `--text-on-dark`; §2.5 — new work uses the token).
 
+**Where it appears (v1.1).** Acts 2 and 3 use it in the moment. Act 1 no longer does: the
+author wanted the lake-hunt facts to land in retrospect, so each lead's `stamp.metric` now
+appears as a chip inside its row of the Act 1 case file, and the POV close-ups carry dialogue
+only.
+
 **Rule:** the metric is a *measurement* (`131°F`, `2.5 sec`), not a label. If you cannot put a
 number in the chip, you do not have a truth stamp; you have a caption. On narrow viewports it
 stacks metric-above-line. `.stamp-temp-badge` is the same chip reused in the case-file header.
@@ -541,14 +596,17 @@ stacks metric-above-line. `.stamp-temp-badge` is the same chip reused in the cas
 A `<button>` with a transparent ground, absolutely positioned over the scene, wrapping the drawn
 object itself. Four parts:
 
-1. **`.interactable-art`** — the SVG. Carries `interactablePulse 2.6s infinite`, an amber
-   `drop-shadow` glow breathing 0 → `--color-food-glow`. Hover/focus: `scale(1.1) translateY(-3px)`
-   with `--ease-pop`, animation paused, glow raised.
+1. **`.interactable-art`** — the rendered prop. No glow on the art itself: an outward glow
+   tracing a silhouette makes a cutout look pasted on (changed 2026-09-22, `e75e7ed`). The
+   invitation is **`.prop-affordance-ring`** — a 2px `--color-food-glow` ellipse lying on the
+   ground at the object's base, breathing via `propRingPulse 2.6s infinite`, plus a
+   `.prop-ground-shadow` contact shadow. Hover/focus: art `scale(1.04)` with `--ease-pop`; ring
+   paused at full opacity. Visited: ring fades out.
 2. **`.interactable-tooltip`** — the name. Hidden at rest (`opacity: 0`), revealed on hover **and
    `:focus-visible`**, sliding up 6px. `--surface-tooltip`, pill radius, `pointer-events: none`.
 3. **`.interactable-check`** — a 20px `--color-success-strong` disc with a 2px white ring and a
-   white glyph, pinned top-right at `-6px/-6px`. Appears with `.visited`, which also swaps the
-   glow amber → green and stops the pulse.
+   white glyph, pinned top-right at `-6px/-6px`. Appears with `.visited`, which also retires the
+   ground ring.
 4. **`:focus-visible`** — `3px solid --color-amber-tint`, `outline-offset: 4px`,
    `border-radius: 12px`.
 
@@ -599,9 +657,17 @@ It is `role="img"` with an `aria-label` spelling out the number and the stage in
 
 ### 6.9 Light glass banner
 
-`.callie-offscreen-banner`, `.foil-crinkle-banner`: `--surface-glass-light` + blur, a 5px
-left rule or 2px full border in the speaker's accent, `--palette-brown-dark` text, `--radius-sm`
-or `--radius-md`, `--elev-4`. Used when a voice arrives from outside the frame.
+`.foil-crinkle-banner`: `--surface-glass-light` + blur, a 2px border in the speaker's accent,
+`--palette-brown-dark` text, `--radius-md`, `--elev-4`. A sound effect arriving from outside
+the frame.
+
+**An off-screen *voice* is not a banner (v1.1).** When a character speaks from outside the
+frame it is their normal speech bubble, pinned to the edge they are standing beyond, with the
+tail leaving that side (`.act1-callie-offscreen-bubble`: right edge, tail height via
+`--stem-top`). Same colours, size and weight on every line — no per-line accent or red for
+escalation; the escalation is in the words. The label stays the speaker's name, with
+`(off-screen)` in an `.sr-only` span. This replaced `.callie-offscreen-banner`, whose accent
+flipped teal → red mid-sequence and made one speaker look like two.
 
 ---
 
@@ -834,8 +900,6 @@ stated worst-case backdrop. Sizes are px at a 16px root; "large" = ≥24px, or �
 | A1 `.shade-drift-timelapse-banner` | `#FDBA74` | `#272E3F` | normal | 4.5 | 8.02 |
 | A1 `.foil-crinkle-banner` | `#382418` | `#FFFFFF` | normal | 4.5 | 14.65 |
 | A1 `.foil-crinkle-sound` | `#C2410C` | `#FFFFFF` | normal | 4.5 | 5.18 |
-| A1 `.callie-offscreen-banner` | `#382418` | `#FFFFFF` | normal | 4.5 | 14.65 |
-| A1 `.callie-offscreen-label` | `#244952` | `#FFFFFF` | normal | 4.5 | 9.77 |
 | A1 `.act2-placeholder-title` | `#382418` | `#FFFFFF` | large | 3.0 | 14.65 |
 | A1 `.act2-placeholder-text` | `#6E635C` | `#FFFFFF` | normal | 4.5 | 5.83 |
 

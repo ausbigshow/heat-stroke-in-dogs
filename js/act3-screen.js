@@ -39,6 +39,8 @@
  */
 
 import { renderPreservingFocus, focusInto, containFocusIn, releaseFocusContainment } from './a11y-focus.js';
+import { progressStore } from './progress-store.js';
+import { confirmLeave, actMarkerHtml, syncBubbleClickHints } from './shared-ui.js';
 
 export class Act3Screen {
   constructor(app) {
@@ -47,6 +49,7 @@ export class Act3Screen {
 
     // ---- Core beat state -------------------------------------------------
     // 'wait' | 'verdict' | 'report' | 'tayReturn' | 'nextTime' | 'recheck' | 'home' | 'recap' | 'end'
+    this.takeawayOpen = false;
     this.currentBeat = 'wait';
     this.stepIndex = 0;
     this._enteredBeat = null;
@@ -54,9 +57,8 @@ export class Act3Screen {
 
     // ---- Beat 3A: the wait ----------------------------------------------
     // Twelve seconds of nothing, which is what makes the vet's entrance land. It is a real
-    // wait, not a loading bar — but it is never a trap: `#act3-btn-skip-wait` is present and
-    // focusable from the first frame (H3, user control and freedom).
-    this.waitOver = false;
+    // wait, not a loading bar — but it is never a trap: the wait beat advances with `Next ▶`.
+
     this.castState = { callie: 'waiting', reyes: 'absent', tay: 'absent' };
 
     // ---- Handed forward from Act 2 (see applyHandoff) --------------------
@@ -101,6 +103,47 @@ export class Act3Screen {
       'Null, Jan. "Heatstroke Deaths of Children in Vehicles." <i>No Heat Stroke</i>, San Francisco State University, www.noheatstroke.org. Accessed 21 Sept. 2026.'
     ];
 
+    // ---- The take-home sheet ------------------------------------------------
+    // For the LEARNER, not the characters: any warm day outside with any dog. Every fact is
+    // one the course already teaches, with the source it was taught from. Printed as a
+    // one-page infographic (see renderTakeawayCard and the print rules in act3-screen.css).
+    this.takeaway = {
+      badge: 'Take this with you',
+      title: 'Hot days outside with your dog',
+      subtitle: 'Lake days, hikes, beaches, parks, the backyard: anywhere your dog spends a warm day outdoors.',
+      stats: [
+        { value: '4×', text: 'Flat-faced breeds (pugs, bulldogs, French bulldogs) get heat illness about 4 times as often.' },
+        { value: '80°F', text: 'Past this, think twice. In high humidity, panting barely cools a dog at all.' },
+        { value: '+20°F', text: 'Inside a parked car within 10 minutes. Cracking the windows barely helps.' },
+        { value: '2.5×', text: 'Dogs cooled before the drive to the vet are about 2.5 times more likely to survive.' }
+      ],
+      habitsTitle: 'Before and during the day',
+      habits: [
+        { icon: 'shade', label: 'Shade first', text: 'Set up real shade before anything else, and check it every 30 minutes. Shade moves. A sleeping dog doesn\'t.' },
+        { icon: 'water', label: 'Water in the shade', text: 'Top up your dog\'s water whenever you top up your own. Warm water in the sun doesn\'t get drunk.' },
+        { icon: 'clock', label: 'Go early or late', text: 'Mornings and evenings. The middle of the afternoon is the hottest part of the day.' },
+        { icon: 'hand', label: 'The 5-second test', text: 'Palm flat on the sand, pavement or boards for 5 seconds. If you can\'t hold it there, your dog can\'t stand on it.' },
+        { icon: 'sun', label: 'Sun heats everything', text: 'A cooler, car or tent in full sun is not a cool spot. Keep your dog in the shade, not beside the gear.' },
+        { icon: 'home', label: 'Some days, stay in', text: 'Too hot or too humid? Air conditioning and a puzzle toy at home.' }
+      ],
+      signsTitle: 'Warning signs, early to late',
+      signsNote: 'The early signs look like a normal hot afternoon. That is what makes them easy to miss.',
+      stages: [
+        { stage: 'Early', signs: ['Fast, heavy panting that never pauses', 'Tired, lagging, lying down more'] },
+        { stage: 'Building', signs: ['Ears hot right through, with no cool spot'] },
+        { stage: 'Advanced', signs: ['Brick-red gums; pressed pink takes over 2 seconds to return', 'Slow to respond to their name, or no response'] }
+      ],
+      actTitle: 'If you see them: cool first, then go',
+      steps: [
+        'Get them into shade and get air moving over them.',
+        'Wet the belly, armpits, groin and paws with cool water. Not ice, and never over the face.',
+        'Offer small sips. Never force water.',
+        'Call the vet and tell them you are coming.',
+        'Drive with the AC on, your dog lying on a flat cool wet towel. Never wrapped in it.'
+      ],
+      footer: 'Caught while mild, about 95% of dogs come through. Caught once severe, about 43%. The difference is how soon cooling starts.'
+    };
+
     // ---- Beat 3B — The verdict --------------------------------------------
     // `business` is Reyes's stage direction, surfaced as her byline. She never stands still.
     this.verdictSteps = [
@@ -134,7 +177,6 @@ export class Act3Screen {
     this.reportRows = [
       {
         id: 'panting',
-        icon: '💨',
         sign: 'Panting',
         reported: 'Fast, shallow, never pausing',
         stageNo: 1,
@@ -143,7 +185,6 @@ export class Act3Screen {
       },
       {
         id: 'ears',
-        icon: '👂',
         sign: 'Ears',
         reported: 'Hot right through, no cool spot',
         stageNo: 2,
@@ -152,7 +193,6 @@ export class Act3Screen {
       },
       {
         id: 'gums',
-        icon: '👄',
         sign: 'Gums + capillary refill',
         short: 'Gums',
         reported: 'Brick red · refill over 2 seconds',
@@ -162,7 +202,6 @@ export class Act3Screen {
       },
       {
         id: 'name',
-        icon: '🗣️',
         sign: 'Response to her name',
         short: 'Her name',
         reported: 'Delayed, then absent',
@@ -182,10 +221,10 @@ export class Act3Screen {
     // The Act 1 timeline, restated one last time. Times match Act 2's `hintsTimeline` exactly —
     // if one changes, change both.
     this.hintsTimeline = [
-      { time: '1:30 PM', icon: '🥪', title: 'The cooler, in open sun', line: '90 minutes against a cold box.', nextTime: 'Put the cooler in the shade and keep her with it. Cold on the outside is still an oven on the inside.' },
-      { time: '1:48 PM', icon: '☀️', title: 'The dock', line: '137°F boards, patrolled twice.', widest: true, nextTime: "Press your palm on the boards for 5 seconds before she walks them. If you can't hold it there, she can't stand on it." },
-      { time: '2:03 PM', icon: '🥣', title: 'The water bowl', line: 'Sun-warm, half empty, untouched.', nextTime: "Bowl in the shade, refilled every time you refill your own. Warm water in the sun doesn't get drunk." },
-      { time: '2:38 PM', icon: '🌳', title: 'The shade that moved', line: '27 minutes asleep in full sun.', nextTime: "Look at where the shadow is every 30 minutes. It moves. A sleeping dog doesn't." }
+      { time: '1:30 PM', title: 'The cooler, in open sun', line: '15 minutes against a cold box, in full sun.', nextTime: 'Put the cooler in the shade and keep her with it. Cold on the outside is still an oven on the inside.' },
+      { time: '1:48 PM', title: 'The dock', line: '137°F boards, patrolled twice.', widest: true, nextTime: "Press your palm on the boards for 5 seconds before she walks them. If you can't hold it there, she can't stand on it." },
+      { time: '2:03 PM', title: 'The water bowl', line: 'Sun-warm, half empty, untouched.', nextTime: "Bowl in the shade, refilled every time you refill your own. Warm water in the sun doesn't get drunk." },
+      { time: '2:38 PM', title: 'The shade that moved', line: '27 minutes asleep in full sun.', nextTime: "Look at where the shadow is every 30 minutes. It moves. A sleeping dog doesn't." }
     ];
 
     // Reyes walks the timeline while she works. Each step reveals one panel of the report,
@@ -282,25 +321,25 @@ export class Act3Screen {
     this.preventionOptions = [
       {
         id: 'setup_first',
-        icon: '⛱️',
+        icon: '1',
         label: 'Shade and water set up before anything else',
         reply: "Set it up before you even touch the cooler. Real shade she can reach, and her water sitting in it."
       },
       {
         id: 'timing',
-        icon: '🌅',
+        icon: '2',
         label: 'Go early or late, not one in the afternoon',
         reply: "Mornings or evenings. 1 PM in July is the worst hour of the day, and it's the one everybody picks."
       },
       {
         id: 'temp_humidity',
-        icon: '🌡️',
+        icon: '3',
         label: 'Watch the temperature, not just the sun',
         reply: "Past 80°F I'd think twice. And check the humidity — that's the part people miss. Panting barely works when the air's already wet."
       },
       {
         id: 'stay_in',
-        icon: '🏠',
+        icon: '4',
         label: 'Some days she just stays inside',
         reply: "AC and a puzzle toy. She'll act completely betrayed. She'll live."
       }
@@ -365,10 +404,10 @@ export class Act3Screen {
       title: 'Discharge instructions',
       patient: 'TAY · French Bulldog · 4 yr · F/S',
       items: [
-        { glyph: '🩸', label: "Bloodwork today: normal", sub: "Good. Not the whole story — this is a snapshot of right now." },
-        { glyph: '📅', label: 'Recheck in 24–48 hours', sub: 'Kidney and clotting problems surface late. Book it before you leave.' },
-        { glyph: '🚨', label: 'Come back sooner if you see any of these', sub: 'Vomiting · dark urine · any bleeding · going flat again' },
-        { glyph: '🌙', label: 'Watch her tonight', sub: 'Not a figure of speech. Somebody in the room with her.' }
+        { glyph: '1', label: "Bloodwork today: normal", sub: "Good. Not the whole story — this is a snapshot of right now." },
+        { glyph: '2', label: 'Recheck in 24–48 hours', sub: 'Kidney and clotting problems surface late. Book it before you leave.' },
+        { glyph: '3', label: 'Come back sooner if you see any of these', sub: 'Vomiting · dark urine · any bleeding · going flat again' },
+        { glyph: '4', label: 'Watch her tonight', sub: 'Not a figure of speech. Somebody in the room with her.' }
       ]
     };
 
@@ -392,7 +431,7 @@ export class Act3Screen {
     const all = this.preventionChosen.size === this.preventionOptions.length;
     const some = this.preventionChosen.size > 0;
     return {
-      className: `act3-hud-btn ${some ? 'btn-action-primary pulse-btn' : 'act3-btn-quiet'}`,
+      className: `act3-hud-btn ${all ? 'btn-action-primary pulse-btn' : (some ? '' : 'act3-btn-quiet')}`,
       html: all ? "That's all of them ➔" : some ? "That's what changes ▶" : 'Nothing changes ▶'
     };
   }
@@ -411,14 +450,36 @@ export class Act3Screen {
 
     this._enteredBeat = null;
     this._renderedStep = null;
+
+    this.handleClickAdvance = (e) => {
+      if (this.isEditModeActive()) return;
+      if (document.querySelector('.leave-guard-scrim')) return;
+      const card = this.container?.querySelector('#act3-card');
+      const targetEl = e.target instanceof Element ? e.target : e.target?.parentElement;
+      if (!card || !targetEl || !card.contains(targetEl)) return;
+      if (targetEl.closest('button, a, input, select, textarea, label, summary, [role="button"], [role="switch"], [role="link"], [tabindex]:not([tabindex="-1"]), [data-no-advance]')) {
+        return;
+      }
+      const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+      if (!advanceBtn || advanceBtn.offsetParent === null) return;
+      advanceBtn.click();
+    };
+    this.container.addEventListener('click', this.handleClickAdvance);
+    this.handleResizeFold = () => { if (this.takeawayOpen) this.fitTakeawayFold(); };
+    window.addEventListener('resize', this.handleResizeFold);
+
     this.render();
-        window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('keydown', this.handleKeyDown);
   }
 
   unmount() {
     if (this._autoAdvanceTimer) clearTimeout(this._autoAdvanceTimer);
     window.removeEventListener('keydown', this.handleKeyDown);
-        releaseFocusContainment(this.container || document);
+    if (this.container && this.handleClickAdvance) {
+      this.container.removeEventListener('click', this.handleClickAdvance);
+    }
+    if (this.handleResizeFold) window.removeEventListener('resize', this.handleResizeFold);
+    releaseFocusContainment(this.container || document);
   }
 
   /**
@@ -529,12 +590,6 @@ export class Act3Screen {
   // BEAT 3A — THE WAIT
   // =======================================================================
 
-  endWait() {
-    this.waitOver = true;
-    this.currentBeat = 'verdict';
-    this.stepIndex = 0;
-    this.render();
-  }
 
   
   // =======================================================================
@@ -551,9 +606,9 @@ export class Act3Screen {
       this.container,
       () => this.renderNow(),
       ['#act3-btn-next-step', '#act3-btn-report-next', '#act3-btn-report-done',
-       '#act3-btn-beat-advance', '#act3-btn-skip-wait', '#act3-btn-report-table']
+       '#act3-btn-beat-advance', '#act3-btn-report-table']
     );
-    const dialog = this.container?.querySelector('[role="dialog"]');
+    const dialog = this.container?.querySelector('.act3-takeaway') || this.container?.querySelector('[role="dialog"]');
     if (dialog) containFocusIn(dialog);
 
     const steps = this.stepsForBeat();
@@ -574,6 +629,13 @@ export class Act3Screen {
         }
       }
     }
+    try {
+      if (this.currentBeat === 'end') {
+        progressStore.clear();
+      } else {
+        progressStore.save('act3', this.getResumeState());
+      }
+    } catch (e) { console.warn('Failed to save progress', e); }
   }
 
   renderNow() {
@@ -629,7 +691,22 @@ export class Act3Screen {
     `;
 
     this.bindEvents();
+    this.updateCardAffordance();
     this._renderedStep = `${this.currentBeat}-${this.stepIndex}`;
+  }
+
+  updateCardAffordance() {
+    const card = this.container?.querySelector('#act3-card');
+    if (!card) return;
+    const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+    const hasAdvance = !!(advanceBtn && advanceBtn.offsetParent !== null);
+    card.classList.toggle('click-advance', hasAdvance);
+    syncBubbleClickHints(card, hasAdvance);
+    if (hasAdvance) {
+      card.setAttribute('title', 'Click anywhere to continue');
+    } else {
+      card.removeAttribute('title');
+    }
   }
 
   /**
@@ -808,35 +885,25 @@ export class Act3Screen {
 
   renderHudBar() {
     const status = this.getTayStatus();
-    const order = ['wait', 'verdict', 'report', 'tayReturn', 'nextTime', 'recheck', 'home', 'recap', 'end'];
-    const currentBeatNum = Math.max(1, order.indexOf(this.currentBeat) + 1);
-    const totalBeats = order.length;
 
     return `
       <header class="act3-hud-bar" data-editor-id="act3-hud-bar">
         <div class="act3-hud-group">
           <button id="act3-btn-back-act2" class="act3-hud-btn" data-editor-id="act3-btn-back-act2"
-                  title="Return to Act 2" aria-label="Return to Act 2">◀ Act 2</button>
+                  title="Return to Part 2" aria-label="Return to Part 2">◀ Part 2</button>
           <button id="act3-btn-title" class="act3-hud-btn" data-editor-id="act3-btn-title"
-                  title="Return to Title" aria-label="Return to the title screen">🏠 Title</button>
+                  title="Return to Title" aria-label="Return to the title screen">Title</button>
         </div>
 
         <div class="act3-hud-group">
-          <div class="act3-hud-pill progress-pill" data-editor-id="act3-hud-progress"
-               aria-label="Act 3 progress: Beat ${currentBeatNum} of ${totalBeats}">
-            <span class="act3-hud-label" aria-hidden="true">BEAT</span>
-            <span class="act3-hud-count">${currentBeatNum}/${totalBeats}</span>
-          </div>
-
+          ${actMarkerHtml(3)}
           <div class="act3-hud-pill clock-pill" data-editor-id="act3-hud-clock" title="Clinic time">
-            <span aria-hidden="true">🕒</span>
             <span>${this.getFormattedTime()}</span>
           </div>
 
           <!-- The engine of Beat 3A. It says IN BACK, and it keeps saying IN BACK. -->
           <div class="act3-hud-pill status-pill tone-${status.tone}" data-editor-id="act3-hud-status"
                aria-label="${status.aria}">
-            <span aria-hidden="true">🐶</span>
             <span>TAY — ${status.word}</span>
           </div>
         </div>
@@ -881,7 +948,6 @@ export class Act3Screen {
       return `
         <div class="speech-bubble tay-bubble act3-tay-bubble ${isNewLineClass}" data-step="${stepKey}" data-editor-id="${editorId}-tay">
           <div class="speech-bubble-speaker">
-            <span aria-hidden="true">🐶</span>
             <span>Tay</span>
           </div>
           <p class="speech-bubble-text">
@@ -896,12 +962,11 @@ export class Act3Screen {
       return `
         <div class="speech-bubble reyes-bubble act3-reyes-bubble ${isNewLineClass}" data-step="${stepKey}" data-editor-id="${editorId}-reyes">
           <div class="speech-bubble-speaker">
-            <span aria-hidden="true">🩺</span>
             <span>Dr. Reyes</span>
             
           </div>
           <p class="speech-bubble-text">
-            <span class="act3-reyes-dialogue">“${textProp}”</span>
+            <span class="act3-reyes-dialogue">${textProp}</span>
           </p>
         </div>
       `;
@@ -910,12 +975,11 @@ export class Act3Screen {
     return `
       <div class="speech-bubble callie-bubble act3-callie-bubble ${isNewLineClass}" data-step="${stepKey}" data-editor-id="${editorId}-callie">
         <div class="speech-bubble-speaker">
-          <span aria-hidden="true">👩</span>
           <span>Callie</span>
           
         </div>
         <p class="speech-bubble-text">
-          <span class="callie-dialogue">“${step.text}”</span>
+          <span class="callie-dialogue">${step.text}</span>
         </p>
       </div>
     `;
@@ -1023,7 +1087,7 @@ export class Act3Screen {
           <footer class="act3-recap-footer">
             <div class="act3-recap-nav">
               <button id="act3-btn-prev-step" class="act3-hud-btn act3-btn-quiet" data-editor-id="act3-btn-prev-step">◀ Back</button>
-              <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary" data-editor-id="act3-btn-beat-advance">Finish ➔</button>
+              <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary" data-editor-id="act3-btn-beat-advance" data-advance-line>Finish ➔</button>
             </div>
           </footer>
         </div>
@@ -1045,7 +1109,7 @@ export class Act3Screen {
           <div class="act3-recap-chips">
             ${this.reportRows.map(row => `
               <span class="act3-stage-chip stage-${row.stageNo}">
-                <span aria-hidden="true">${row.icon}</span> ${row.short || row.sign} &middot; <span class="act3-stage-no">${row.stageNo}</span>
+                ${row.short || row.sign} &middot; <span class="act3-stage-no">${row.stageNo}</span>
                 <span>${row.stage}</span>
               </span>
             `).join('')}
@@ -1074,7 +1138,7 @@ export class Act3Screen {
             ${this.reportRows.map(row => `
               <tr>
                 <th scope="row" class="act3-cell-sign">
-                  <span aria-hidden="true">${row.icon}</span> ${row.sign}
+                  ${row.sign}
                 </th>
                 <td class="act3-cell-reported">
                   ${row.reported}
@@ -1119,12 +1183,11 @@ export class Act3Screen {
   renderReportTimeline() {
     return `
       <div class="act3-recap-panel">
-        <h3 class="act3-panel-title">Her afternoon, from Act 1</h3>
+        <h3 class="act3-panel-title">Her afternoon, from Part 1</h3>
         <ol class="act3-recap-timeline">
           ${this.hintsTimeline.map(item => `
             <li class="act3-timeline-item ${item.widest ? 'is-widest' : ''}">
               <span class="act3-timeline-time">${item.time}</span>
-              <span class="act3-timeline-icon" aria-hidden="true">${item.icon}</span>
               <span class="act3-timeline-copy">
                 <strong>${item.title}</strong>
                 <span>${item.line}</span>
@@ -1162,7 +1225,7 @@ export class Act3Screen {
         <div class="act3-prevention-card" data-editor-id="act3-prevention-card" role="group"
              aria-label="What changes about the next lake day">
           <span class="act3-prevention-badge">Dr. Reyes</span>
-          <h2 class="act3-prevention-title">“So what's different about the next lake day?”</h2>
+          <h2 class="act3-prevention-title">So what's different about the next lake day?</h2>
           <p class="act3-prevention-sub">
             Choose every change you'd actually make. Each one opens Dr. Reyes's answer and stays
             open — there's no wrong pick here.
@@ -1180,7 +1243,7 @@ export class Act3Screen {
                           aria-pressed="${isChosen}"
                           ${isChosen ? 'aria-disabled="true"' : ''}
                           ${isChosen ? `aria-describedby="act3-prevention-reply-${opt.id}"` : ''}>
-                    <span class="act3-prevention-icon" aria-hidden="true">${opt.icon}</span>
+                    <span class="act3-prevention-icon act3-icon-badge" aria-hidden="true">${opt.icon}</span>
                     <span class="act3-prevention-label">${opt.label}</span>
                     <!-- Chosen is a glyph and a word, never the green alone (§7.3). -->
                     <span class="act3-prevention-state">
@@ -1198,7 +1261,7 @@ export class Act3Screen {
                            aria-hidden="${!isChosen}"
                            ${this.activePrevention === opt.id ? 'role="status"' : ''}>
                         <span class="act3-report-who">Dr. Reyes</span>
-                        <p class="act3-report-text">“${opt.reply}”</p>
+                        <p class="act3-report-text">${opt.reply}</p>
                       </div>
                     </div>
                   </div>
@@ -1254,7 +1317,7 @@ export class Act3Screen {
         <ul class="act3-discharge-list">
           ${this.dischargeSheet.items.map((item, i) => `
             <li class="act3-discharge-item" data-editor-id="act3-discharge-item-${i}">
-              <span class="act3-discharge-glyph" aria-hidden="true">${item.glyph}</span>
+              <span class="act3-discharge-glyph act3-icon-badge" aria-hidden="true">${item.glyph}</span>
               <span class="act3-discharge-copy">
                 <strong>${item.label}</strong>
                 <span>${item.sub}</span>
@@ -1318,10 +1381,8 @@ export class Act3Screen {
           </p>
 
           <div class="act3-end-actions">
-            <button id="act3-btn-replay-act3" class="act3-hud-btn btn-action-primary"
-                    data-editor-id="act3-btn-replay-act3">⏮ Replay Act 3</button>
-            <button id="act3-btn-replay-act1" class="act3-hud-btn" data-editor-id="act3-btn-replay-act1">🐾 Replay Act 1</button>
-            <button id="act3-btn-end-title" class="act3-hud-btn" data-editor-id="act3-btn-end-title">🏠 Title</button>
+            <button id="act3-btn-takeaway" class="act3-hud-btn btn-action-primary" data-editor-id="act3-btn-takeaway">Your take-home sheet ➔</button>
+            <button id="act3-btn-start-over" class="act3-hud-btn" data-editor-id="act3-btn-start-over">Start over from the beginning</button>
           </div>
         </div>
 
@@ -1329,9 +1390,129 @@ export class Act3Screen {
           <span class="act3-sources-badge">Works cited</span>
           <h2 class="act3-sources-title">Sources</h2>
           <ul class="act3-mla-list" aria-label="Sources">
-            ${this.sources.map(src => `<li>${src}</li>`).join('')}
+            ${this.sources.map(src => `<li>${this.linkifySource(src)}</li>`).join('')}
           </ul>
         </div>
+      </div>
+      ${this.takeawayOpen ? this.renderTakeawayCard() : ''}
+    `;
+  }
+
+
+  // Each MLA entry keeps its printed form; its URL becomes a link that opens in a new tab so
+  // the learner never loses their place in the course.
+  linkifySource(src) {
+    const re = /\b(https?:\/\/[^\s<]+|www\.[^\s<]+|[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:com|org|edu)\/[^\s<]*)/i;
+    const m = src.match(re);
+    if (!m) return src;
+    const shown = m[1].replace(/[.,]+$/, '');
+    const href = /^https?:/i.test(shown) ? shown : `https://${shown}`;
+    const link = `<a href="${href}" target="_blank" rel="noopener noreferrer">${shown}<span class="sr-only"> (opens in a new tab)</span></a>`;
+    return src.slice(0, m.index) + link + src.slice(m.index + shown.length);
+  }
+
+  // The sheet scrolls, and when its fold landed in the gap between two bands it looked
+  // finished: only the scrollbar said otherwise. If the fold isn't already cutting through a
+  // tile, shorten the scroll area so it cuts through the last tile that fits, leaving the
+  // next row of information visibly peeking out. .has-more adds a soft fade at the foot
+  // while there is more below.
+  fitTakeawayFold() {
+    const body = this.container?.querySelector('.act3-takeaway-body');
+    if (!body) return;
+    body.style.maxHeight = '';
+    const syncFade = () => body.classList.toggle('has-more',
+      body.scrollTop + body.clientHeight < body.scrollHeight - 4);
+    if (!body.dataset.foldBound) {
+      body.addEventListener('scroll', syncFade, { passive: true });
+      body.dataset.foldBound = '1';
+    }
+    if (body.scrollHeight > body.clientHeight + 4) {
+      const fold = body.clientHeight;
+      const origin = body.getBoundingClientRect().top - body.scrollTop;
+      const tiles = [...body.querySelectorAll('.act3-tk-stat, .act3-tk-habit, .act3-tk-stage, .act3-tk-step, .act3-tk-footer-line')]
+        .map((el) => { const r = el.getBoundingClientRect(); return { top: r.top - origin, bottom: r.bottom - origin }; });
+      const cutting = tiles.some((t) => t.top < fold - 24 && t.bottom > fold + 24);
+      if (!cutting) {
+        const last = tiles
+          .filter((t) => t.bottom <= fold + 24 && t.bottom - t.top > 50)
+          .sort((a, b) => b.top - a.top)[0];
+        if (last) body.style.maxHeight = `${Math.round(last.top + (last.bottom - last.top) * 0.55)}px`;
+      }
+    }
+    syncFade();
+  }
+
+  // Small flat line icons for the take-home sheet (decorative; the label carries the meaning).
+  takeawayIcon(name) {
+    const paths = {
+      shade: '<path d="M4 20h16"/><path d="M12 20v-7"/><path d="M5 13a7 7 0 0 1 14 0z"/>',
+      water: '<path d="M12 3c3 4 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 3-7 6-11z"/>',
+      clock: '<circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/>',
+      hand: '<path d="M7 12V6.5a1.5 1.5 0 0 1 3 0V11"/><path d="M10 11V5a1.5 1.5 0 0 1 3 0v6"/><path d="M13 11V6a1.5 1.5 0 0 1 3 0v6"/><path d="M16 12V8.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5A6.5 6.5 0 0 1 6 16.8L4.3 13.6a1.5 1.5 0 0 1 2.6-1.5L7 12"/>',
+      sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>',
+      home: '<path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>'
+    };
+    return `<svg class="act3-tk-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name] || ''}</svg>`;
+  }
+
+  // The take-home sheet: an infographic in four bands (the numbers, habits, warning signs as
+  // an early-to-late scale, what to do). The same markup is copied into #act3-print-root
+  // for the one-page print.
+  renderTakeawayCard() {
+    const t = this.takeaway;
+    return `
+      <div class="act3-takeaway-scrim" data-editor-id="act3-takeaway-scrim"></div>
+      <div class="act3-takeaway" role="dialog" aria-modal="true" aria-labelledby="act3-takeaway-title" data-editor-id="act3-takeaway">
+        <header class="act3-takeaway-header">
+          <span class="act3-takeaway-badge">${t.badge}</span>
+          <h2 id="act3-takeaway-title" class="act3-takeaway-title">${t.title}</h2>
+          <p class="act3-tk-subtitle">${t.subtitle}</p>
+        </header>
+        <div class="act3-takeaway-body">
+          <ul class="act3-tk-stats" data-editor-id="act3-tk-stats">
+            ${t.stats.map(st => `
+              <li class="act3-tk-stat">
+                <span class="act3-tk-stat-value">${st.value}</span>
+                <span class="act3-tk-stat-text">${st.text}</span>
+              </li>`).join('')}
+          </ul>
+
+          <section class="act3-tk-band" data-editor-id="act3-tk-habits">
+            <h3 class="act3-tk-band-title">${t.habitsTitle}</h3>
+            <ul class="act3-tk-habits">
+              ${t.habits.map(h => `
+                <li class="act3-tk-habit">
+                  <span class="act3-tk-icon-wrap">${this.takeawayIcon(h.icon)}</span>
+                  <span class="act3-tk-habit-copy"><strong>${h.label}</strong> ${h.text}</span>
+                </li>`).join('')}
+            </ul>
+          </section>
+
+          <section class="act3-tk-band" data-editor-id="act3-tk-signs">
+            <h3 class="act3-tk-band-title">${t.signsTitle}</h3>
+            <p class="act3-tk-note">${t.signsNote}</p>
+            <ol class="act3-tk-scale">
+              ${t.stages.map((st, i) => `
+                <li class="act3-tk-stage act3-tk-stage-${i + 1}">
+                  <span class="act3-tk-stage-name">${st.stage}</span>
+                  <ul>${st.signs.map(sign => `<li>${sign}</li>`).join('')}</ul>
+                </li>`).join('')}
+            </ol>
+          </section>
+
+          <section class="act3-tk-band act3-tk-act" data-editor-id="act3-tk-act">
+            <h3 class="act3-tk-band-title">${t.actTitle}</h3>
+            <ol class="act3-tk-steps">
+              ${t.steps.map((step, i) => `
+                <li class="act3-tk-step"><span class="act3-tk-step-num" aria-hidden="true">${i + 1}</span><span>${step}</span></li>`).join('')}
+            </ol>
+            <p class="act3-tk-footer-line">${t.footer}</p>
+          </section>
+        </div>
+        <footer class="act3-takeaway-footer">
+          <button id="act3-btn-takeaway-print" class="act3-hud-btn" data-editor-id="act3-btn-takeaway-print">Print</button>
+          <button id="act3-btn-takeaway-close" class="act3-hud-btn" data-editor-id="act3-btn-takeaway-close">✕ Close</button>
+        </footer>
       </div>
     `;
   }
@@ -1348,15 +1529,6 @@ export class Act3Screen {
                 aria-label="Go back one step">◀ Back</button>
     ` : '';
 
-    if (this.currentBeat === 'nextTime' && this.stepIndex === 0 && this.preventionChosen.size === 0) {
-      return `
-        ${back}
-        <div class="act3-hud-pill act3-nudge-pill" data-editor-id="act3-nudge-pill">
-          <span aria-hidden="true">👆</span>
-          <span>Pick the ones you'd actually do</span>
-        </div>
-      `;
-    }
     return back;
   }
 
@@ -1369,32 +1541,32 @@ export class Act3Screen {
     switch (this.currentBeat) {
       case 'wait':
         return `
-          <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">Next ▶</button>
+          <button id="act3-btn-beat-advance" class="act3-hud-btn"
+                  data-editor-id="act3-btn-beat-advance" data-advance-line>Next ▶</button>
         `;
 
       case 'verdict':
         return this.stepIndex < this.verdictSteps.length - 1 ? `
-          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
+          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">📋 Look at the chart ➔</button>
+                  data-editor-id="act3-btn-beat-advance" data-advance-line>Look at the chart ➔</button>
         `;
 
       case 'report':
         return this.stepIndex < this.stepsForBeat().length - 1 ? `
-          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
+          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">Where's Tay? ➔</button>
+                  data-editor-id="act3-btn-beat-advance" data-advance-line>Where's Tay? ➔</button>
         `;
 
       case 'tayReturn':
         return this.stepIndex < this.tayReturnSteps.length - 1 ? `
-          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
+          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">Next time ➔</button>
+                  data-editor-id="act3-btn-beat-advance" data-advance-line>Next time ➔</button>
         `;
 
       case 'nextTime': {
@@ -1408,27 +1580,27 @@ export class Act3Screen {
           `;
         }
         return this.stepIndex < this.hotCarSteps.length ? `
-          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
+          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">Pick up your keys ➔</button>
+                  data-editor-id="act3-btn-beat-advance" data-advance-line>Pick up your keys ➔</button>
         `;
       }
 
       case 'recheck':
         return this.stepIndex < this.recheckSteps.length - 1 ? `
-          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
+          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">🚗 Take her home ➔</button>
+                  data-editor-id="act3-btn-beat-advance" data-advance-line>Take her home ➔</button>
         `;
 
       case 'home':
         return this.stepIndex < this.homeSteps.length - 1 ? `
-          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
+          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">Fade ➔</button>
+                  data-editor-id="act3-btn-beat-advance" data-advance-line>Fade ➔</button>
         `;
 
       case 'recap':
@@ -1459,11 +1631,34 @@ export class Act3Screen {
       });
     };
 
-    on('#act3-btn-back-act2', () => this.app?.navigateTo('act2', {
-      beat: 'transport',
-      handoff: this.getHandoff()
-    }));
-    on('#act3-btn-title', () => this.app?.navigateTo('opening'));
+    on('#act3-btn-back-act2', async (e) => {
+      e.preventDefault();
+      if (this.hasProgress()) {
+        const leave = await confirmLeave({
+          title: 'Go back to Part 2?',
+          message: 'Part 2 starts again from the beginning, and your progress in Part 3 will be cleared.',
+          leaveLabel: 'Go back'
+        });
+        if (!leave) return;
+      }
+      this.app?.navigateTo('act2', {
+        beat: 'transport',
+        handoff: this.getHandoff()
+      });
+    });
+    on('#act3-btn-title', async (e) => {
+      e.preventDefault();
+      if (this.hasProgress()) {
+        const leave = await confirmLeave({
+          title: 'Leave the story?',
+          message: "You'll go back to the title screen, and everything you've done in Part 3 so far will be cleared.",
+          leaveLabel: 'Leave anyway'
+        });
+        if (!leave) return;
+      }
+      try { progressStore.clear(); } catch(err) {}
+      this.app?.navigateTo('opening');
+    });
 
     on('#act3-btn-next-step', () => this.nextSubStep());
     on('#act3-btn-prev-step', () => this.prevSubStep());
@@ -1485,9 +1680,44 @@ export class Act3Screen {
     });
 
     // --- The close ---
-    on('#act3-btn-replay-act3', () => this.app?.navigateTo('act3', { handoff: this.getHandoff() }));
-    on('#act3-btn-replay-act1', () => this.app?.navigateTo('act1'));
-    on('#act3-btn-end-title', () => this.app?.navigateTo('opening'));
+    on('#act3-btn-takeaway', () => {
+      this.takeawayOpen = true;
+      this.render();
+      this.fitTakeawayFold();
+      focusInto(this.container, ['#act3-btn-takeaway-close']);
+    });
+    on('#act3-btn-takeaway-close', () => {
+      this.takeawayOpen = false;
+      this.render();
+      setTimeout(() => {
+        const btn = this.container.querySelector('#act3-btn-takeaway');
+        if (btn) btn.focus();
+      }, 0);
+    });
+    // The card lives inside a transformed, overflow-clipped viewport card on a page that never
+    // scrolls, so printing it in place gets cut off. Print a clean body-level copy instead.
+    on('#act3-btn-takeaway-print', () => {
+      const card = this.container.querySelector('.act3-takeaway');
+      if (!card) return;
+      document.getElementById('act3-print-root')?.remove();
+      const root = document.createElement('div');
+      root.id = 'act3-print-root';
+      root.innerHTML = card.querySelector('.act3-takeaway-header').outerHTML
+        + card.querySelector('.act3-takeaway-body').outerHTML
+        + '<p class="act3-tk-print-credit">From Callie &amp; Tay: Heat Stroke in Dogs. Facts drawn from the sources listed at the end of the course. This sheet does not replace advice from your vet.</p>';
+      // The on-screen fold fit and fade are for scrolling; the page prints whole.
+      const printBody = root.querySelector('.act3-takeaway-body');
+      printBody?.removeAttribute('style');
+      printBody?.classList.remove('has-more');
+      document.body.appendChild(root);
+      window.addEventListener('afterprint', () => root.remove(), { once: true });
+      window.print();
+    });
+    // The only way on from the end: the whole story again, from the intro, with nothing carried.
+    on('#act3-btn-start-over', () => {
+      progressStore.clear();
+      this.app?.navigateTo('act0');
+    });
   }
 
   /**
@@ -1503,6 +1733,38 @@ export class Act3Screen {
       hintsDropped: this.hintsDropped,
       coolingWrongCount: this.coolingWrongCount
     };
+  }
+
+  // ---- Resume point (js/progress-store.js) -------------------------------
+  // Everything render() needs to put the learner back where they were. Timers, the takeaway
+  // dialog and entrance flags are transient and start fresh.
+  getResumeState() {
+    return {
+      currentBeat: this.currentBeat,
+      stepIndex: this.stepIndex,
+      clockMinutes: this.clockMinutes,
+      castState: { ...this.castState },
+      reportTableExpanded: this.reportTableExpanded,
+      preventionChosen: [...this.preventionChosen],
+      activePrevention: this.activePrevention,
+      handoff: this.getHandoff()
+    };
+  }
+
+  applyResumeState(state) {
+    if (!state || typeof state !== 'object') return;
+    if (state.handoff) this.applyHandoff(state.handoff);
+    if (typeof state.currentBeat === 'string') this.currentBeat = state.currentBeat;
+    if (Number.isInteger(state.stepIndex)) this.stepIndex = state.stepIndex;
+    if (Number.isFinite(state.clockMinutes)) this.clockMinutes = state.clockMinutes;
+    if (state.castState && typeof state.castState === 'object') this.castState = { ...this.castState, ...state.castState };
+    this.reportTableExpanded = !!state.reportTableExpanded;
+    if (Array.isArray(state.preventionChosen)) this.preventionChosen = new Set(state.preventionChosen);
+    if (state.activePrevention !== undefined) this.activePrevention = state.activePrevention;
+  }
+
+  hasProgress() {
+    return !(this.currentBeat === 'wait' && this.stepIndex === 0);
   }
 
   /**
@@ -1571,6 +1833,7 @@ export class Act3Screen {
       nextBtn.className = state.className;
       nextBtn.innerHTML = state.html;
     }
+    try { progressStore.save('act3', this.getResumeState()); } catch (e) { console.warn('Failed to save progress', e); }
   }
 
   // =======================================================================
@@ -1635,7 +1898,7 @@ export class Act3Screen {
     if (this.currentBeat === 'report') {
       focusInto(this.container, ['#act3-btn-report-next', '#act3-btn-report-done']);
     } else if (this.currentBeat === 'end') {
-      focusInto(this.container, ['#act3-btn-replay-act3']);
+      focusInto(this.container, ['#act3-btn-takeaway']);
     }
   }
 
@@ -1684,6 +1947,16 @@ export class Act3Screen {
     // the file is a beat the story passes through, not an optional overlay, and dropping the
     // learner back into an empty clinic would be a dead end rather than an exit.
     if (e.key === 'Escape') {
+      if (this.takeawayOpen) {
+        e.preventDefault();
+        this.takeawayOpen = false;
+        this.render();
+        setTimeout(() => {
+          const btn = this.container.querySelector('#act3-btn-takeaway');
+          if (btn) btn.focus();
+        }, 0);
+        return;
+      }
       if (this.currentBeat === 'recap') {
         e.preventDefault();
         this.nextBeat();
@@ -1711,7 +1984,7 @@ export class Act3Screen {
 
     if (this.currentBeat === 'wait') {
       e.preventDefault();
-      this.endWait();
+      this.nextBeat();
       return;
     }
 

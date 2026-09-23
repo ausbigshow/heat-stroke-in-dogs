@@ -15,6 +15,8 @@
  */
 
 import { renderPreservingFocus, focusInto, containFocusIn, releaseFocusContainment } from './a11y-focus.js';
+import { progressStore } from './progress-store.js';
+import { confirmLeave, actMarkerHtml, syncBubbleClickHints } from './shared-ui.js';
 
 export class Act1Screen {
   constructor(app) {
@@ -239,6 +241,22 @@ export class Act1Screen {
     this._enteredBeat = null;
     this._renderedStep = null;
     this._mounted = false;
+
+    this.handleClickAdvance = (e) => {
+      if (this.isEditModeActive()) return;
+      if (document.querySelector('.leave-guard-scrim')) return;
+      const card = this.container?.querySelector('#act1-card');
+      const targetEl = e.target instanceof Element ? e.target : e.target?.parentElement;
+      if (!card || !targetEl || !card.contains(targetEl)) return;
+      if (targetEl.closest('button, a, input, select, textarea, label, summary, [role="button"], [role="switch"], [role="link"], [tabindex]:not([tabindex="-1"]), [data-no-advance]')) {
+        return;
+      }
+      const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+      if (!advanceBtn || advanceBtn.offsetParent === null) return;
+      advanceBtn.click();
+    };
+    this.container.addEventListener('click', this.handleClickAdvance);
+
     this.render();
     window.addEventListener('keydown', this.handleKeyDown);
   }
@@ -249,7 +267,50 @@ export class Act1Screen {
     if (this.container && this.handleClick) {
       this.container.removeEventListener('click', this.handleClick);
     }
+    if (this.container && this.handleClickAdvance) {
+      this.container.removeEventListener('click', this.handleClickAdvance);
+    }
     this._mounted = false;
+  }
+
+  getResumeState() {
+    return {
+      currentBeat: this.currentBeat,
+      clockMinutes: this.clockMinutes,
+      visitedLeads: Array.from(this.visitedLeads),
+      leadVisitOrder: this.leadVisitOrder,
+      leadVisitCounts: this.leadVisitCounts,
+      pantingLevel: this.pantingLevel,
+      stepIndex: this.stepIndex,
+      activeLeadId: this.activeLeadId,
+      returnFocusLeadId: this.returnFocusLeadId,
+      povStepIndex: this.povStepIndex,
+      tayHasEnteredScene: this.tayHasEnteredScene,
+      tayPosition: this.tayPosition,
+      tayFacingLeft: this.tayFacingLeft
+    };
+  }
+
+  applyResumeState(state) {
+    if (!state) return;
+    this.currentBeat = state.currentBeat ?? 'cold_open';
+    this.clockMinutes = state.clockMinutes ?? 90;
+    this.visitedLeads = new Set(state.visitedLeads || []);
+    this.leadVisitOrder = state.leadVisitOrder ?? [];
+    this.leadVisitCounts = state.leadVisitCounts ?? { cooler: 0, dock: 0, bowl: 0, lake: 0 };
+    this.pantingLevel = state.pantingLevel ?? 1;
+    this.stepIndex = state.stepIndex ?? 0;
+    this.activeLeadId = state.activeLeadId ?? null;
+    this.returnFocusLeadId = state.returnFocusLeadId ?? null;
+    this.povStepIndex = state.povStepIndex ?? 0;
+    this.tayHasEnteredScene = state.tayHasEnteredScene ?? false;
+    this.tayPosition = state.tayPosition ?? { top: 72, left: 52 };
+    this.tayFacingLeft = state.tayFacingLeft ?? true;
+  }
+
+  hasProgress() {
+    if (this.currentBeat !== 'cold_open') return true;
+    return this.stepIndex > 0;
   }
 
   getFormattedTime() {
@@ -316,6 +377,7 @@ export class Act1Screen {
         this.syncHud();
         this.renderBeatContent();
         this.renderNav();
+        this.updateCardAffordance();
         
         if (this.currentBeat === 'nap' || this.currentBeat === 'drift') {
           this.tayHasEnteredScene = true;
@@ -330,6 +392,12 @@ export class Act1Screen {
     
     const dialog = this.container.querySelector('[role="dialog"]');
     if (dialog) containFocusIn(dialog);
+
+    if (this.hasProgress()) {
+      try {
+        progressStore.save('act1', this.getResumeState());
+      } catch (e) {}
+    }
   }
 
   mountScene() {
@@ -342,18 +410,19 @@ export class Act1Screen {
 
           <header class="act1-hud-bar" data-editor-id="act1-hud-bar">
             <div class="act1-hud-group">
-              <button id="act1-btn-back-act0" class="act1-hud-btn" data-editor-id="act1-btn-back-act0" title="Return to Act 0" aria-label="Return to Act 0">◀ Act 0</button>
+              <button id="act1-btn-back-act0" class="act1-hud-btn" data-editor-id="act1-btn-back-act0" title="Return to the intro" aria-label="Return to the intro">◀ Intro</button>
               <button id="act1-btn-title" class="act1-hud-btn" data-editor-id="act1-btn-title" title="Return to Title" aria-label="Return to the title screen">Title</button>
             </div>
 
             <div class="act1-hud-group">
+              ${actMarkerHtml(1)}
               <div class="act1-hud-pill clock-pill" data-editor-id="act1-hud-clock" title="Lake Time" role="status" aria-live="polite">
                 <span id="act1-clock-text"></span>
               </div>
               
               <div class="act1-hud-pill hints-dropped-pill" id="act1-hud-hints-pill" data-editor-id="act1-hud-hints" role="status" aria-live="polite" hidden>
-                <span class="hud-label-full">HINTS DROPPED: 4</span>
-                <span class="hud-label-short">HINTS: 4</span>
+                <span class="hud-label-full">WARNING SIGNS: 4</span>
+                <span class="hud-label-short">WARNINGS: 4</span>
               </div>
               <div class="act1-hud-pill leads-pill" id="act1-hud-leads-pill" data-editor-id="act1-hud-leads">
                 <span class="hud-label-full"></span>
@@ -443,7 +512,7 @@ export class Act1Screen {
         aria-pressed="false"
       >
         <span class="interactable-art">
-        ${leadId !== 'lake' ? '<div class="prop-ground-shadow"></div><div class="prop-affordance-ring"></div>' : ''}${artHtml}</span>
+        ${leadId !== 'lake' ? '<div class="prop-ground-shadow"></div><div class="prop-affordance-ring ring-back"></div>' : ''}${artHtml}${leadId !== 'lake' ? '<div class="prop-affordance-ring ring-front"></div>' : '<div class="prop-affordance-ring lake-ring"></div>'}</span>
         <span class="interactable-tooltip" aria-hidden="true">${lead.tayName}</span>
       </button>
     `;
@@ -542,16 +611,19 @@ export class Act1Screen {
 
     const targetCoords = {
       cooler: { top: 71, left: 47 },
-      dock: { top: 60, left: 22 },
+      // On the sand at the dock's near end, in front of it (ground line ~64% vs the dock's 61.5%).
+      dock: { top: 60.6, left: 26, scale: 0.7 },
       bowl: { top: 76, left: 48 },
-      lake: { top: 56, left: 11 },
+      // On the sand at the waterline, never in the water. Smaller than her depth scale
+      // alone would make her: the shore reads further off than the grass in front.
+      lake: { top: 53.7, left: 41, scale: 0.66 },
       canopy: { top: 70, left: 74 }
     }[leadId] || { top: 70, left: 50 };
 
     const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const movingLeft = targetCoords.left < this.tayPosition.left;
     this.tayFacingLeft = movingLeft;
-    this.tayPosition = targetCoords;
+    this.tayPosition = { ...targetCoords };
 
     if (isReducedMotion) {
       if (leadId === 'canopy') {
@@ -594,27 +666,31 @@ export class Act1Screen {
     card.classList.toggle('canopy-focus', isCanopyFocus);
     card.classList.toggle('is-cold-open-active', isColdOpenClickable);
     card.classList.toggle('is-entering', entering);
+    // The scene is mounted once and persists across beats, so the leads are on screen during
+    // the cold open, the nap and the alarm too. Only the hub acts on a click; everywhere else
+    // they must stop inviting one (no ring, no cursor, out of the tab order).
+    const leadsLive = this.currentBeat === 'hub';
+    card.classList.toggle('leads-live', leadsLive);
     
     card.style.setProperty('--act1-drift-opacity', escalation.driftOpacity);
     card.style.setProperty('--act1-saturation-drop', `${escalation.saturationDrop}%`);
     card.style.setProperty('--act1-shade-shift', `${escalation.shadeShiftX}%`);
     card.style.setProperty('--act1-shade-scale-y', escalation.shadeScaleY);
-    if (isColdOpenClickable) {
-      card.setAttribute('title', 'Click anywhere to continue (or press Space)');
-    } else {
-      card.removeAttribute('title');
-    }
+    this.updateCardAffordance();
 
     ['cooler', 'dock', 'bowl', 'lake'].forEach(leadId => {
       const el = this.container.querySelector(`.interactable-${leadId}`);
       if (el) {
         // Exact ground line = top + height from CSS
-        const depths = { cooler: 73, dock: 64.4, bowl: 79.6, lake: 63 };
+        const depths = { cooler: 73, dock: 61.5, bowl: 79.6, lake: 52 };
         el.style.zIndex = 10 + Math.round(depths[leadId]);
         const visited = this.visitedLeads.has(leadId);
         const lead = this.leadsData[leadId];
         el.classList.toggle('visited', visited);
         el.setAttribute('aria-pressed', visited.toString());
+        el.tabIndex = leadsLive ? 0 : -1;
+        if (leadsLive) el.removeAttribute('aria-disabled');
+        else el.setAttribute('aria-disabled', 'true');
         el.setAttribute('aria-label', `Investigate ${lead.tayName}${visited ? ' (already investigated)' : ''}`);
         
         let checkSpan = el.querySelector('.interactable-check');
@@ -659,10 +735,10 @@ export class Act1Screen {
         // Tay's ground line is offset from her bounding box `top` due to `translate: -73.2%`.
         // Base offset = (0.985 ground contact - 0.732 translate) * 18.58 (height in container %) = 4.7%
         const baseOffset = 4.7;
-        const tayScale = this.getDepthScale(this.tayPosition.top);
+        const tayScale = this.tayPosition.scale !== undefined ? this.tayPosition.scale : this.getDepthScale(this.tayPosition.top);
         const tayGroundLine = this.tayPosition.top + (baseOffset * tayScale);
         tayEl.style.zIndex = 10 + Math.round(tayGroundLine);
-        tayEl.style.setProperty('--tay-scale', this.getDepthScale(this.tayPosition.top));
+        tayEl.style.setProperty('--tay-scale', tayScale);
         
         const standingImg = tayEl.querySelector('.tay-standing-img');
         if (standingImg && standingImg.getAttribute('src') !== info.standingSrc) {
@@ -679,12 +755,29 @@ export class Act1Screen {
     const isNapping = this.currentBeat === 'nap' || this.currentBeat === 'drift' || this.currentBeat === 'alarm' || this.currentBeat === 'case_file' || this.currentBeat === 'pov_rise';
     const taySleepEl = this.container.querySelector('.lake-scene-tay');
     if (taySleepEl) {
-      taySleepEl.style.zIndex = 10 + 75;
+      // She lies between the canopy's front and back legs. The canopy is one image sorted by
+      // its FRONT feet (78), so at 75 its back leg drew straight across her body. Her head is
+      // placed clear of the front leg (see .lake-scene-tay left), so she can sort above it.
+      taySleepEl.style.zIndex = 10 + 79;
       taySleepEl.hidden = !isNapping;
       if (isNapping) {
         taySleepEl.classList.toggle('tay-entering', !this.tayHasEnteredScene);
         taySleepEl.classList.toggle('tay-drifting', this.currentBeat !== 'nap');
       }
+    }
+  }
+
+  updateCardAffordance() {
+    const card = this.container?.querySelector('#act1-card');
+    if (!card) return;
+    const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+    const hasAdvance = !!(advanceBtn && advanceBtn.offsetParent !== null);
+    card.classList.toggle('click-advance', hasAdvance);
+    syncBubbleClickHints(card, hasAdvance);
+    if (hasAdvance) {
+      card.setAttribute('title', 'Click anywhere to continue');
+    } else {
+      card.removeAttribute('title');
     }
   }
 
@@ -779,7 +872,7 @@ export class Act1Screen {
              role="dialog" aria-modal="true" aria-labelledby="act1-mission-card-title">
           <div class="mission-card-header">
             <span class="mission-card-badge">Tay's Detective Mission</span>
-            <span style="font-size: 0.85rem; color: #94A3B8; font-weight: 700;">Lake Shore Hub</span>
+            <span style="font-size: 0.85rem; color: var(--text-on-dark-dim); font-weight: 700;">Lake Shore Hub</span>
           </div>
           <h2 class="mission-card-title" id="act1-mission-card-title">Mission: Find Real Food (No Kibble)</h2>
           <div class="mission-card-body">
@@ -793,7 +886,7 @@ export class Act1Screen {
             </div>
           </div>
           <div class="mission-card-footer">
-            <button id="act1-btn-start-hub-modal" class="act1-hud-btn btn-action-primary pulse-btn" data-editor-id="act1-btn-start-hub-modal" aria-label="Start the investigation">
+            <button id="act1-btn-start-hub-modal" class="act1-hud-btn btn-action-primary pulse-btn" data-editor-id="act1-btn-start-hub-modal" data-advance-line aria-label="Start the investigation">
               Start Investigation ➔
             </button>
           </div>
@@ -802,26 +895,8 @@ export class Act1Screen {
     }
 
     if (step.speaker === 'callie_offscreen') {
-      return `
-        <div 
-          class="speech-bubble callie-bubble act1-callie-offscreen-bubble ${isNewLineClass}" 
-          style="${step.pos || 'top: 24%; left: 45%; max-width: var(--bubble-max-w, 320px);'}" 
-          data-editor-id="act1-coldopen-callie"
-        >
-          <div class="speech-bubble-speaker">
-            <span>Callie (Off-screen)</span>
-          </div>
-          <p class="speech-bubble-text">
-            "${step.text}"
-          </p>
-          <div class="bubble-click-hint" aria-hidden="true">
-            <span>Click anywhere to continue</span>
-            <span class="hint-arrow">▶</span>
-          </div>
-        </div>
-      `;
+      return this.renderOffscreenCallie(step.text, 'act1-coldopen-callie', isNewLineClass, ``);
     }
-
     return `
       <div 
         class="speech-bubble tay-bubble act1-coldopen-tay-bubble ${isNewLineClass}" 
@@ -835,10 +910,6 @@ export class Act1Screen {
           <span class="tay-onomatopoeia">${step.onomatopoeia}</span>
           <span class="tay-sub-dialogue">(${step.dialogue})</span>
         </p>
-        <div class="bubble-click-hint" aria-hidden="true">
-          <span>Click anywhere to continue</span>
-          <span class="hint-arrow">▶</span>
-        </div>
       </div>
     `;
   }
@@ -940,11 +1011,6 @@ export class Act1Screen {
     if (!step) return '';
 
     const isLastStep = stepIdx === steps.length - 1;
-    // The stamp lands with the final beat, once she has had her say. Lake revisits are
-    // gag-only, so they don't re-run the correction.
-    const isLakeRevisit = isLake && (this.leadVisitCounts[this.activeLeadId] || 1) > 1;
-    const stamp = (isLastStep && !isLakeRevisit) ? lead.stamp : null;
-
     const stepKey = `${this.currentBeat}-${this.activeLeadId}-${this.povStepIndex}`;
     const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
 
@@ -978,7 +1044,7 @@ export class Act1Screen {
                 </div>
                 <p class="speech-bubble-text">
                   ${step.onomatopoeia ? `<span class="tay-onomatopoeia">${step.onomatopoeia}</span>` : ''}
-                  <span class="tay-sub-dialogue">"${step.text}"</span>
+                  <span class="tay-sub-dialogue">(${step.text})</span>
                 </p>
               </div>
             ` : `
@@ -990,32 +1056,20 @@ export class Act1Screen {
                   <span>Callie</span>
                 </div>
                 <p class="speech-bubble-text">
-                  <span class="callie-dialogue">"${step.text}"</span>
+                  <span class="callie-dialogue">${step.text}</span>
                 </p>
               </div>
             `}
-
-            ${stamp ? `
-              <div class="act1-truth-stamp ${isNewLineClass}" data-editor-id="act1-truth-stamp">
-                <span class="truth-stamp-metric">${stamp.metric}</span>
-                <span class="truth-stamp-line">${stamp.line}</span>
-              </div>
-            ` : ''}
           </div>
 
-          <!-- Beat counter + advance / finish -->
-          <nav class="act1-nav-bar" style="bottom: 0.9rem; left: 1.1rem; right: 1.1rem; justify-content: space-between;">
-            <div class="pov-beat-dots" aria-hidden="true">
-              ${steps.map((s, i) => `
-                <span class="pov-beat-dot ${i === stepIdx ? 'current' : ''} ${i < stepIdx ? 'seen' : ''}"></span>
-              `).join('')}
-            </div>
+          <!-- Advance / finish -->
+          <nav class="act1-nav-bar" style="bottom: 0.9rem; left: 1.1rem; right: 1.1rem; justify-content: flex-end;">
             ${isLastStep ? `
-              <button id="act1-btn-finish-lead" class="act1-hud-btn btn-action-primary pulse-btn" data-editor-id="act1-btn-finish-lead" aria-label="Done investigating this lead">
+              <button id="act1-btn-finish-lead" class="act1-hud-btn btn-action-primary pulse-btn" data-editor-id="act1-btn-finish-lead" data-advance-line aria-label="Done investigating this lead">
                 Done Investigating ➔
               </button>
             ` : `
-              <button id="act1-btn-pov-next" class="act1-hud-btn btn-action-primary" data-editor-id="act1-btn-pov-next" aria-label="Next">
+              <button id="act1-btn-pov-next" class="act1-hud-btn" data-editor-id="act1-btn-pov-next" data-advance-line aria-label="Next">
                 Next ▶
               </button>
             `}
@@ -1082,17 +1136,32 @@ export class Act1Screen {
     `;
   }
 
+  /**
+   * Callie speaking from outside the frame. Every off-screen line in Act 1 uses this one
+   * bubble — her normal ink-on-white bubble, pinned to the right edge, with its tail coming
+   * out of the right side toward where she is. No colour or size change per line: the
+   * escalation lives in the words.
+   */
+  renderOffscreenCallie(text, editorId, isNewLineClass = '', extra = '') {
+    return `
+      <div class="speech-bubble callie-bubble act1-callie-offscreen-bubble ${isNewLineClass}"
+           data-editor-id="${editorId}">
+        <div class="speech-bubble-speaker">
+          <span>Callie</span><span class="sr-only"> (off-screen)</span>
+        </div>
+        <p class="speech-bubble-text">${text}</p>
+        ${extra}
+      </div>
+    `;
+  }
+
   renderAlarm() {
     const step = this.alarmSteps[this.stepIndex];
     if (!step) return '';
 
-    const isLast = this.stepIndex === this.alarmSteps.length - 1;
-    return `
-      <div class="callie-offscreen-banner" style="top: 4.5rem; right: 2rem; border-color: ${isLast ? '#DC2626' : 'var(--palette-teal-dark)'};" data-editor-id="act1-alarm-callie">
-        <div class="callie-offscreen-label" style="color: ${isLast ? '#DC2626' : 'var(--palette-teal-dark)'};">Callie</div>
-        <div style="font-size: 1.15rem; font-weight: 800;">"${step.text}"</div>
-      </div>
-    `;
+    const stepKey = `${this.currentBeat}-${this.stepIndex}`;
+    const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
+    return this.renderOffscreenCallie(step.text, 'act1-alarm-callie', isNewLineClass);
   }
 
   renderCaseFile() {
@@ -1101,36 +1170,36 @@ export class Act1Screen {
            role="dialog" aria-modal="true" aria-labelledby="act1-case-file-title">
         <div class="case-file-header">
           <div class="case-file-title-group">
-            <span class="case-file-badge">Act 1 Case File</span>
+            <span class="case-file-badge">Part 1 Case File</span>
             <h2 class="case-file-title" id="act1-case-file-title">The Four Leads vs. Heat Stroke Reality</h2>
           </div>
-          <div class="stamp-temp-badge" style="background: #0284C7; border-color: #38BDF8;">3:05 PM</div>
+          <div class="stamp-temp-badge" style="background: var(--color-info-strong); border-color: var(--color-info);">3:05 PM</div>
         </div>
 
         <table class="case-file-table" data-editor-id="act1-case-file-table">
           <thead>
             <tr>
-              <th>What Tay Called It</th>
-              <th>What It Actually Was (Risk Factor)</th>
+              <th scope="col">What Tay Called It</th>
+              <th scope="col">What It Actually Was</th>
+              <th scope="col">Risk Factor</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td class="tay-term">The Vault</td>
-              <td>Full sun, no shade, 90 minutes — extreme trapped heat</td>
-            </tr>
-            <tr>
-              <td class="tay-term">High Ground</td>
-              <td>137°F dock wood surface — radiant heat at 4 inches</td>
-            </tr>
-            <tr>
-              <td class="tay-term">The Water One</td>
-              <td>Warm sun-baked water — zero hydration since car ride</td>
-            </tr>
-            <tr class="lake-row">
-              <td class="tay-term">The Biggest Bowl</td>
-              <td class="reality-term">The immediate cooling source she never used</td>
-            </tr>
+            ${[
+              { id: 'cooler', object: 'The cooler', risk: 'Full sun, no shade, 15 minutes pressed against it — trapped heat' },
+              { id: 'dock', object: 'The dock', risk: '137°F dock wood surface — radiant heat at 4 inches' },
+              { id: 'bowl', object: 'The water bowl', risk: 'Warm sun-baked water — zero hydration since car ride' },
+              { id: 'lake', object: 'The lake', risk: 'The immediate cooling source she never used' }
+            ].map(({ id, object, risk }) => {
+              const lead = this.leadsData[id];
+              const isLake = id === 'lake';
+              return `
+                <tr${isLake ? ' class="lake-row"' : ''}>
+                  <td class="tay-term">${lead.tayName}</td>
+                  <th scope="row" class="object-term">${object}</th>
+                  <td${isLake ? ' class="reality-term"' : ''}>${risk}<br><span class="truth-stamp-metric">${lead.stamp.metric}</span></td>
+                </tr>`;
+            }).join('')}
           </tbody>
         </table>
 
@@ -1138,7 +1207,7 @@ export class Act1Screen {
           <button 
             id="act1-btn-proceed-pov" 
             class="act1-hud-btn btn-action-primary pulse-btn" 
-            data-editor-id="act1-btn-proceed-pov" aria-label="See what Callie sees"
+            data-editor-id="act1-btn-proceed-pov" data-advance-line aria-label="See what Callie sees"
           >
             See What Callie Sees ➔
           </button>
@@ -1150,20 +1219,7 @@ export class Act1Screen {
   renderPovRise() {
     const stepKey = `${this.currentBeat}-${this.stepIndex}`;
     const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
-    return `
-      <div 
-        class="speech-bubble callie-bubble ${isNewLineClass}" 
-        style="top: 18%; left: 35%; max-width: var(--bubble-max-w, 340px);" 
-        data-editor-id="act1-pov-callie-bubble"
-      >
-        <div class="speech-bubble-speaker">
-          <span>Callie</span>
-        </div>
-        <p class="speech-bubble-text" style="font-size: 1.35rem; font-weight: 800; color: #DC2626;">
-          "Tay?"
-        </p>
-      </div>
-    `;
+    return this.renderOffscreenCallie('Tay?', 'act1-pov-callie-bubble', isNewLineClass);
   }
 
   renderBottomLeftControls() {
@@ -1192,17 +1248,7 @@ export class Act1Screen {
     }
 
     if (this.currentBeat === 'lead_active') {
-      return `
-        <button 
-          id="act1-btn-return-hub" 
-          class="act1-hud-btn" 
-          data-editor-id="act1-btn-return-hub"
-          title="Return to Lake Hub"
-          aria-label="Back to the lake hub"
-        >
-          ◀ Back to Hub
-        </button>
-      `;
+      return '';
     }
 
     return '';
@@ -1221,15 +1267,17 @@ export class Act1Screen {
           <button
             id="act1-btn-start-hub"
             class="act1-hud-btn btn-action-primary pulse-btn"
-            data-editor-id="act1-btn-start-hub" aria-label="Start the investigation"
+            data-editor-id="act1-btn-start-hub" data-advance-line aria-label="Start the investigation"
           >
             Start Investigation ➔
           </button>
         ` : `
-          <button 
-            id="act1-btn-next-step" 
-            class="act1-hud-btn btn-action-primary pulse-btn" 
-            data-editor-id="act1-btn-next-step" aria-label="Next line"
+          <button
+            id="act1-btn-next-step"
+            class="act1-hud-btn"
+            data-editor-id="act1-btn-next-step"
+            data-advance-line
+            aria-label="Next line"
           >
             Next ▶
           </button>
@@ -1275,15 +1323,17 @@ export class Act1Screen {
           <button 
             id="act1-btn-start-drift" 
             class="act1-hud-btn btn-action-primary" 
-            data-editor-id="act1-btn-start-drift" aria-label="Rest in the shade"
+            data-editor-id="act1-btn-start-drift" data-advance-line aria-label="Let her sleep"
           >
-            Rest in Shade ➔
+            Let her sleep ➔
           </button>
         ` : `
           <button 
             id="act1-btn-next-step" 
             class="act1-hud-btn" 
-            data-editor-id="act1-btn-next-step" aria-label="Next"
+            data-editor-id="act1-btn-next-step"
+            data-advance-line
+            aria-label="Next"
           >
             Next ▶
           </button>
@@ -1294,7 +1344,7 @@ export class Act1Screen {
           <button 
             id="act1-btn-start-alarm" 
             class="act1-hud-btn btn-action-primary pulse-btn" 
-            data-editor-id="act1-btn-start-alarm" aria-label="Continue: later that afternoon"
+            data-editor-id="act1-btn-start-alarm" data-advance-line aria-label="Continue: later that afternoon"
           >
             Later That Afternoon ➔
           </button>
@@ -1306,7 +1356,7 @@ export class Act1Screen {
           <button 
             id="act1-btn-start-case-file" 
             class="act1-hud-btn btn-action-primary pulse-btn" 
-            data-editor-id="act1-btn-start-case-file" aria-label="Review the case file"
+            data-editor-id="act1-btn-start-case-file" data-advance-line aria-label="Review the case file"
           >
             Review Case File ➔
           </button>
@@ -1314,7 +1364,9 @@ export class Act1Screen {
           <button 
             id="act1-btn-next-step" 
             class="act1-hud-btn" 
-            data-editor-id="act1-btn-next-step" aria-label="Next"
+            data-editor-id="act1-btn-next-step"
+            data-advance-line
+            aria-label="Next"
           >
             Next ▶
           </button>
@@ -1328,9 +1380,9 @@ export class Act1Screen {
           <button 
             id="act1-btn-start-act2" 
             class="act1-hud-btn btn-action-primary pulse-btn" 
-            data-editor-id="act1-btn-start-act2" aria-label="Continue to Act 2: Emergency Response"
+            data-editor-id="act1-btn-start-act2" aria-label="Continue to Part 2: Emergency Response"
           >
-            Act 2: Emergency Response ➔
+            Part 2: Emergency Response ➔
           </button>
         `;
 
@@ -1340,18 +1392,37 @@ export class Act1Screen {
   }
 
   bindEvents() {
-    this.handleClick = this.handleClick || ((e) => {
+    this.handleClick = this.handleClick || (async (e) => {
       if (this.isEditModeActive()) return;
 
       const target = e.target;
 
       if (target.closest('#act1-btn-back-act0')) {
+        e.preventDefault();
         e.stopPropagation();
+        if (this.hasProgress()) {
+          const leave = await confirmLeave({
+            title: 'Go back to the intro?',
+            message: 'The intro starts again from the beginning, and your progress in Part 1 will be cleared.',
+            leaveLabel: 'Go back'
+          });
+          if (!leave) return;
+        }
         this.app?.navigateTo('act0');
         return;
       }
       if (target.closest('#act1-btn-title')) {
+        e.preventDefault();
         e.stopPropagation();
+        if (this.hasProgress()) {
+          const leave = await confirmLeave({
+            title: 'Leave the story?',
+            message: "You'll go back to the title screen, and everything you've done in Part 1 so far will be cleared.",
+            leaveLabel: 'Leave anyway'
+          });
+          if (!leave) return;
+        }
+        progressStore.clear();
         this.app?.navigateTo('opening');
         return;
       }
@@ -1371,14 +1442,6 @@ export class Act1Screen {
         if (this.visitedLeads.size < 4) return;
         this.triggerWalkToLead('canopy');
         return;
-      }
-
-      if (this.currentBeat === 'cold_open') {
-        const isMissionCardStep = this.coldOpenSteps[this.stepIndex]?.type === 'mission_card';
-        if (!isMissionCardStep && !target.closest('.act1-nav-bar, .act1-hud-bar, .act1-mission-card, .act1-interactable, .act1-pov-card')) {
-          this.nextSubStep();
-          return;
-        }
       }
 
       const buttonMap = {

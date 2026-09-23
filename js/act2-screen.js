@@ -35,6 +35,13 @@
  */
 
 import { renderPreservingFocus, focusInto, containFocusIn, releaseFocusContainment } from './a11y-focus.js';
+import { progressStore } from './progress-store.js';
+import { confirmLeave, actMarkerHtml, syncBubbleClickHints } from './shared-ui.js';
+
+// How long the air has to run over Tay before the clinic turn-in is offered. The drive is
+// the cooling, not a formality: the arrive button stays hidden until she has had this long
+// with the AC on and the windows cracked. Keep in step with --cool-delay in act2-screen.css.
+const COOL_DELAY_MS = 6000;
 
 export class Act2Screen {
   constructor(app) {
@@ -89,6 +96,10 @@ export class Act2Screen {
     this.arriving = false;
     this.arriveTimeout = null;
     this.skipListener = null;
+    // True once the air has run over her for COOL_DELAY_MS. Transient, never saved: a
+    // resumed drive runs the cooling again.
+    this.cooled = false;
+    this.coolTimer = null;
     // Pre-paid off by the phone call in Beat 2A — the learner does not have to do this.
     this.calledAhead = true;
 
@@ -105,7 +116,6 @@ export class Act2Screen {
         speaker: 'tay_final',
         onomatopoeia: 'Huff…',
         dialogue: "I'm okay. I'm okay.",
-        note: "Tay's last line of the act."
       },
       { speaker: 'callie', text: "You're not okay. You're not okay. Where's my phone —" }
     ];
@@ -161,7 +171,7 @@ export class Act2Screen {
 
     // Beat 2A payoff: the four Act 1 leads, restated as a case history with times.
     this.hintsTimeline = [
-      { time: '1:30 PM', title: 'The cooler, in open sun', line: 'She parked herself against it for 90 minutes. No shade.' },
+      { time: '1:30 PM', title: 'The cooler, in open sun', line: 'She parked herself against it for 15 minutes. No shade.' },
       { time: '1:48 PM', title: 'The dock', line: '137°F boards. She patrolled the length of them twice.' },
       { time: '2:03 PM', title: 'The water bowl', line: 'Sun-warm, half empty, untouched. No water since the car.' },
       { time: '2:38 PM', title: 'The shade that moved', line: 'Asleep for 27 minutes while the shade crept off her.' }
@@ -215,7 +225,7 @@ export class Act2Screen {
             label: 'Ice out of the cooler — pack it against her',
             correct: false,
             smePending: true,
-            consequence: "You have the lid up before you finish the thought — the same cooler she spent 90 minutes pressed against. Ice against her skin makes the surface vessels clamp down, and heat that needs to leave her core stays in it. She feels cold to your hand and is no cooler inside.",
+            consequence: "You have the lid up before you finish the thought — the same cooler she spent 15 minutes pressed against. Ice against her skin makes the surface vessels clamp down, and heat that needs to leave her core stays in it. She feels cold to your hand and is no cooler inside.",
             correction: "Cool water, not ice, and not ice packs. Extreme cold constricts the vessels near the skin and traps the heat where you least want it. The lake is right there."
           }
         ]
@@ -318,6 +328,21 @@ export class Act2Screen {
     this._enteredBeat = null;
     this._renderedStep = null;
 
+    this.handleClickAdvance = (e) => {
+      if (this.isEditModeActive()) return;
+      if (document.querySelector('.leave-guard-scrim')) return;
+      const card = this.container?.querySelector('#act2-card');
+      const targetEl = e.target instanceof Element ? e.target : e.target?.parentElement;
+      if (!card || !targetEl || !card.contains(targetEl)) return;
+      if (targetEl.closest('button, a, input, select, textarea, label, summary, [role="button"], [role="switch"], [role="link"], [tabindex]:not([tabindex="-1"]), [data-no-advance]')) {
+        return;
+      }
+      const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+      if (!advanceBtn || advanceBtn.offsetParent === null) return;
+      advanceBtn.click();
+    };
+    this.container.addEventListener('click', this.handleClickAdvance);
+
     if (options.activeCheckId) {
       this.openCheck(options.activeCheckId, options.checkStepIndex ?? 0);
     } else {
@@ -328,7 +353,14 @@ export class Act2Screen {
 
   unmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
+    if (this.container && this.handleClickAdvance) {
+      this.container.removeEventListener('click', this.handleClickAdvance);
+    }
     this.stopElapsedClock();
+    if (this.coolTimer) {
+      clearTimeout(this.coolTimer);
+      this.coolTimer = null;
+    }
     if (this.arriveTimeout) {
       clearTimeout(this.arriveTimeout);
       this.arriveTimeout = null;
@@ -369,6 +401,66 @@ export class Act2Screen {
       windowsOpen: this.windowsOpen,
       winInteracted: this.winInteracted
     };
+  }
+
+  hasProgress() {
+    return !(this.currentBeat === 'arrival' && this.stepIndex === 0);
+  }
+
+  getResumeState() {
+    return {
+      currentBeat: this.currentBeat,
+      stepIndex: this.stepIndex,
+      activeCheckId: this.activeCheckId,
+      checkStepIndex: this.checkStepIndex,
+      checkReportOrder: [...this.checkReportOrder],
+      decisionChoice: this.decisionChoice,
+      coolingIndex: this.coolingIndex,
+      coolingFeedback: this.coolingFeedback ? { ...this.coolingFeedback } : null,
+      coolingWrongCount: this.coolingWrongCount,
+      acOn: this.acOn,
+      acInteracted: this.acInteracted,
+      windowsOpen: this.windowsOpen,
+      winInteracted: this.winInteracted,
+      calledAhead: this.calledAhead,
+      clockMinutes: this.clockMinutes,
+      elapsedSeconds: this.elapsedSeconds,
+      clockVisible: this.clockVisible,
+      severity: this.severity,
+      hintsDropped: this.hintsDropped,
+      hintsCashedOut: this.hintsCashedOut
+    };
+  }
+
+  applyResumeState(state) {
+    if (!state) return;
+    this.currentBeat = state.currentBeat ?? 'arrival';
+    this.stepIndex = state.stepIndex ?? 0;
+    this.activeCheckId = state.activeCheckId ?? null;
+    this.checkStepIndex = state.checkStepIndex ?? 0;
+    this.checkReportOrder = state.checkReportOrder ? [...state.checkReportOrder] : [];
+    this.checksDone = new Set(this.checkReportOrder);
+    this.decisionChoice = state.decisionChoice ?? null;
+    this.coolingIndex = state.coolingIndex ?? 0;
+    this.coolingFeedback = state.coolingFeedback ? { ...state.coolingFeedback } : null;
+    this.coolingWrongCount = state.coolingWrongCount ?? 0;
+    this.acOn = state.acOn ?? false;
+    this.acInteracted = state.acInteracted ?? false;
+    this.windowsOpen = state.windowsOpen ?? false;
+    this.winInteracted = state.winInteracted ?? false;
+    this.calledAhead = state.calledAhead ?? true;
+    this.clockMinutes = state.clockMinutes ?? 185;
+    this.elapsedSeconds = state.elapsedSeconds ?? 0;
+    this.clockVisible = state.clockVisible ?? false;
+    this.severity = state.severity ?? 0.5;
+    this.hintsDropped = state.hintsDropped ?? 4;
+    this.hintsCashedOut = state.hintsCashedOut ?? false;
+  }
+
+  saveProgress() {
+    try {
+      progressStore.save('act2', this.getResumeState());
+    } catch (e) {}
   }
 
   /** Restore a playthrough produced by getHandoff(). Partial payloads are fine. */
@@ -521,6 +613,10 @@ export class Act2Screen {
         conv.scrollTop = conv.scrollHeight;
       });
     }
+
+    if (this.hasProgress()) {
+      this.saveProgress();
+    }
   }
 
   getEntranceKey(beat) {
@@ -599,10 +695,25 @@ export class Act2Screen {
     `;
 
     this.bindEvents();
+    this.updateCardAffordance();
     
     this._renderedStep = this.currentBeat === 'check_active' 
       ? `${this.currentBeat}-${this.activeCheckId}-${this.checkStepIndex}`
       : (this.currentBeat === 'cooling' ? `${this.currentBeat}-${this.coolingIndex}` : `${this.currentBeat}-${this.stepIndex}`);
+  }
+
+  updateCardAffordance() {
+    const card = this.container?.querySelector('#act2-card');
+    if (!card) return;
+    const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+    const hasAdvance = !!(advanceBtn && advanceBtn.offsetParent !== null);
+    card.classList.toggle('click-advance', hasAdvance);
+    syncBubbleClickHints(card, hasAdvance);
+    if (hasAdvance) {
+      card.setAttribute('title', 'Click anywhere to continue');
+    } else {
+      card.removeAttribute('title');
+    }
   }
 
   /**
@@ -634,12 +745,13 @@ export class Act2Screen {
       <header class="act2-hud-bar" data-editor-id="act2-hud-bar">
         <div class="act2-hud-group">
           <button id="act2-btn-back-act1" class="act2-hud-btn" data-editor-id="act2-btn-back-act1"
-                  title="Return to Act 1" aria-label="Return to Act 1">Back to Act 1</button>
+                  title="Return to Part 1" aria-label="Return to Part 1">◀ Part 1</button>
           <button id="act2-btn-title" class="act2-hud-btn" data-editor-id="act2-btn-title"
                   title="Return to Title" aria-label="Return to the title screen">Title</button>
         </div>
 
         <div class="act2-hud-group">
+          ${actMarkerHtml(2)}
           <div class="act2-hud-pill clock-pill" data-editor-id="act2-hud-clock" title="Lake time">
             <span>${timeStr}</span>
           </div>
@@ -654,13 +766,13 @@ export class Act2Screen {
 
           ${this.hintsCashedOut ? `
             <div class="act2-hud-pill hints-cashed-pill" data-editor-id="act2-hud-hints"
-                 aria-label="4 warning signs from Act 1, all reported to the clinic">
-              <span>HINTS DROPPED: ${this.hintsDropped} — REPORTED</span>
+                 aria-label="4 warning signs from Part 1, all reported to the clinic">
+              <span>WARNING SIGNS: ${this.hintsDropped} — REPORTED</span>
             </div>
           ` : `
             <div class="act2-hud-pill hints-pill" data-editor-id="act2-hud-hints"
-                 aria-label="4 warning signs dropped during Act 1, not yet reported">
-              <span>HINTS DROPPED: ${this.hintsDropped}</span>
+                 aria-label="4 warning signs from Part 1, not yet reported">
+              <span>WARNING SIGNS: ${this.hintsDropped}</span>
             </div>
           `}
 
@@ -865,7 +977,7 @@ export class Act2Screen {
         }
         @keyframes act2GumBlanchAnim {
           0%, ${pct(0.6)} { background-color: var(--gum-color); animation-timing-function: ease; }
-          ${pct(1.1)} { background-color: #F2DCD6; animation-timing-function: linear; }
+          ${pct(1.1)} { background-color: var(--gum-blanched); animation-timing-function: linear; }
           ${pct(1.1 + refill)} { background-color: var(--gum-color); }
           100% { background-color: var(--gum-color); }
         }
@@ -1083,7 +1195,7 @@ export class Act2Screen {
             <span class="tay-onomatopoeia">${step.onomatopoeia}</span>
             <span class="tay-sub-dialogue">(${step.dialogue})</span>
           </p>
-          <span class="act2-final-line-tag">${step.note}</span>
+          ${step.note ? `<span class="act2-final-line-tag">${step.note}</span>` : ''}
         </div>
       `;
     }
@@ -1097,7 +1209,7 @@ export class Act2Screen {
           <span>Callie</span>
         </div>
         <p class="speech-bubble-text">
-          <span class="callie-dialogue">"${step.text}"</span>
+          <span class="callie-dialogue">${step.text}</span>
         </p>
       </div>
     `;
@@ -1130,7 +1242,7 @@ export class Act2Screen {
             <span>Callie</span>
           </div>
           <p class="speech-bubble-text">
-            <span class="callie-dialogue">"${step.text}"</span>
+            <span class="callie-dialogue">${step.text}</span>
           </p>
         </div>
       `;
@@ -1138,18 +1250,24 @@ export class Act2Screen {
 
     if (step.speaker === 'tech') {
       return `
+        <!-- Anchored by its BOTTOM edge: the bolt hangs off the bottom, so a top anchor let
+             longer lines push the bolt down past the phone. Taller bubbles grow upward. -->
         <div class="speech-bubble phone-radio-bubble ${isNewLineClass}"
-             style="top: 12%; left: 26%; max-width: min(440px, 36vw);"
+             style="bottom: 54.5%; left: 34%; max-width: min(420px, 34vw);"
              data-editor-id="act2-art-phone-bezel">
           <div class="speech-bubble-speaker comic-radio-speaker">
             
             <span>Dana · Lakeside Emergency (Phone)</span>
           </div>
-          <p class="speech-bubble-text comic-radio-text">
-            "${step.text}"
-          </p>
-          <svg class="electric-lightning-tail" viewBox="0 0 40 40" aria-hidden="true">
-            <polygon points="2,0 36,0 26,14 38,18 10,38 18,22 4,18" fill="#08212C" stroke="#06B6D4" stroke-width="2.5" stroke-linejoin="miter" />
+          <p class="speech-bubble-text comic-radio-text">${step.text}</p>
+          <!-- Comic-book "electric" tail: a zig-zag bolt down to the phone in Callie's hand.
+               Filled like the bubble, outlined on its two outer edges only, so its top edge
+               sits over the bubble's border and the join is seamless. -->
+          <svg class="electric-lightning-tail" viewBox="0 0 80 60" aria-hidden="true">
+            <polygon points="46,0 74,0 54,20 64,22 34,42 42,44 4,58 24,38 16,36 40,16 32,14"
+                     style="fill: var(--surface-radio);" />
+            <polyline points="74,0 54,20 64,22 34,42 42,44 4,58 24,38 16,36 40,16 32,14 46,0"
+                      style="fill: none; stroke: var(--color-radio);" stroke-width="3" stroke-linejoin="miter" />
           </svg>
         </div>
       `;
@@ -1168,9 +1286,9 @@ export class Act2Screen {
     const body = `
       <div class="act2-phone-line line-tech">
         <span class="act2-phone-line-who">Dana · Vet Tech</span>
-        <p class="act2-phone-line-text">"${remaining.length
+        <p class="act2-phone-line-text">${remaining.length
           ? "Whichever one you can get to. I'll take them in any order."
-          : "That's all 4. Stay on the line."}"</p>
+          : "That's all 4. Stay on the line."}</p>
       </div>
       <ul class="act2-triage-list" data-editor-id="act2-triage-list">
         ${Object.values(this.checksData).map(c => {
@@ -1264,7 +1382,7 @@ export class Act2Screen {
               
               <span>Dana · Lakeside Emergency (Phone)</span>
             </div>
-            <p class="speech-bubble-text comic-radio-text">"${step.text}"</p>
+            <p class="speech-bubble-text comic-radio-text">${step.text}</p>
           </div>
         `;
       } else if (step.type === 'report') {
@@ -1275,7 +1393,7 @@ export class Act2Screen {
               <span>Callie</span>
             </div>
             <p class="speech-bubble-text">
-              <span class="callie-dialogue">"${this.getCallieReportLine(checkId, v)}"</span>
+              <span class="callie-dialogue">${this.getCallieReportLine(checkId, v)}</span>
             </p>
           </div>
         `;
@@ -1283,12 +1401,6 @@ export class Act2Screen {
     }
     
     return artByCheck[checkId](convHtml);
-  }
-
-  getCheckDotsHtml(steps, idx) {
-    return steps.map((s, i) => `
-      <span class="act2-beat-dot ${i === idx ? 'current' : ''} ${i < idx ? 'seen' : ''}"></span>
-    `).join('');
   }
 
   getCheckNavButtonState(isLast) {
@@ -1302,7 +1414,8 @@ export class Act2Screen {
     return {
       id: 'act2-btn-check-nav',
       className: 'act2-hud-btn',
-      html: 'Next ▶'
+      html: 'Next ▶',
+      advanceLine: true
     };
   }
 
@@ -1338,11 +1451,9 @@ export class Act2Screen {
           </div>
 
           <nav class="act2-check-nav">
-            <div class="act2-beat-dots" aria-hidden="true">
-              ${this.getCheckDotsHtml(steps, idx)}
-            </div>
             <button id="${btnState.id}" class="${btnState.className}"
-                    data-editor-id="${btnState.id}">${btnState.html}</button>
+                    data-editor-id="${btnState.id}"
+                    ${btnState.advanceLine ? 'data-advance-line' : ''}>${btnState.html}</button>
           </nav>
 
         </div>
@@ -1402,7 +1513,7 @@ export class Act2Screen {
     return `
       <div class="act2-payoff-card" data-editor-id="act2-payoff-card">
         <div class="act2-payoff-header">
-          <span class="act2-payoff-badge">Hints Dropped · 4 / 4</span>
+          <span class="act2-payoff-badge">Warning Signs · 4 / 4</span>
           <h2 class="act2-payoff-title">It has been going on since 1:30 this afternoon.</h2>
         </div>
         <ol class="act2-payoff-timeline" data-editor-id="act2-payoff-timeline">
@@ -1418,12 +1529,12 @@ export class Act2Screen {
         </ol>
         <p class="act2-payoff-tech">
           <span class="act2-phone-line-who">Dana · Vet Tech</span>
-          "95 minutes of build-up, and everything you just described to me. I'm not
-          going to make you wait for a number. Bring her in — and start cooling her before you drive."
+          95 minutes of build-up, and everything you just described to me. I'm not
+          going to make you wait for a number. Bring her in — and start cooling her before you drive.
         </p>
         <div class="act2-payoff-footer">
           <button id="act2-btn-to-decision" class="act2-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act2-btn-to-decision">What do you do? ➔</button>
+                  data-editor-id="act2-btn-to-decision" data-advance-line>What do you do? ➔</button>
         </div>
       </div>
     `;
@@ -1434,7 +1545,7 @@ export class Act2Screen {
     return `
       <div class="act2-decision-card" data-editor-id="act2-decision-card" role="group"
            aria-label="The decision: act now, or give her 5 minutes">
-        <span class="act2-decision-badge">Beat 2B · Your call</span>
+        <span class="act2-decision-badge">Your call</span>
         <h2 class="act2-decision-title">She's flat on the grass and she isn't answering you.</h2>
         <p class="act2-decision-sub">
           The lake is 20 feet away. The car is 40. Dana is still on the line.
@@ -1531,7 +1642,7 @@ export class Act2Screen {
 
         <p class="act2-cool-prompt">
           <span class="act2-phone-line-who">Dana · Vet Tech</span>
-          "${step.techPrompt}"
+          ${step.techPrompt}
         </p>
 
         ${step.commonBelief ? `
@@ -1558,11 +1669,30 @@ export class Act2Screen {
     `;
   }
 
+  // Starts the cooling clock when both air sources are on; stops and resets it the moment
+  // either goes off, so the learner cannot bank cooling time and then shut the air.
+  syncCoolTimer() {
+    const airOn = this.acOn && this.windowsOpen;
+    if (!airOn || this.currentBeat !== 'transport') {
+      if (this.coolTimer) clearTimeout(this.coolTimer);
+      this.coolTimer = null;
+      if (!airOn) this.cooled = false;
+      return;
+    }
+    if (this.cooled || this.coolTimer) return;
+    this.coolTimer = setTimeout(() => {
+      this.coolTimer = null;
+      this.cooled = true;
+      this.patchTransportControls();
+    }, COOL_DELAY_MS);
+  }
+
   getTransportStateStrings() {
-    const ready = this.acOn && this.windowsOpen;
+    const airOn = this.acOn && this.windowsOpen;
+    const ready = airOn && this.cooled;
     return {
       ready,
-      sceneClass: `act2-transport-scene ${this.acOn ? 'ac-on' : ''} ${this.windowsOpen ? 'windows-open' : ''}`,
+      sceneClass: `act2-transport-scene ${this.acOn ? 'ac-on' : ''} ${this.windowsOpen ? 'windows-open' : ''} ${airOn && !this.cooled ? 'is-cooling' : ''}`,
       acAria: this.acOn ? 'Air conditioning, currently on' : 'Air conditioning, currently off',
       acPillText: `AC · ${this.acOn ? 'ON' : 'OFF'}`,
       acChecked: this.acOn ? 'true' : 'false',
@@ -1571,7 +1701,9 @@ export class Act2Screen {
       winChecked: this.windowsOpen ? 'true' : 'false',
       hintText: ready
         ? 'Air is moving over her, she is on the cool towel, and they are expecting you.'
-        : 'She is on the cool towel. Now get air moving over her.'
+        : airOn
+          ? 'Keep the cold air on her the whole way to the clinic.'
+          : 'She is on the cool towel. Now get air moving over her.'
     };
   }
 
@@ -1580,6 +1712,17 @@ export class Act2Screen {
     const s = this.getTransportStateStrings();
     const acInviteClass = !this.acInteracted && !this.arriving ? 'needs-invite' : '';
     const winInviteClass = !this.winInteracted && !this.arriving ? 'needs-invite' : '';
+    // Wind streaks fanning out of each vent (the vent sits at the top centre of the box).
+    // Thin dashes travelling along curved lines read as moving air; soft blobs read as fog.
+    const airLines = [
+      'M100 10 C 92 50, 60 70, 62 110 S 34 168, 28 196',
+      'M100 10 C 104 55, 92 100, 100 140 S 108 180, 100 198',
+      'M100 10 C 108 50, 140 70, 138 110 S 166 168, 172 196',
+    ].map((d, i) => `<path class="act2-air-line" d="${d}" pathLength="100" style="animation-delay: ${(-0.37 * i).toFixed(2)}s" />`).join('');
+    // Streak rays for the window gap: [y where it enters at the pillar, y where it leaves
+    // at the left edge]. Staggered delays so the gusts never march in step.
+    const windLines = [[21, -200], [58, -140], [95, -80], [132, -20], [169, 40], [206, 100], [242, 160], [279, 220], [316, 280], [353, 340], [390, 400], [426, 460], [463, 520], [500, 580], [537, 640], [574, 700], [610, 760]]
+      .map(([a, b], i) => `<path class="act2-wind-line" d="M440 ${a} L-40 ${b}" pathLength="100" style="animation-delay: ${(-0.23 * ((i * 7) % 11)).toFixed(2)}s" />`).join('');
 
     return `
       <div class="${s.sceneClass}" data-editor-id="act2-transport-scene">
@@ -1587,25 +1730,68 @@ export class Act2Screen {
         <div class="act2-car-sway-container">
           <img src="Assets/Image/Car-FPV-Interior.jpg" alt="" class="act2-scene-img act2-car-plate" style="z-index: 1;" />
           <div class="act2-exterior-motion" style="z-index: 2;">
+            <!-- The centre line is a strip lying flat on the road in CSS 3D, so every dash
+                 shrinks toward the vanishing point by true perspective and moves at one steady
+                 road speed. -->
             <div class="act2-lane-dashes">
-              <div class="act2-dash"></div>
-              <div class="act2-dash" style="animation-delay: calc(var(--road-dash-cadence) * -0.33)"></div>
-              <div class="act2-dash" style="animation-delay: calc(var(--road-dash-cadence) * -0.66)"></div>
+              <div class="act2-road-plane"><div class="act2-road-stripe"></div></div>
             </div>
             <div class="act2-roadside-drift">
               <div class="act2-drift act2-drift-left"></div>
               <div class="act2-drift act2-drift-right"></div>
             </div>
-            <img src="Assets/Image/Clinic-Exterior-Approach.png" alt="" class="act2-clinic-approach" />
+            <img src="Assets/Image/Clinic-RoadEnd.png" alt="" class="act2-clinic-approach" />
           </div>
           
           <div class="act2-car-overlays" aria-hidden="true" style="pointer-events: none; z-index: 3;">
-            <img src="Assets/Image/Car-Mirror-Tay.png" alt="Tay lying on her side on the back seat on a cool wet towel spread flat underneath her, panting" class="act2-rear-view-mirror" />
+            <!-- The mirror glass: the back seat seen from the front, with Tay drawn over it as
+                 her own layer so her flank can heave with the same panting as every other
+                 shot of her. The nested svg is her own 1376x768 art space, so the shared
+                 heave transform-origin lands on her flank here too. -->
+            <svg class="act2-rear-view-mirror" viewBox="0 0 1036 290" preserveAspectRatio="xMidYMid slice"
+                 data-editor-id="act2-art-rear-view-mirror" role="img"
+                 aria-label="In the rear-view mirror, Tay lying on her side on the back seat on a cool wet towel, panting">
+              <defs>
+                <clipPath id="act2-mirror-tay-abdomen-clip">
+                  <path d="M936,245 C856,215 696,215 616,220 C606,300 616,420 626,560 C696,565 856,565 926,545 C936,460 941,330 936,245 Z" />
+                </clipPath>
+              </defs>
+              <image href="Assets/Image/Car-Mirror-Cabin.png" x="0" y="0" width="1036" height="290" />
+              <svg x="281.2" y="58.7" width="534" height="298.1" viewBox="0 0 1376 768" overflow="visible">
+                <image href="Assets/Image/Tay-LayingLateralPanting.png" x="0" y="0" width="1376" height="768" />
+                <g class="act2-tay-labored-abdomen tay-labored-abdomen">
+                  <image href="Assets/Image/Tay-LayingLateralPanting.png" x="0" y="0" width="1376" height="768" clip-path="url(#act2-mirror-tay-abdomen-clip)" />
+                </g>
+              </svg>
+            </svg>
             
             <div class="act2-window-aperture">
-              <div class="act2-wind-gap"></div>
+              <!-- Wind through the cracked gap: streaks running back along the car. Each line
+                   sits on a ray from the road's vanishing point (lines along the car's length
+                   converge there), clipped to the band the lowered glass opens up. Units are
+                   the painting's own pixels inside the aperture box (1920x1080 source). -->
+              <svg class="act2-wind-gap" viewBox="0 0 414.7 842.4" preserveAspectRatio="none">
+                <defs>
+                  <clipPath id="act2-window-gap-clip">
+                    <polygon points="0,15 100,48 190,98 240,148 280,225 330,318 380,400 410,475 412,677 410,677 380,602 330,520 280,427 240,350 190,300 100,250 0,217" />
+                  </clipPath>
+                </defs>
+                <g clip-path="url(#act2-window-gap-clip)">${windLines}</g>
+              </svg>
               <div class="act2-window-pane"></div>
             </div>
+
+            <!-- Air coming in: streaks that start in the open gap and sweep inward across the
+                 cabin toward the driver, fading as they spread. Painting pixel space. -->
+            <svg class="act2-window-inflow" viewBox="0 0 1920 1080" preserveAspectRatio="none">
+              ${[
+                'M60 135 C 200 170, 330 250, 470 420',
+                'M150 180 C 280 230, 380 330, 520 520',
+                'M230 245 C 330 300, 420 400, 560 610',
+                'M300 360 C 380 420, 450 520, 600 700',
+                'M360 470 C 430 540, 500 640, 640 790',
+              ].map((d, i) => `<path class="act2-inflow-line" d="${d}" pathLength="100" style="animation-delay: ${(-0.29 * ((i * 3) % 5)).toFixed(2)}s" />`).join('')}
+            </svg>
 
             <div class="act2-ac-knob-well">
               <svg class="act2-ac-knob-svg" viewBox="0 0 100 100">
@@ -1615,32 +1801,41 @@ export class Act2Screen {
             </div>
 
             <div class="act2-airflow-layer">
-              <div class="act2-stream act2-stream-1"></div>
-              <div class="act2-stream act2-stream-2"></div>
-              <div class="act2-stream act2-stream-3"></div>
+              <svg class="act2-stream act2-stream-1" viewBox="0 0 200 200">${airLines}</svg>
+              <svg class="act2-stream act2-stream-2" viewBox="0 0 200 200">${airLines}</svg>
+              <svg class="act2-stream act2-stream-3" viewBox="0 0 200 200">${airLines}</svg>
             </div>
             <div class="act2-ac-tint"></div>
           </div>
         </div>
 
         <button id="act2-toggle-ac" class="act2-diegetic-btn ${acInviteClass}" role="switch" aria-checked="${s.acChecked}" aria-label="${s.acAria}" ${this.arriving ? 'disabled="true"' : ''}>
+           <!-- Rings traced on the painting in its own pixels (1920x1080): the viewBox is this
+                button's box, so the ring lands on the drawn control at any card size. -->
+           <svg class="act2-control-ring" viewBox="1359.36 690.12 330.24 309.96" preserveAspectRatio="none" aria-hidden="true">
+             <circle cx="1532" cy="899" r="92" />
+           </svg>
            <span class="act2-diegetic-pill" id="act2-ac-pill">${s.acPillText}</span>
         </button>
 
         <button id="act2-toggle-windows" class="act2-diegetic-btn ${winInviteClass}" role="switch" aria-checked="${s.winChecked}" aria-label="${s.winAria}" ${this.arriving ? 'disabled="true"' : ''}>
+           <svg class="act2-control-ring" viewBox="175 889 291 191" preserveAspectRatio="none" aria-hidden="true">
+             <path d="M175 1084 L231 1032 L259 1010 L371 919 L409 889 L429 892 L443 902 L454 911 L464 924 L466 944 L459 960 L447 977 L409 1023 L359 1081 Z" />
+           </svg>
            <span class="act2-diegetic-pill" id="act2-win-pill">${s.winPillText}</span>
         </button>
 
         <div class="act2-transport-hud">
           <div class="act2-transport-hud-msg">Cool her on the way. Don't just drive.</div>
-          <div class="act2-transport-hud-hint" id="act2-transport-hint">${s.hintText}</div>
+          <div class="act2-transport-hud-hint" id="act2-transport-hint" aria-live="polite">${s.hintText}</div>
+          <div class="act2-cool-meter" aria-hidden="true"><div class="act2-cool-meter-fill"></div></div>
           <div class="act2-transport-hud-prepaid">
             Clinic called ahead — already done, Dana has been on the line since the lake
           </div>
         </div>
 
         <div class="act2-transport-footer">
-          <button id="act2-btn-arrive" class="act2-hud-btn btn-action-primary ${s.ready && !this.arriving ? 'pulse-btn' : ''}" data-editor-id="act2-btn-arrive" ${s.ready && !this.arriving ? '' : 'disabled="true"'}>
+          <button id="act2-btn-arrive" class="act2-hud-btn btn-action-primary ${s.ready && !this.arriving ? 'pulse-btn' : ''}" data-editor-id="act2-btn-arrive" ${s.ready || this.arriving ? '' : 'hidden'}>
             Pull in at the clinic ➔
           </button>
         </div>
@@ -1649,6 +1844,7 @@ export class Act2Screen {
   }
 
   patchTransportControls() {
+    this.syncCoolTimer();
     const s = this.getTransportStateStrings();
     const scene = this.container.querySelector('.act2-transport-scene');
     if (scene) {
@@ -1693,14 +1889,12 @@ export class Act2Screen {
     
     const arrive = this.container.querySelector('#act2-btn-arrive');
     if (arrive) {
-      if (s.ready && !this.arriving) {
-        arrive.removeAttribute('disabled');
-        arrive.classList.add('pulse-btn');
-      } else {
-        arrive.setAttribute('disabled', 'true');
-        arrive.classList.remove('pulse-btn');
-      }
+      // Hidden, not disabled, until the cooling has run: a greyed button would read as
+      // "pull in now" the moment the air goes on. During the arrival it stays up as skip.
+      arrive.hidden = !(s.ready || this.arriving);
+      arrive.classList.toggle('pulse-btn', s.ready && !this.arriving);
     }
+    if (this.hasProgress()) this.saveProgress();
   }
 
   renderHandoff() {
@@ -1711,7 +1905,7 @@ export class Act2Screen {
           Cooled first, drove second, and they were ready for her at the door.
         </p>
         <button id="act2-btn-act3" class="act2-hud-btn btn-action-primary pulse-btn"
-                data-editor-id="act2-btn-act3">Act 3: The Clinic ➔</button>
+                data-editor-id="act2-btn-act3">Part 3: The Clinic ➔</button>
       </div>
     `;
   }
@@ -1746,9 +1940,9 @@ export class Act2Screen {
         const isLast = this.stepIndex === this.arrivalSteps.length - 1;
         return isLast ? `
           <button id="act2-btn-start-call" class="act2-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act2-btn-start-call">Call the clinic ➔</button>
+                  data-editor-id="act2-btn-start-call" data-advance-line>Call the clinic ➔</button>
         ` : `
-          <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step">Next ▶</button>
+          <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step" data-advance-line>Next ▶</button>
         `;
       }
 
@@ -1756,9 +1950,9 @@ export class Act2Screen {
         const isLast = this.stepIndex === this.callSteps.length - 1;
         return isLast ? `
           <button id="act2-btn-start-checks" class="act2-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act2-btn-start-checks">Start looking ➔</button>
+                  data-editor-id="act2-btn-start-checks" data-advance-line>Start looking ➔</button>
         ` : `
-          <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step">Next ▶</button>
+          <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step" data-advance-line>Next ▶</button>
         `;
       }
 
@@ -1780,16 +1974,16 @@ export class Act2Screen {
 
       case 'payoff':
         return this.stepIndex === 0 ? `
-          <button id="act2-btn-next-step" class="act2-hud-btn btn-action-primary"
-                  data-editor-id="act2-btn-next-step">Tell her ▶</button>
+          <button id="act2-btn-next-step" class="act2-hud-btn"
+                  data-editor-id="act2-btn-next-step" data-advance-line>Tell her ▶</button>
         ` : '';
 
       case 'waiting':
         return this.stepIndex === 0 ? `
-          <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step">Next ▶</button>
+          <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act2-btn-start-cooling" class="act2-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act2-btn-start-cooling">Start cooling her ➔</button>
+                  data-editor-id="act2-btn-start-cooling" data-advance-line>Start cooling her ➔</button>
         `;
 
       default:
@@ -1816,8 +2010,31 @@ export class Act2Screen {
     };
 
     // --- Global nav ---
-    on('#act2-btn-back-act1', () => this.app?.navigateTo('act1', { beat: 'pov_rise' }));
-    on('#act2-btn-title', () => this.app?.navigateTo('opening'));
+    on('#act2-btn-back-act1', async () => {
+      if (this.hasProgress()) {
+        const leave = await confirmLeave({
+          title: 'Go back to Part 1?',
+          message: 'Part 1 starts again from the beginning, and your progress in Part 2 will be cleared.',
+          leaveLabel: 'Go back'
+        });
+        if (!leave) return;
+        try { progressStore.clear(); } catch(e) {}
+      }
+      this.app?.navigateTo('act1', { beat: 'pov_rise' });
+    });
+
+    on('#act2-btn-title', async () => {
+      if (this.hasProgress()) {
+        const leave = await confirmLeave({
+          title: 'Leave the story?',
+          message: 'You\'ll go back to the title screen, and everything you\'ve done in Part 2 so far will be cleared.',
+          leaveLabel: 'Leave anyway'
+        });
+        if (!leave) return;
+        try { progressStore.clear(); } catch(e) {}
+      }
+      this.app?.navigateTo('opening');
+    });
 
     // --- Generic advance ---
     on('#act2-btn-next-step', () => this.nextSubStep());
@@ -1924,6 +2141,7 @@ export class Act2Screen {
       this.patchTransportControls(); 
     });
     on('#act2-btn-arrive', () => this.handleArriveClick());
+    if (this.currentBeat === 'transport') this.syncCoolTimer();
     // Act 3's central claim is that every number lands on a decision the learner already
     // made, so the playthrough travels with them. Without this the survival payoff has to
     // fall back to its neutral variant. See Act3Screen.applyHandoff().
@@ -1939,6 +2157,7 @@ export class Act2Screen {
       this.skipArrival();
       return;
     }
+    if (!(this.acOn && this.windowsOpen && this.cooled)) return;
     this.arriving = true;
     
     this.patchTransportControls();
@@ -1958,9 +2177,10 @@ export class Act2Screen {
       });
     }
 
+    // Matches clinicApproach (5s) plus a short hold once the car has pulled in.
     this.arriveTimeout = setTimeout(() => {
       this.finishArrival();
-    }, 2500);
+    }, 5600);
   }
 
   skipArrival() {
@@ -2059,21 +2279,24 @@ export class Act2Screen {
         });
       }
 
-      // Patch the beat dots
-      const dots = this.container.querySelector('.act2-beat-dots');
-      if (dots) dots.innerHTML = this.getCheckDotsHtml(steps, this.checkStepIndex);
-
       // Patch the nav button
-      const { id, className, html } = this.getCheckNavButtonState(isLast);
+      const { id, className, html, advanceLine } = this.getCheckNavButtonState(isLast);
       const btn = this.container.querySelector('.act2-check-nav .act2-hud-btn');
       if (btn) {
         btn.id = id;
         btn.className = className;
         btn.innerHTML = html;
         btn.setAttribute('data-editor-id', id);
+        if (advanceLine) {
+          btn.setAttribute('data-advance-line', '');
+        } else {
+          btn.removeAttribute('data-advance-line');
+        }
       }
+      this.updateCardAffordance();
 
       this.focusInModal();
+      if (this.hasProgress()) this.saveProgress();
     } else {
       this.reportCheck();
     }
@@ -2175,8 +2398,8 @@ export class Act2Screen {
 
             <div class="act2-cool-feedback-footer">
               ${correct ? `
-                <button class="act2-hud-btn btn-action-primary pulse-btn act2-btn-cool-next"
-                        data-editor-id="act2-btn-cool-next-${opt.id}">
+                <button class="act2-hud-btn ${isLastStep ? 'btn-action-primary pulse-btn' : ''} act2-btn-cool-next"
+                        data-editor-id="act2-btn-cool-next-${opt.id}" data-advance-line>
                   ${isLastStep ? 'Get her in the car ➔' : 'Next ▶'}
                 </button>
               ` : `
@@ -2199,6 +2422,7 @@ export class Act2Screen {
     if (cooler) cooler.classList.toggle('is-tempting', this.isCoolerTempting());
     const elapsedEl = this.container.querySelector('#act2-elapsed-text');
     if (elapsedEl) elapsedEl.textContent = this.getFormattedElapsed();
+    if (this.hasProgress()) this.saveProgress();
   }
 
   chooseCooling(optionId) {

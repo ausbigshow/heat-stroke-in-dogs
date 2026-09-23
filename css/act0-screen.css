@@ -78,9 +78,9 @@
 
 .speech-bubble-speaker {
   font-family: var(--font-family-display);
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   margin-bottom: 0.35rem;
   display: flex;
@@ -88,10 +88,11 @@
   gap: 0.35rem;
 }
 
+/* Bubble typography standard, design-language.md §6.3.1: every speaker, every act. */
 .speech-bubble-text {
   font-family: var(--font-family-display);
-  font-size: clamp(1.02rem, 1.35vw, 1.28rem);
-  line-height: 1.42;
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+  line-height: 1.4;
   margin: 0;
   font-weight: 600;
 }
@@ -150,17 +151,13 @@
   color: var(--color-heat);
 }
 
-.speech-bubble.tay-bubble .speech-bubble-text {
-  font-family: var(--font-family-body);
-  font-weight: 700;
-}
-
 .speech-bubble.tay-bubble .tay-onomatopoeia {
   font-weight: 800;
   color: var(--color-heat);
   font-style: normal;
   display: inline;
   margin-right: 0.2rem;
+  text-transform: uppercase;
 }
 
 .speech-bubble.tay-bubble .tay-sub-dialogue {
@@ -229,7 +226,7 @@
   color: var(--text-inverse);
   border: 1.5px solid var(--hairline-light);
   font-family: var(--font-family-display);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 700;
   height: 40px;
   padding: 0 1.2rem;
@@ -238,7 +235,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
   box-sizing: border-box;
   transition: background-color var(--dur-fast) var(--ease-out-expo),
               border-color var(--dur-fast) var(--ease-out-expo),
@@ -301,23 +298,6 @@
   50% { box-shadow: 0 8px 28px rgba(251, 146, 60, 0.7); }
 }
 
-.act0-progress-badge {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(8px);
-  color: var(--palette-brown-dark);
-  font-family: var(--font-family-display);
-  font-size: 0.85rem;
-  font-weight: 700;
-  height: 34px;
-  padding: 0 0.9rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  border-radius: var(--radius-pill);
-  box-shadow: var(--elev-1);
-  pointer-events: auto;
-}
 
 /* ==========================================================
    REDUCED MOTION
@@ -390,11 +370,6 @@
     font-size: 0.88rem;
     touch-action: manipulation;
   }
-  .act0-progress-badge {
-    height: 34px;
-    padding: 0 0.75rem;
-    font-size: 0.8rem;
-  }
 }
 
 @media (max-width: 480px) {
@@ -413,7 +388,35 @@
     padding: 0 0.85rem;
     font-size: 0.82rem;
   }
-  .act0-progress-badge {
+}
+
+.act0-hud-btn.vo-mute-btn {
+  width: 40px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* Act 0 HUD marker */
+.act0-hud-top {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.5rem;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  z-index: 40;
+}
+
+@media (max-width: 768px) {
+  .act0-hud-top {
+    top: 0.6rem;
+    right: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .act0-hud-top {
     display: none;
   }
 }

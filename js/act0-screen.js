@@ -10,6 +10,8 @@
 
 import { audioManager } from './audio-manager.js';
 import { renderPreservingFocus } from './a11y-focus.js';
+import { progressStore } from './progress-store.js';
+import { confirmLeave, actMarkerHtml, syncBubbleClickHints } from './shared-ui.js';
 
 export class Act0Screen {
   constructor(app) {
@@ -131,6 +133,21 @@ export class Act0Screen {
     // Kick off manifest load + preload; render() will request the first clip once ready.
     audioManager.init();
 
+    this.handleClickAdvance = (e) => {
+      if (this.isEditModeActive()) return;
+      if (document.querySelector('.leave-guard-scrim')) return;
+      const card = this.container?.querySelector('#act0-card');
+      const targetEl = e.target instanceof Element ? e.target : e.target?.parentElement;
+      if (!card || !targetEl || !card.contains(targetEl)) return;
+      if (targetEl.closest('button, a, input, select, textarea, label, summary, [role="button"], [role="switch"], [role="link"], [tabindex]:not([tabindex="-1"]), [data-no-advance]')) {
+        return;
+      }
+      const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+      if (!advanceBtn || advanceBtn.offsetParent === null) return;
+      advanceBtn.click();
+    };
+    this.container.addEventListener('click', this.handleClickAdvance);
+
     this.render();
     window.addEventListener('keydown', this.handleKeyDown);
   }
@@ -139,6 +156,23 @@ export class Act0Screen {
     this.isMounted = false;
     audioManager.stop();
     window.removeEventListener('keydown', this.handleKeyDown);
+    if (this.container && this.handleClickAdvance) {
+      this.container.removeEventListener('click', this.handleClickAdvance);
+    }
+  }
+
+  getResumeState() {
+    return {
+      stepIndex: this.currentStepIndex
+    };
+  }
+
+  applyResumeState(state) {
+    this.currentStepIndex = state?.stepIndex ?? 0;
+  }
+
+  hasProgress() {
+    return this.currentStepIndex > 0;
   }
 
   /**
@@ -205,7 +239,6 @@ export class Act0Screen {
         data-editor-id="act0-bubble-${step.id}"
       >
         <div class="speech-bubble-speaker">
-          <span aria-hidden="true">${isTay ? '🐶' : '👩'}</span>
           <span>${step.name}</span>
         </div>
         ${bubbleContent}
@@ -216,8 +249,10 @@ export class Act0Screen {
       <div class="act0-container" data-editor-id="act0-screen-container">
         
         <!-- Main Front-and-Center Viewport Card -->
-        <div id="act0-card" class="act0-viewport-card" data-editor-id="act0-viewport-card" title="Click anywhere to continue">
+        <div id="act0-card" class="act0-viewport-card" data-editor-id="act0-viewport-card">
           
+          <div class="act0-hud-top" data-editor-id="act0-hud-top">${actMarkerHtml(0)}</div>
+
           <!-- Background Scene Illustration -->
           <img 
             src="Assets/Image/CallieAndTay-Home.jpg" 
@@ -256,19 +291,11 @@ export class Act0Screen {
                 class="act0-hud-btn"
                 data-editor-id="act0-btn-title"
                 title="Return to Title Screen"
-                aria-label="Return to title screen"
+                aria-label="Return to the title screen"
               >
-                <span aria-hidden="true">🏠</span> Title
+                Title
               </button>
               ${audioManager.muteButtonHtml('act0-btn-mute', 'act0-hud-btn')}
-            </div>
-
-            <!-- The counter is readable on demand but NOT a live region: the speech layer
-                 above is already aria-live, and a second polite region made every advance
-                 announce the line and then "step 4 of 13" behind it. -->
-            <div class="act0-progress-badge" data-editor-id="act0-progress">
-              <span class="sr-only">Step ${this.currentStepIndex + 1} of ${totalSteps}</span>
-              <span aria-hidden="true">${this.currentStepIndex + 1} / ${totalSteps}</span>
             </div>
 
             <div class="act0-nav-group">
@@ -277,6 +304,7 @@ export class Act0Screen {
                   id="act0-btn-next" 
                   class="act0-hud-btn" 
                   data-editor-id="act0-btn-next"
+                  data-advance-line
                   title="Next Line (Space / ArrowRight / Click Image)"
                   aria-label="Next line"
                 >
@@ -287,10 +315,10 @@ export class Act0Screen {
                   id="act0-btn-start-act1" 
                   class="act0-hud-btn btn-start" 
                   data-editor-id="act0-btn-start-act1"
-                  title="Begin Act 1: The Lake Trip"
-                  aria-label="Begin Act 1: The Lake Trip"
+                  title="Begin Part 1: The Lake Trip"
+                  aria-label="Begin Part 1: The Lake Trip"
                 >
-                  <span aria-hidden="true">🐾</span> Begin Act 1 <span aria-hidden="true">➔</span>
+                  Begin Part 1 <span aria-hidden="true">➔</span>
                 </button>
               `}
             </div>
@@ -302,22 +330,33 @@ export class Act0Screen {
     `;
 
     this.bindEvents();
+    this.updateCardAffordance();
     this.playStepAudio();
+
+    try {
+      progressStore.save('act0', this.getResumeState());
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  updateCardAffordance() {
+    const card = this.container?.querySelector('#act0-card');
+    if (!card) return;
+    const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+    const hasAdvance = !!(advanceBtn && advanceBtn.offsetParent !== null);
+    card.classList.toggle('click-advance', hasAdvance);
+    syncBubbleClickHints(card, hasAdvance);
+    if (hasAdvance) {
+      card.setAttribute('title', 'Click anywhere to continue');
+    } else {
+      card.removeAttribute('title');
+    }
   }
 
   bindEvents() {
     // Re-bind the HUD mute button; innerHTML re-render discards previous listeners.
     audioManager.bindMuteButton(this.container);
-
-    const card = this.container.querySelector('#act0-card');
-    if (card) {
-      card.addEventListener('click', (e) => {
-        if (this.isEditModeActive()) return;
-        // Do not advance if clicking inside HUD or bubble in edit mode
-        if (e.target.closest('.act0-nav-bar')) return;
-        this.nextStep();
-      });
-    }
 
     const prevBtn = this.container.querySelector('#act0-btn-prev');
     if (prevBtn) {
@@ -339,9 +378,21 @@ export class Act0Screen {
 
     const titleBtn = this.container.querySelector('#act0-btn-title');
     if (titleBtn) {
-      titleBtn.addEventListener('click', (e) => {
+      titleBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         if (this.isEditModeActive()) return;
+        
+        if (this.hasProgress()) {
+          const leave = await confirmLeave({
+            title: 'Leave the story?',
+            message: "You'll go back to the title screen, and everything you've done in the intro so far will be cleared.",
+            leaveLabel: 'Leave anyway'
+          });
+          if (!leave) return;
+        }
+
+        try { progressStore.clear(); } catch (err) {}
+
         if (this.app && typeof this.app.navigateTo === 'function') {
           this.app.navigateTo('opening');
         }
@@ -387,7 +438,7 @@ export class Act0Screen {
       this.app.navigateTo('act1');
     } else {
       console.log('🐾 Act 1 starting...');
-      alert('Act 1: The Lake Trip is up next!');
+      alert('Part 1: The Lake Trip is up next!');
     }
   }
 
