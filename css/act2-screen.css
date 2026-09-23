@@ -457,15 +457,15 @@
   top: 5rem;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(8, 33, 44, 0.92);
-  border: 2px solid #06B6D4;
-  color: #E0F2FE;
+  background: var(--surface-radio-pill);
+  border: 2px solid var(--color-radio);
+  color: var(--text-radio);
   font-family: var(--font-family-display);
   font-size: 0.95rem;
   font-weight: 700;
   padding: 0.6rem 1.4rem;
   border-radius: var(--radius-pill);
-  box-shadow: 0 0 15px rgba(6, 182, 212, 0.35);
+  box-shadow: 0 0 15px var(--color-radio-glow);
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
@@ -1076,7 +1076,7 @@
   background: color-mix(in srgb, var(--palette-teal) 10%, var(--palette-warm-white));
   color: var(--palette-text-dark);
   border-radius: var(--radius-xl);
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: var(--radius-xs);
   padding: 0.8rem 1.1rem;
   max-width: 85%;
   align-self: flex-start;
@@ -1090,7 +1090,7 @@
   background: var(--palette-peach-light);
   color: var(--palette-text-dark);
   border-radius: var(--radius-xl);
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: var(--radius-xs);
   padding: 0.8rem 1.1rem;
   max-width: 85%;
   align-self: flex-end;
@@ -1125,7 +1125,7 @@
   border-radius: var(--radius-sm);
   overflow: hidden;
   box-shadow: var(--elev-2);
-  background: #F3E4DA;
+  background: var(--surface-art-mat);
   border: 2px solid rgba(56, 36, 24, 0.15);
 }
 
@@ -1160,7 +1160,7 @@
 }
 .act2-check-conversation::-webkit-scrollbar-thumb {
   background: var(--hairline-light-strong);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
 }
 
 .act2-check-readout-wrap {
@@ -1236,7 +1236,7 @@
   overflow: hidden;
   box-shadow: var(--elev-2);
   grid-row: span 2;
-  background: #F3E4DA;
+  background: var(--surface-art-mat);
   border: 2px solid rgba(56, 36, 24, 0.15);
 }
 
@@ -2429,7 +2429,7 @@
     animation: none !important;
   }
   .act2-gum-blanch {
-    background-color: color-mix(in srgb, #F2DCD6 40%, var(--gum-color)) !important;
+    background-color: color-mix(in srgb, var(--gum-blanched) 40%, var(--gum-color)) !important;
   }
   .act2-gum-hand {
     transform: translate(var(--hand-offset-x, 8%), var(--hand-offset-y, 16%)) !important;
