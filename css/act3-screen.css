@@ -487,11 +487,21 @@
    centre, so her bubble hangs to her upper right and the stem points back down-left; Reyes
    stands by the door, so hers hangs to her upper left and the stem points down-right; Tay
    is centred under hers. */
+/* Height-capped, but the BUBBLE never clips: overflow:hidden here cut off the stem (it hangs
+   below the box). The bubble is a column instead, and only the text scrolls if a long line
+   ever outgrows the band. */
 #screen-act3 .speech-bubble {
   top: 13%;
   max-height: 30%;
-  overflow: hidden;
+  overflow: visible;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+#screen-act3 .speech-bubble .speech-bubble-text {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .scene-clinic .act3-callie-bubble,
