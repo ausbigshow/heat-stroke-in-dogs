@@ -336,111 +336,33 @@
   outline-offset: 4px;
 }
 
-/* Blurb - right side, across from the illustration: who the learner meets and what they will
-   be able to do afterwards. Sits clear of the Continue button below it. */
+/* Blurb - right side, across from the illustration: a broad overview of the story before the
+   learner starts. Sits clear of the Continue button below it. */
 .opening-blurb {
   position: absolute;
-  right: 2%;
+  right: 4%;
   top: 0;
   bottom: 5.5rem;
-  width: 50%;
-  max-width: 620px;
+  width: 46%;
+  max-width: 560px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.6rem;
   pointer-events: auto;
   animation: charactersFadeIn 1.1s var(--ease-out-expo) 0.35s backwards;
 }
 
-.opening-blurb-heading {
-  font-family: var(--font-family-display);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--palette-teal-dark);
-  margin: 0.4rem 0 0;
-}
-
-.opening-cast,
-.opening-objectives {
+.opening-blurb-text {
   margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.opening-cast-item {
-  display: grid;
-  grid-template-columns: 4.6rem 1fr;
-  align-items: baseline;
-  gap: 0.9rem;
-  padding: 0.7rem 1rem;
+  padding: 1.4rem 1.6rem;
   background: rgba(255, 255, 255, 0.78);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   border-left: 4px solid var(--palette-teal);
-  box-shadow: 0 4px 14px -6px rgba(56, 36, 24, 0.14);
-}
-
-.opening-cast-item.is-tay {
-  border-left-color: var(--color-heat);
-}
-
-.opening-cast-name {
-  font-family: var(--font-family-display);
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--palette-teal-dark);
-}
-
-.is-tay .opening-cast-name {
-  color: var(--color-heat);
-}
-
-.opening-cast-line,
-.opening-objectives li,
-.opening-blurb-note {
+  box-shadow: 0 8px 22px -10px rgba(56, 36, 24, 0.18);
   font-family: var(--font-family-body);
-  font-size: clamp(0.92rem, 1.05vw, 1.05rem);
-  line-height: 1.45;
+  font-size: clamp(1rem, 1.35vw, 1.3rem);
+  line-height: 1.55;
   color: var(--palette-text-dark);
-}
-
-.opening-objectives {
-  counter-reset: objective;
-  gap: 0.45rem;
-}
-
-.opening-objectives li {
-  counter-increment: objective;
-  position: relative;
-  padding-left: 2.2rem;
-}
-
-.opening-objectives li::before {
-  content: counter(objective);
-  position: absolute;
-  left: 0;
-  top: 0.05rem;
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 50%;
-  background: var(--palette-teal);
-  color: var(--text-inverse);
-  font-family: var(--font-family-display);
-  font-size: 0.82rem;
-  font-weight: 700;
-  display: grid;
-  place-items: center;
-}
-
-.opening-blurb-note {
-  margin: 0.3rem 0 0;
-  color: var(--palette-text-muted);
-  font-style: italic;
 }
 
 /* Keyframe Animations */
@@ -537,8 +459,8 @@
   }
 
   .opening-blurb {
-    width: 52%;
-    right: 0;
+    width: 50%;
+    right: 1%;
   }
 }
 
@@ -755,10 +677,6 @@
     width: auto;
     flex: 1;
     justify-content: flex-start;
-  }
-
-  .opening-blurb-heading:first-child {
-    margin-top: 0;
   }
 
   .continue-btn-container {
