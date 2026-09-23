@@ -1164,7 +1164,7 @@ export class Act1Screen {
           </thead>
           <tbody>
             ${[
-              { id: 'cooler', object: 'The cooler', risk: 'Full sun, no shade, 90 minutes — extreme trapped heat' },
+              { id: 'cooler', object: 'The cooler', risk: 'Full sun, no shade, 15 minutes pressed against it — trapped heat' },
               { id: 'dock', object: 'The dock', risk: '137°F dock wood surface — radiant heat at 4 inches' },
               { id: 'bowl', object: 'The water bowl', risk: 'Warm sun-baked water — zero hydration since car ride' },
               { id: 'lake', object: 'The lake', risk: 'The immediate cooling source she never used' }

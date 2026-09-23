@@ -221,7 +221,7 @@ export class Act3Screen {
     // The Act 1 timeline, restated one last time. Times match Act 2's `hintsTimeline` exactly —
     // if one changes, change both.
     this.hintsTimeline = [
-      { time: '1:30 PM', title: 'The cooler, in open sun', line: '90 minutes against a cold box.', nextTime: 'Put the cooler in the shade and keep her with it. Cold on the outside is still an oven on the inside.' },
+      { time: '1:30 PM', title: 'The cooler, in open sun', line: '15 minutes against a cold box, in full sun.', nextTime: 'Put the cooler in the shade and keep her with it. Cold on the outside is still an oven on the inside.' },
       { time: '1:48 PM', title: 'The dock', line: '137°F boards, patrolled twice.', widest: true, nextTime: "Press your palm on the boards for 5 seconds before she walks them. If you can't hold it there, she can't stand on it." },
       { time: '2:03 PM', title: 'The water bowl', line: 'Sun-warm, half empty, untouched.', nextTime: "Bowl in the shade, refilled every time you refill your own. Warm water in the sun doesn't get drunk." },
       { time: '2:38 PM', title: 'The shade that moved', line: '27 minutes asleep in full sun.', nextTime: "Look at where the shadow is every 30 minutes. It moves. A sleeping dog doesn't." }

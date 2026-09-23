@@ -171,7 +171,7 @@ export class Act2Screen {
 
     // Beat 2A payoff: the four Act 1 leads, restated as a case history with times.
     this.hintsTimeline = [
-      { time: '1:30 PM', title: 'The cooler, in open sun', line: 'She parked herself against it for 90 minutes. No shade.' },
+      { time: '1:30 PM', title: 'The cooler, in open sun', line: 'She parked herself against it for 15 minutes. No shade.' },
       { time: '1:48 PM', title: 'The dock', line: '137°F boards. She patrolled the length of them twice.' },
       { time: '2:03 PM', title: 'The water bowl', line: 'Sun-warm, half empty, untouched. No water since the car.' },
       { time: '2:38 PM', title: 'The shade that moved', line: 'Asleep for 27 minutes while the shade crept off her.' }
@@ -225,7 +225,7 @@ export class Act2Screen {
             label: 'Ice out of the cooler — pack it against her',
             correct: false,
             smePending: true,
-            consequence: "You have the lid up before you finish the thought — the same cooler she spent 90 minutes pressed against. Ice against her skin makes the surface vessels clamp down, and heat that needs to leave her core stays in it. She feels cold to your hand and is no cooler inside.",
+            consequence: "You have the lid up before you finish the thought — the same cooler she spent 15 minutes pressed against. Ice against her skin makes the surface vessels clamp down, and heat that needs to leave her core stays in it. She feels cold to your hand and is no cooler inside.",
             correction: "Cool water, not ice, and not ice packs. Extreme cold constricts the vessels near the skin and traps the heat where you least want it. The lake is right there."
           }
         ]
