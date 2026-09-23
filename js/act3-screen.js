@@ -113,7 +113,7 @@ export class Act3Screen {
       subtitle: 'Lake days, hikes, beaches, parks, the backyard: anywhere your dog spends a warm day outdoors.',
       stats: [
         { value: '4×', text: 'Flat-faced breeds (pugs, bulldogs, French bulldogs) get heat illness about 4 times as often.' },
-        { value: '80°F', text: 'Past this, think twice. In high humidity, panting barely cools a dog at all.' },
+        { value: '80°F', text: 'Past this, think twice. Check the humidity too: panting barely works when the air is already wet.' },
         { value: '+20°F', text: 'Inside a parked car within 10 minutes. Cracking the windows barely helps.' },
         { value: '2.5×', text: 'Dogs cooled before the drive to the vet are about 2.5 times more likely to survive.' }
       ],
@@ -121,17 +121,17 @@ export class Act3Screen {
       habits: [
         { icon: 'shade', label: 'Shade first', text: 'Set up real shade before anything else, and check it every 30 minutes. Shade moves. A sleeping dog doesn\'t.' },
         { icon: 'water', label: 'Water in the shade', text: 'Top up your dog\'s water whenever you top up your own. Warm water in the sun doesn\'t get drunk.' },
-        { icon: 'clock', label: 'Go early or late', text: 'Mornings and evenings. The middle of the afternoon is the hottest part of the day.' },
+        { icon: 'clock', label: 'Go early or late', text: 'Mornings or evenings. 1 PM in July is the worst hour of the day, and it\'s the one everybody picks.' },
         { icon: 'hand', label: 'The 5-second test', text: 'Palm flat on the sand, pavement or boards for 5 seconds. If you can\'t hold it there, your dog can\'t stand on it.' },
-        { icon: 'sun', label: 'Sun heats everything', text: 'A cooler, car or tent in full sun is not a cool spot. Keep your dog in the shade, not beside the gear.' },
+        { icon: 'sun', label: 'Cooler in the shade', text: 'Put the cooler in the shade and keep your dog there with it. Cold on the outside is still an oven on the inside.' },
         { icon: 'home', label: 'Some days, stay in', text: 'Too hot or too humid? Air conditioning and a puzzle toy at home.' }
       ],
       signsTitle: 'Warning signs, early to late',
-      signsNote: 'The early signs look like a normal hot afternoon. That is what makes them easy to miss.',
+      signsNote: 'The early stage looks like a normal afternoon. That is what makes it easy to wave off.',
       stages: [
-        { stage: 'Early', signs: ['Fast, heavy panting that never pauses', 'Tired, lagging, lying down more'] },
+        { stage: 'Early', signs: ['Panting: fast, shallow, never pausing', 'Lethargy: just looks tired'] },
         { stage: 'Building', signs: ['Ears hot right through, with no cool spot'] },
-        { stage: 'Advanced', signs: ['Brick-red gums; pressed pink takes over 2 seconds to return', 'Slow to respond to their name, or no response'] }
+        { stage: 'Advanced', signs: ['Brick-red gums; press and let go, and the colour takes over 2 seconds to come back', 'Slow to respond to their name, then no response'] }
       ],
       actTitle: 'If you see them: cool first, then go',
       steps: [
@@ -139,7 +139,7 @@ export class Act3Screen {
         'Wet the belly, armpits, groin and paws with cool water. Not ice, and never over the face.',
         'Offer small sips. Never force water.',
         'Call the vet and tell them you are coming.',
-        'Drive with the AC on, your dog lying on a flat cool wet towel. Never wrapped in it.'
+        'Drive with the AC on and the windows cracked, your dog lying on a flat cool wet towel. Never wrapped in it.'
       ],
       footer: 'Caught while mild, about 95% of dogs come through. Caught once severe, about 43%. The difference is how soon cooling starts.'
     };
