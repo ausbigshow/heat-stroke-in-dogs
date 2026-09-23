@@ -929,7 +929,7 @@ export class Act3Screen {
             
           </div>
           <p class="speech-bubble-text">
-            <span class="act3-reyes-dialogue">“${textProp}”</span>
+            <span class="act3-reyes-dialogue">${textProp}</span>
           </p>
         </div>
       `;
@@ -942,7 +942,7 @@ export class Act3Screen {
           
         </div>
         <p class="speech-bubble-text">
-          <span class="callie-dialogue">“${step.text}”</span>
+          <span class="callie-dialogue">${step.text}</span>
         </p>
       </div>
     `;
@@ -1188,7 +1188,7 @@ export class Act3Screen {
         <div class="act3-prevention-card" data-editor-id="act3-prevention-card" role="group"
              aria-label="What changes about the next lake day">
           <span class="act3-prevention-badge">Dr. Reyes</span>
-          <h2 class="act3-prevention-title">“So what's different about the next lake day?”</h2>
+          <h2 class="act3-prevention-title">So what's different about the next lake day?</h2>
           <p class="act3-prevention-sub">
             Choose every change you'd actually make. Each one opens Dr. Reyes's answer and stays
             open — there's no wrong pick here.
@@ -1224,7 +1224,7 @@ export class Act3Screen {
                            aria-hidden="${!isChosen}"
                            ${this.activePrevention === opt.id ? 'role="status"' : ''}>
                         <span class="act3-report-who">Dr. Reyes</span>
-                        <p class="act3-report-text">“${opt.reply}”</p>
+                        <p class="act3-report-text">${opt.reply}</p>
                       </div>
                     </div>
                   </div>

@@ -360,17 +360,20 @@
   max-width: min(380px, 32vw);
 }
 
+/* Stem sits near the left edge, but is placed from the right via --stem-right so Edit
+   Mode's stem handle (which writes --stem-right on .callie-bubble) still moves it (§6.3).
+   calc(100% - 58px) = the old left: 34px for a 24px-wide stem. */
 .act2-viewport-card.view-close-canopy .act2-callie-bubble::before {
-  left: 34px;
-  right: auto;
+  left: auto;
+  right: var(--stem-right, calc(100% - 58px));
   border-left: 6px solid transparent;
   border-right: 18px solid transparent;
   border-top: 22px solid var(--palette-brown-dark);
 }
 
 .act2-viewport-card.view-close-canopy .act2-callie-bubble::after {
-  left: 36px;
-  right: auto;
+  left: auto;
+  right: calc(var(--stem-right, calc(100% - 58px)) + 2px);
   border-left: 5px solid transparent;
   border-right: 15px solid transparent;
   border-top: 19px solid var(--palette-warm-white);
@@ -403,10 +406,10 @@
   color: var(--text-radio);
   border-radius: var(--radius-xs);
   box-shadow: 0 0 18px var(--color-radio-glow), var(--elev-modal);
-  padding: 1.1rem 1.35rem 1.1rem;
+  padding: 1.1rem 1.4rem;
   pointer-events: auto;
   z-index: 35;
-  animation: act2SlideIn 0.3s var(--ease-out-expo) forwards;
+  animation: bubblePop 0.3s var(--ease-back) both;
 }
 
 .speech-bubble.phone-radio-bubble .comic-radio-speaker {

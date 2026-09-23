@@ -17,6 +17,13 @@ reference.
 
 ---
 
+## 0. Naming in the product
+
+The course is an **intro and three parts**. "Act" is working vocabulary for the team and this
+document; the learner never sees or hears it. Everything learner-facing (visible text,
+`aria-label`, `title`, dialog copy) says "Part N" or "the intro". Code identifiers, screen keys
+(`act1`…) and `data-editor-id`s keep "act". There are no step counters on any screen.
+
 ## 1. Principles
 
 1. **Flat vector, no outlines, no gradients on characters.** The art direction is locked by the
@@ -512,6 +519,14 @@ running to the phone in the speaker's hand — filled like the bubble, outlined 
 only, overlapping the border by 3px for a seamless join. **Never put `clip-path` on a bubble:** it
 clips the tail (this is how the bolt went missing before v1.1). Every line Dana speaks — bubble,
 phone panel, symptom cards, cooling card — uses the §6.3.1 dialogue size, without quote marks.
+
+**Dr. Reyes** — `.reyes-bubble` (Act 3): white ground, `3px solid --palette-teal-dark`,
+teal-dark text, `--color-info-strong` label, stem via `--stem-left` like Tay's. Same §6.3.1 type,
+padding, radius, shadow and `bubblePop` entrance as every other bubble. Her stage direction
+rides the label as `.act3-business`.
+
+**Every bubble** (all speakers, all acts) enters with `bubblePop 0.3s --ease-back`, and no
+dialogue line is ever wrapped in quote marks — in a bubble, a card or a heading (v1.1 audit).
 
 ### 6.4 Modal card
 

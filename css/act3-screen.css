@@ -1982,6 +1982,10 @@
 #screen-act3 .speech-bubble-text {
   font-size: clamp(1rem, 1.25vw, 1.2rem);
 }
+/* The span rule above sets every span to 600; Tay's sound is the one span that is 800 (§6.3). */
+#screen-act3 .speech-bubble-text .tay-onomatopoeia {
+  font-weight: 800;
+}
 
 .act3-timeline-next-time-row {
   display: block;
