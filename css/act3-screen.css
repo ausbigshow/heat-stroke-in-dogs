@@ -1163,7 +1163,7 @@
 
 .act3-timeline-item {
   display: grid;
-  grid-template-columns: 4.6rem 1.6rem 1fr;
+  grid-template-columns: 4.6rem 1fr;
   align-items: start;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
@@ -1184,7 +1184,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.act3-timeline-icon { font-size: 0.95rem; }
 
 .act3-timeline-copy {
   display: flex;
