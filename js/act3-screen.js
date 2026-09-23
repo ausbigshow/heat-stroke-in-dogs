@@ -134,7 +134,6 @@ export class Act3Screen {
     this.reportRows = [
       {
         id: 'panting',
-        icon: '💨',
         sign: 'Panting',
         reported: 'Fast, shallow, never pausing',
         stageNo: 1,
@@ -143,7 +142,6 @@ export class Act3Screen {
       },
       {
         id: 'ears',
-        icon: '👂',
         sign: 'Ears',
         reported: 'Hot right through, no cool spot',
         stageNo: 2,
@@ -152,7 +150,6 @@ export class Act3Screen {
       },
       {
         id: 'gums',
-        icon: '👄',
         sign: 'Gums + capillary refill',
         short: 'Gums',
         reported: 'Brick red · refill over 2 seconds',
@@ -162,7 +159,6 @@ export class Act3Screen {
       },
       {
         id: 'name',
-        icon: '🗣️',
         sign: 'Response to her name',
         short: 'Her name',
         reported: 'Delayed, then absent',
@@ -182,10 +178,10 @@ export class Act3Screen {
     // The Act 1 timeline, restated one last time. Times match Act 2's `hintsTimeline` exactly —
     // if one changes, change both.
     this.hintsTimeline = [
-      { time: '1:30 PM', icon: '🥪', title: 'The cooler, in open sun', line: '90 minutes against a cold box.', nextTime: 'Put the cooler in the shade and keep her with it. Cold on the outside is still an oven on the inside.' },
-      { time: '1:48 PM', icon: '☀️', title: 'The dock', line: '137°F boards, patrolled twice.', widest: true, nextTime: "Press your palm on the boards for 5 seconds before she walks them. If you can't hold it there, she can't stand on it." },
-      { time: '2:03 PM', icon: '🥣', title: 'The water bowl', line: 'Sun-warm, half empty, untouched.', nextTime: "Bowl in the shade, refilled every time you refill your own. Warm water in the sun doesn't get drunk." },
-      { time: '2:38 PM', icon: '🌳', title: 'The shade that moved', line: '27 minutes asleep in full sun.', nextTime: "Look at where the shadow is every 30 minutes. It moves. A sleeping dog doesn't." }
+      { time: '1:30 PM', title: 'The cooler, in open sun', line: '90 minutes against a cold box.', nextTime: 'Put the cooler in the shade and keep her with it. Cold on the outside is still an oven on the inside.' },
+      { time: '1:48 PM', title: 'The dock', line: '137°F boards, patrolled twice.', widest: true, nextTime: "Press your palm on the boards for 5 seconds before she walks them. If you can't hold it there, she can't stand on it." },
+      { time: '2:03 PM', title: 'The water bowl', line: 'Sun-warm, half empty, untouched.', nextTime: "Bowl in the shade, refilled every time you refill your own. Warm water in the sun doesn't get drunk." },
+      { time: '2:38 PM', title: 'The shade that moved', line: '27 minutes asleep in full sun.', nextTime: "Look at where the shadow is every 30 minutes. It moves. A sleeping dog doesn't." }
     ];
 
     // Reyes walks the timeline while she works. Each step reveals one panel of the report,
@@ -282,25 +278,25 @@ export class Act3Screen {
     this.preventionOptions = [
       {
         id: 'setup_first',
-        icon: '⛱️',
+        icon: '1',
         label: 'Shade and water set up before anything else',
         reply: "Set it up before you even touch the cooler. Real shade she can reach, and her water sitting in it."
       },
       {
         id: 'timing',
-        icon: '🌅',
+        icon: '2',
         label: 'Go early or late, not one in the afternoon',
         reply: "Mornings or evenings. 1 PM in July is the worst hour of the day, and it's the one everybody picks."
       },
       {
         id: 'temp_humidity',
-        icon: '🌡️',
+        icon: '3',
         label: 'Watch the temperature, not just the sun',
         reply: "Past 80°F I'd think twice. And check the humidity — that's the part people miss. Panting barely works when the air's already wet."
       },
       {
         id: 'stay_in',
-        icon: '🏠',
+        icon: '4',
         label: 'Some days she just stays inside',
         reply: "AC and a puzzle toy. She'll act completely betrayed. She'll live."
       }
@@ -365,10 +361,10 @@ export class Act3Screen {
       title: 'Discharge instructions',
       patient: 'TAY · French Bulldog · 4 yr · F/S',
       items: [
-        { glyph: '🩸', label: "Bloodwork today: normal", sub: "Good. Not the whole story — this is a snapshot of right now." },
-        { glyph: '📅', label: 'Recheck in 24–48 hours', sub: 'Kidney and clotting problems surface late. Book it before you leave.' },
-        { glyph: '🚨', label: 'Come back sooner if you see any of these', sub: 'Vomiting · dark urine · any bleeding · going flat again' },
-        { glyph: '🌙', label: 'Watch her tonight', sub: 'Not a figure of speech. Somebody in the room with her.' }
+        { glyph: '1', label: "Bloodwork today: normal", sub: "Good. Not the whole story — this is a snapshot of right now." },
+        { glyph: '2', label: 'Recheck in 24–48 hours', sub: 'Kidney and clotting problems surface late. Book it before you leave.' },
+        { glyph: '3', label: 'Come back sooner if you see any of these', sub: 'Vomiting · dark urine · any bleeding · going flat again' },
+        { glyph: '4', label: 'Watch her tonight', sub: 'Not a figure of speech. Somebody in the room with her.' }
       ]
     };
 
@@ -392,7 +388,7 @@ export class Act3Screen {
     const all = this.preventionChosen.size === this.preventionOptions.length;
     const some = this.preventionChosen.size > 0;
     return {
-      className: `act3-hud-btn ${some ? 'btn-action-primary pulse-btn' : 'act3-btn-quiet'}`,
+      className: `act3-hud-btn ${all ? 'btn-action-primary pulse-btn' : (some ? '' : 'act3-btn-quiet')}`,
       html: all ? "That's all of them ➔" : some ? "That's what changes ▶" : 'Nothing changes ▶'
     };
   }
@@ -818,7 +814,7 @@ export class Act3Screen {
           <button id="act3-btn-back-act2" class="act3-hud-btn" data-editor-id="act3-btn-back-act2"
                   title="Return to Act 2" aria-label="Return to Act 2">◀ Act 2</button>
           <button id="act3-btn-title" class="act3-hud-btn" data-editor-id="act3-btn-title"
-                  title="Return to Title" aria-label="Return to the title screen">🏠 Title</button>
+                  title="Return to Title" aria-label="Return to the title screen">Title</button>
         </div>
 
         <div class="act3-hud-group">
@@ -829,14 +825,12 @@ export class Act3Screen {
           </div>
 
           <div class="act3-hud-pill clock-pill" data-editor-id="act3-hud-clock" title="Clinic time">
-            <span aria-hidden="true">🕒</span>
             <span>${this.getFormattedTime()}</span>
           </div>
 
           <!-- The engine of Beat 3A. It says IN BACK, and it keeps saying IN BACK. -->
           <div class="act3-hud-pill status-pill tone-${status.tone}" data-editor-id="act3-hud-status"
                aria-label="${status.aria}">
-            <span aria-hidden="true">🐶</span>
             <span>TAY — ${status.word}</span>
           </div>
         </div>
@@ -881,7 +875,6 @@ export class Act3Screen {
       return `
         <div class="speech-bubble tay-bubble act3-tay-bubble ${isNewLineClass}" data-step="${stepKey}" data-editor-id="${editorId}-tay">
           <div class="speech-bubble-speaker">
-            <span aria-hidden="true">🐶</span>
             <span>Tay</span>
           </div>
           <p class="speech-bubble-text">
@@ -896,7 +889,6 @@ export class Act3Screen {
       return `
         <div class="speech-bubble reyes-bubble act3-reyes-bubble ${isNewLineClass}" data-step="${stepKey}" data-editor-id="${editorId}-reyes">
           <div class="speech-bubble-speaker">
-            <span aria-hidden="true">🩺</span>
             <span>Dr. Reyes</span>
             
           </div>
@@ -910,7 +902,6 @@ export class Act3Screen {
     return `
       <div class="speech-bubble callie-bubble act3-callie-bubble ${isNewLineClass}" data-step="${stepKey}" data-editor-id="${editorId}-callie">
         <div class="speech-bubble-speaker">
-          <span aria-hidden="true">👩</span>
           <span>Callie</span>
           
         </div>
@@ -1045,7 +1036,7 @@ export class Act3Screen {
           <div class="act3-recap-chips">
             ${this.reportRows.map(row => `
               <span class="act3-stage-chip stage-${row.stageNo}">
-                <span aria-hidden="true">${row.icon}</span> ${row.short || row.sign} &middot; <span class="act3-stage-no">${row.stageNo}</span>
+                ${row.short || row.sign} &middot; <span class="act3-stage-no">${row.stageNo}</span>
                 <span>${row.stage}</span>
               </span>
             `).join('')}
@@ -1074,7 +1065,7 @@ export class Act3Screen {
             ${this.reportRows.map(row => `
               <tr>
                 <th scope="row" class="act3-cell-sign">
-                  <span aria-hidden="true">${row.icon}</span> ${row.sign}
+                  ${row.sign}
                 </th>
                 <td class="act3-cell-reported">
                   ${row.reported}
@@ -1124,7 +1115,6 @@ export class Act3Screen {
           ${this.hintsTimeline.map(item => `
             <li class="act3-timeline-item ${item.widest ? 'is-widest' : ''}">
               <span class="act3-timeline-time">${item.time}</span>
-              <span class="act3-timeline-icon" aria-hidden="true">${item.icon}</span>
               <span class="act3-timeline-copy">
                 <strong>${item.title}</strong>
                 <span>${item.line}</span>
@@ -1180,7 +1170,7 @@ export class Act3Screen {
                           aria-pressed="${isChosen}"
                           ${isChosen ? 'aria-disabled="true"' : ''}
                           ${isChosen ? `aria-describedby="act3-prevention-reply-${opt.id}"` : ''}>
-                    <span class="act3-prevention-icon" aria-hidden="true">${opt.icon}</span>
+                    <span class="act3-prevention-icon act3-icon-badge" aria-hidden="true">${opt.icon}</span>
                     <span class="act3-prevention-label">${opt.label}</span>
                     <!-- Chosen is a glyph and a word, never the green alone (§7.3). -->
                     <span class="act3-prevention-state">
@@ -1254,7 +1244,7 @@ export class Act3Screen {
         <ul class="act3-discharge-list">
           ${this.dischargeSheet.items.map((item, i) => `
             <li class="act3-discharge-item" data-editor-id="act3-discharge-item-${i}">
-              <span class="act3-discharge-glyph" aria-hidden="true">${item.glyph}</span>
+              <span class="act3-discharge-glyph act3-icon-badge" aria-hidden="true">${item.glyph}</span>
               <span class="act3-discharge-copy">
                 <strong>${item.label}</strong>
                 <span>${item.sub}</span>
@@ -1318,10 +1308,10 @@ export class Act3Screen {
           </p>
 
           <div class="act3-end-actions">
-            <button id="act3-btn-replay-act3" class="act3-hud-btn btn-action-primary"
-                    data-editor-id="act3-btn-replay-act3">⏮ Replay Act 3</button>
-            <button id="act3-btn-replay-act1" class="act3-hud-btn" data-editor-id="act3-btn-replay-act1">🐾 Replay Act 1</button>
-            <button id="act3-btn-end-title" class="act3-hud-btn" data-editor-id="act3-btn-end-title">🏠 Title</button>
+            <button id="act3-btn-replay-act3" class="act3-hud-btn"
+                    data-editor-id="act3-btn-replay-act3">Replay Act 3</button>
+            <button id="act3-btn-replay-act1" class="act3-hud-btn" data-editor-id="act3-btn-replay-act1">Replay Act 1</button>
+            <button id="act3-btn-end-title" class="act3-hud-btn" data-editor-id="act3-btn-end-title">Title</button>
           </div>
         </div>
 
@@ -1352,7 +1342,6 @@ export class Act3Screen {
       return `
         ${back}
         <div class="act3-hud-pill act3-nudge-pill" data-editor-id="act3-nudge-pill">
-          <span aria-hidden="true">👆</span>
           <span>Pick the ones you'd actually do</span>
         </div>
       `;
@@ -1369,7 +1358,7 @@ export class Act3Screen {
     switch (this.currentBeat) {
       case 'wait':
         return `
-          <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
+          <button id="act3-btn-beat-advance" class="act3-hud-btn"
                   data-editor-id="act3-btn-beat-advance">Next ▶</button>
         `;
 
@@ -1378,7 +1367,7 @@ export class Act3Screen {
           <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">📋 Look at the chart ➔</button>
+                  data-editor-id="act3-btn-beat-advance">Look at the chart ➔</button>
         `;
 
       case 'report':
@@ -1420,7 +1409,7 @@ export class Act3Screen {
           <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">🚗 Take her home ➔</button>
+                  data-editor-id="act3-btn-beat-advance">Take her home ➔</button>
         `;
 
       case 'home':

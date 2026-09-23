@@ -89,7 +89,7 @@
   --surface-radio-pill: rgba(8, 33, 44, 0.92);
   --color-radio: #06B6D4;        /* NON-TEXT ONLY — border, bolt, glow */
   --color-radio-glow: rgba(6, 182, 212, 0.45);
-  --text-radio: #E0F2FE;         /* on --surface-radio = 15.9 */
+  --text-radio: #E0F2FE;         /* on --surface-radio = 14.48 */
 
   /* Illustration mats — the warm ground behind a framed art plate */
   --surface-art-mat: #F3E4DA;

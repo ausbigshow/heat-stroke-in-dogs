@@ -205,7 +205,6 @@ export class Act0Screen {
         data-editor-id="act0-bubble-${step.id}"
       >
         <div class="speech-bubble-speaker">
-          <span aria-hidden="true">${isTay ? '🐶' : '👩'}</span>
           <span>${step.name}</span>
         </div>
         ${bubbleContent}
@@ -256,9 +255,9 @@ export class Act0Screen {
                 class="act0-hud-btn"
                 data-editor-id="act0-btn-title"
                 title="Return to Title Screen"
-                aria-label="Return to title screen"
+                aria-label="Return to the title screen"
               >
-                <span aria-hidden="true">🏠</span> Title
+                Title
               </button>
               ${audioManager.muteButtonHtml('act0-btn-mute', 'act0-hud-btn')}
             </div>
@@ -290,7 +289,7 @@ export class Act0Screen {
                   title="Begin Act 1: The Lake Trip"
                   aria-label="Begin Act 1: The Lake Trip"
                 >
-                  <span aria-hidden="true">🐾</span> Begin Act 1 <span aria-hidden="true">➔</span>
+                  Begin Act 1 <span aria-hidden="true">➔</span>
                 </button>
               `}
             </div>

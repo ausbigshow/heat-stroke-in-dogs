@@ -1,6 +1,6 @@
 # Design Language — Callie & Tay: Heat Stroke in Dogs
 
-**Status:** authoritative. Version 1.0, 2026-08-31.
+**Status:** authoritative. Version 1.1, 2026-09-22 (v1.0 2026-08-31).
 **Owner:** Workstream C (`design-systems`).
 **Audience:** every agent or human adding a screen, component, or asset to this module.
 
@@ -134,6 +134,13 @@ warm ember "Tay / urgency" family, both hardcoded. They are now named.
 | `--color-water-edge` | `rgba(224,242,254,0.5)` | Lake interactable inset rule |  |
 | `--color-water-glow` | `rgba(125,211,252,0.75)` | Water / canopy invitation glow |  |
 | `--color-food-glow` | `rgba(245,158,11,0.65)` | Solid-object invitation glow |  |
+| `--surface-radio` | `#08212C` | Phone/radio bubble ground (Act 2 clinic call) |  |
+| `--surface-radio-pill` | `rgba(8,33,44,0.92)` | "Calling…" pill ground |  |
+| `--color-radio` | `#06B6D4` | **Non-text only** — radio bubble border, bolt tail |  |
+| `--color-radio-glow` | `rgba(6,182,212,0.45)` | Radio bubble bloom |  |
+| `--text-radio` | `#E0F2FE` | Text on `--surface-radio` | 14.48 ✓ |
+| `--surface-art-mat` | `#F3E4DA` | Warm mat behind a framed art plate (Act 2 checks) |  |
+| `--gum-blanched` | `#F2DCD6` | Capillary-refill blanch — illustration only |  |
 
 **Temperature ramp** (Tay's gauge, §6.8)
 
@@ -202,11 +209,13 @@ Everything else — every colour in every one of the three files — comes from 
 
 | Token | Stack | Use |
 |---|---|---|
-| `--font-family-display` | `'Outfit', 'Nunito', 'Segoe UI', system-ui, sans-serif` | Headings, all UI chrome (pills, buttons, badges, tooltips, labels), **Callie's dialogue**, table headers, `td.tay-term` |
-| `--font-family-body` | `'Plus Jakarta Sans', 'Inter', 'Segoe UI', system-ui, sans-serif` | Running prose, card bodies, table cells, truth-stamp lines, **Tay's dialogue** |
+| `--font-family-display` | `'Outfit', 'Nunito', 'Segoe UI', system-ui, sans-serif` | Headings, all UI chrome (pills, buttons, badges, tooltips, labels), **all speech-bubble dialogue** (§6.3.1), table headers, `td.tay-term` |
+| `--font-family-body` | `'Plus Jakarta Sans', 'Inter', 'Segoe UI', system-ui, sans-serif` | Running prose, card bodies, table cells, truth-stamp lines |
 
-The split is meaningful, not decorative: **Outfit is the module's voice** (systems, labels, Callie
-narrating) and **Plus Jakarta Sans is the read** (facts, body copy, Tay's interior monologue).
+The split is meaningful, not decorative: **Outfit is the module's voice** (systems, labels, every
+character speaking) and **Plus Jakarta Sans is the read** (facts, body copy). v1.1 resolved a
+conflict with §6.3.1: Tay's bubbles were body family in Acts 0–2 and display in Act 3. §6.3.1
+wins — speaker identity is carried by colour, border and stem, never by family.
 Loaded from Google Fonts in `index.html` — Outfit 500/600/700/800, Plus Jakarta Sans 400/500/600/700.
 Weights 800 and 900 render from the nearest available face; keep 900 to short all-caps runs.
 
@@ -220,7 +229,7 @@ Sizes are `rem` at a 16px root. Fluid entries use `clamp()` so a 16:9 card scale
 | Display L | `clamp(1.2rem, 2.2vw, 2rem)` | 500 | Opening subtitle (body family) |
 | Title | `1.5rem` | 800 | Modal titles |
 | Title S | `1.35rem` / `clamp(1rem,1.45vw,1.25rem)` | 800 | Card titles |
-| Dialogue | `clamp(1.02rem, 1.35vw, 1.28rem)` | 600–700 | Speech bubble text |
+| Dialogue | `clamp(1rem, 1.25vw, 1.2rem)` | 600 | Speech bubble text (§6.3.1) |
 | Body | `0.98rem`–`1rem` | 400–500 | Card body, prose |
 | Body S | `clamp(0.82rem, 1.1vw, 0.94rem)` | 400–500 | Table cells, truth-stamp line |
 | UI | `0.92rem`–`0.95rem` | 700 | HUD buttons |
@@ -243,12 +252,13 @@ Decorative or pictorial emoji are not used anywhere in UI copy, labels, ARIA tex
 Icons that genuinely aid recognition belong in the art or as SVG, not as emoji in a text node.
 
 **The narrow exception:** a small closed set of typographic UI glyphs is permitted where it
-carries affordance or state. These four, and no near-variants of them:
+carries affordance or state. These five, and no near-variants of them:
 
 | Glyph | Codepoint | Used for |
 |---|---|---|
 | `➔` | U+2794 | Advance to the next beat — "Report it ➔" |
 | `▶` | U+25B6 | Advance within a beat — "Next ▶" |
+| `◀` | U+25C0 | Go back — "◀ Act 1", "◀ Back" (added v1.1, the mirror of ▶) |
 | `✓` | U+2713 | A completed or correct state |
 | `✕` | U+2715 | Dismiss or close — "✕ Back to Tay" |
 
@@ -256,9 +266,12 @@ The codepoints are listed because the near-variants are the trap: `➡` U+27A1, 
 `✖` U+2716 look almost identical in a proof and are **not** permitted. Copy the glyph from this
 table rather than typing a lookalike, or the module ends up with two visually inconsistent sets.
 
-Nothing beyond these four without a deliberate decision recorded here.
+Nothing beyond these five without a deliberate decision recorded here. Emoji in `console.log`
+developer output are out of scope.
 
-> **Note:** this rule applies module-wide, but Acts 0, 1 and 3 have not yet been swept. It is a forward commitment for those acts rather than a description of current state.
+The v1.1 pass (2026-09-22) swept every act; the rule now describes current state. Where an
+emoji sat in an icon slot, it became a numeral or time in a §6.7 square badge. The mute toggle
+uses inline SVG.
 
 ---
 
@@ -379,9 +392,8 @@ metrics  height 38px, padding 0 1rem, --radius-pill, gap 0.45rem
 shadow   --elev-3
 ```
 
-> **Note.** `--hairline-light` is the rule for new work. The existing `.act1-hud-pill` still
-> carries a hand-tuned `rgba(255,255,255,0.22)` rather than the token's `0.25` — see §2.5.
-> Reconcile it only alongside a deliberate visual pass; do not copy the literal.
+> **Note.** Reconciled in v1.1: `.act1-hud-pill` now uses `--hairline-light` like every other
+> act's pill.
 
 Variants swap ground + border only: `.clock-pill` (`--surface-clock` / `--color-amber-tint` /
 `#FFEDD5` text), `.leads-pill` (`rgba(124,45,18,0.9)` / `#FB923C`), `.leads-pill.all-done` and
@@ -405,6 +417,15 @@ disabled opacity 0.4, cursor not-allowed
 
 **Primary variant** — `.btn-action-primary` (Act 1) / `.btn-start` (Act 0). One per screen, and
 only for the action that advances the story.
+
+**The glyph names the tier (v1.1).** A label ending in `▶` advances *within* a beat ("Next ▶",
+"Check Finished ▶") and is always the standard dark HUD button. A label ending in `➔` advances
+the *story* — starts or finishes a beat or an act — and is always the primary variant. A learner
+can tell how big a step a button takes before reading it.
+
+**Nav labels are identical in every act.** Previous act: `◀ Act N` (aria-label "Return to Act N").
+Step back inside an act: `◀ Back`. Title: `Title`, no glyph (aria-label "Return to the title
+screen").
 
 ```
 ground   --color-heat            /* NOT --color-heat-bright: that fails AA */
@@ -432,7 +453,7 @@ shadow   0 16px 36px -4px rgba(56,36,24,0.28), 0 4px 12px rgba(56,36,24,0.15)
 entrance bubblePop 0.3s --ease-back
 ```
 
-**Anatomy:** `.speech-bubble-speaker` (display, 0.8rem/800, uppercase, +0.06em, uppercase name)
+**Anatomy:** `.speech-bubble-speaker` (display, 0.7rem/700, uppercase, +0.08em — §6.3.1)
 then `.speech-bubble-text`.
 
 ### 6.3.1 Bubble typography (standard)
@@ -465,16 +486,18 @@ Edit Mode's stem handle writes `--stem-right` for `.callie-bubble` and `--stem-l
 other bubble (`js/editor/selection-manager.js`); a new bubble variant that hardcodes `left`/`right`
 will silently swallow the author's saved stem position.
 
-**Tay onomatopoeia format** — Tay does not talk. Her subtitles are a sound then a thought:
+**Tay onomatopoeia format** — Tay does not talk. Her subtitles are a sound, then her thought in
+parentheses (the Act 3 format, adopted module-wide in v1.1):
 
 ```html
 <p class="speech-bubble-text">
-  <span class="tay-onomatopoeia">SNFF SNFF.</span><span class="tay-sub-dialogue">Cold box. Definitely food in there.</span>
+  <span class="tay-onomatopoeia">Sniff!</span> <span class="tay-sub-dialogue">(Cold box. Definitely food in there.)</span>
 </p>
 ```
 
-`.tay-onomatopoeia` is weight 800, `--color-heat`, upright, all-caps, trailing period, one
-`0.2rem` right margin. `.tay-sub-dialogue` is italic, `--color-heat-deep`, inline. Both inline —
+`.tay-onomatopoeia` is weight 800, `--color-heat`, upright, and `text-transform: uppercase` — the
+casing is enforced by CSS so the script can be written naturally. The parentheses are added by
+the template, never typed into the data. `.tay-sub-dialogue` is italic, `--color-heat-deep`, inline. Both inline —
 never a line break between them. On an exit line, add `.is-exit-line` to the bubble: the sub
 dialogue goes italic at 0.9 opacity, reading as trailing off.
 
