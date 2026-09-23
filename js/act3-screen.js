@@ -114,7 +114,7 @@ export class Act3Screen {
       stats: [
         { value: '4×', text: 'Flat-faced breeds (pugs, bulldogs, French bulldogs) get heat illness about 4 times as often.' },
         { value: '80°F', text: 'Past this, think twice. Check the humidity too: panting barely works when the air is already wet.' },
-        { value: '+20°F', text: 'Inside a parked car within 10 minutes. Cracking the windows barely helps.' },
+        { value: '+12°F', text: 'Inside a parked car within 10 minutes. Cracking the windows barely helps.' },
         { value: '2.5×', text: 'Dogs cooled before the drive to the vet are about 2.5 times more likely to survive.' }
       ],
       habitsTitle: 'Before and during the day',
@@ -354,9 +354,9 @@ export class Act3Screen {
         speaker: 'reyes',
         business: 'washing her hands',
         cast: { reyes: 'serious' },
-        text: "You'd think. It's 20 degrees hotter inside within the first 10 minutes. And cracking the windows? That takes it from about 3.4 degrees every 5 minutes to about 3.1. It does <strong>next to nothing</strong>.",
+        text: "You'd think. It's about 12 degrees hotter inside within the first 10 minutes. And cracking the windows? That takes it from about 3.4 degrees every 5 minutes to about 3.1. It does <strong>next to nothing</strong>.",
         stamp: {
-          metric: '+20°F in 10 min',
+          metric: '+12°F in 10 min',
           line: 'Cracking the windows barely moves it: about 3.4°F every 5 minutes becomes about 3.1°F. It does next to nothing.'
         }
       },

@@ -108,7 +108,7 @@ export class Act1Screen {
         exitLine: "Old clues. No hot dog now. Moving on.",
         stamp: {
           metric: '137°F deck, 96°F air',
-          line: "Her paws are four inches off that board. If the back of your hand can't take seven seconds on it, neither can she."
+          line: "Her belly is four inches off that board. If the back of your hand can't take seven seconds on it, neither can she."
         }
       },
       bowl: {
