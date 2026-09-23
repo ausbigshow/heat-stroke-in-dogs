@@ -1226,9 +1226,9 @@ export class Act1Screen {
             Start Investigation ➔
           </button>
         ` : `
-          <button 
-            id="act1-btn-next-step" 
-            class="act1-hud-btn btn-action-primary pulse-btn" 
+          <button
+            id="act1-btn-next-step"
+            class="act1-hud-btn"
             data-editor-id="act1-btn-next-step" aria-label="Next line"
           >
             Next ▶
