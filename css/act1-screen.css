@@ -39,10 +39,9 @@
 
 /* POV Rise Animation (Beat 1H) */
 .act1-viewport-card.pov-raised {
-  transform: perspective(1000px) rotateX(0deg) translateY(-6px);
-  box-shadow: 
-    0 32px 70px -10px rgba(56, 36, 24, 0.38),
-    0 6px 24px rgba(56, 36, 24, 0.15);
+  /* No camera move here any more: the author found the tilt/lift/zoom at the end of the act
+     unnecessary. Same transform as .low-cam so nothing shifts when the class swaps. */
+  transform: perspective(1000px) rotateX(1deg);
 }
 
 /* Background Lake Scene Image */
@@ -56,10 +55,6 @@
   transition: filter 1.8s ease, transform 1.2s ease;
 }
 
-/* POV Raised Zoom/Pan shift */
-.act1-viewport-card.pov-raised .act1-scene-img {
-  transform: scale(1.04) translateY(-1.5%);
-}
 
 /* Overlays Container */
 .act1-overlay-layer {
@@ -571,8 +566,8 @@
 /* Tay, asleep on the grass under the canopy in lateral recumbency */
 .lake-scene-tay {
   position: absolute;
-  top: 66.5%;
-  left: 68%;
+  top: 64%; /* clear of the nav bar's primary button */
+  left: 71%; /* head clear of the canopy's front leg in the canopy-focus camera */
   width: 16%;
   aspect-ratio: 1376 / 768;
   pointer-events: none;
@@ -1753,6 +1748,20 @@
   font-weight: 700;
   color: var(--color-amber-tint);
   white-space: nowrap;
+}
+
+/* Middle column: the plain object behind Tay's name. A row header (th scope="row") for screen
+   readers, styled as body-weight text rather than the uppercase column-header treatment. */
+.case-file-table th.object-term {
+  font-family: var(--font-family-display);
+  font-size: clamp(0.82rem, 1.1vw, 0.94rem);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-on-dark);
+  white-space: nowrap;
+  padding: clamp(0.35rem, 0.8vw, 0.55rem) 0.6rem;
+  border-bottom: 1px solid var(--hairline-light-faint);
 }
 
 /* Lake Row highlighted / set apart per script */

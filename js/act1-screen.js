@@ -739,7 +739,10 @@ export class Act1Screen {
     const isNapping = this.currentBeat === 'nap' || this.currentBeat === 'drift' || this.currentBeat === 'alarm' || this.currentBeat === 'case_file' || this.currentBeat === 'pov_rise';
     const taySleepEl = this.container.querySelector('.lake-scene-tay');
     if (taySleepEl) {
-      taySleepEl.style.zIndex = 10 + 75;
+      // She lies between the canopy's front and back legs. The canopy is one image sorted by
+      // its FRONT feet (78), so at 75 its back leg drew straight across her body. Her head is
+      // placed clear of the front leg (see .lake-scene-tay left), so she can sort above it.
+      taySleepEl.style.zIndex = 10 + 79;
       taySleepEl.hidden = !isNapping;
       if (isNapping) {
         taySleepEl.classList.toggle('tay-entering', !this.tayHasEnteredScene);
@@ -1158,27 +1161,27 @@ export class Act1Screen {
         <table class="case-file-table" data-editor-id="act1-case-file-table">
           <thead>
             <tr>
-              <th>What Tay Called It</th>
-              <th>What It Actually Was (Risk Factor)</th>
+              <th scope="col">What Tay Called It</th>
+              <th scope="col">What It Actually Was</th>
+              <th scope="col">Risk Factor</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td class="tay-term">The Vault</td>
-              <td>Full sun, no shade, 90 minutes — extreme trapped heat<br><span class="truth-stamp-metric">99°F, full sun</span></td>
-            </tr>
-            <tr>
-              <td class="tay-term">High Ground</td>
-              <td>137°F dock wood surface — radiant heat at 4 inches<br><span class="truth-stamp-metric">137°F deck, 96°F air</span></td>
-            </tr>
-            <tr>
-              <td class="tay-term">The Water One</td>
-              <td>Warm sun-baked water — zero hydration since car ride<br><span class="truth-stamp-metric">Warm since noon</span></td>
-            </tr>
-            <tr class="lake-row">
-              <td class="tay-term">The Biggest Bowl</td>
-              <td class="reality-term">The immediate cooling source she never used<br><span class="truth-stamp-metric">72°F water</span></td>
-            </tr>
+            ${[
+              { id: 'cooler', object: 'The cooler', risk: 'Full sun, no shade, 90 minutes — extreme trapped heat' },
+              { id: 'dock', object: 'The dock', risk: '137°F dock wood surface — radiant heat at 4 inches' },
+              { id: 'bowl', object: 'The water bowl', risk: 'Warm sun-baked water — zero hydration since car ride' },
+              { id: 'lake', object: 'The lake', risk: 'The immediate cooling source she never used' }
+            ].map(({ id, object, risk }) => {
+              const lead = this.leadsData[id];
+              const isLake = id === 'lake';
+              return `
+                <tr${isLake ? ' class="lake-row"' : ''}>
+                  <td class="tay-term">${lead.tayName}</td>
+                  <th scope="row" class="object-term">${object}</th>
+                  <td${isLake ? ' class="reality-term"' : ''}>${risk}<br><span class="truth-stamp-metric">${lead.stamp.metric}</span></td>
+                </tr>`;
+            }).join('')}
           </tbody>
         </table>
 
