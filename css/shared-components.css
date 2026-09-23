@@ -143,3 +143,50 @@
 .click-advance :is(button, a, [role="button"], [role="switch"], .act1-hud-bar, .act1-nav-bar) { cursor: auto; }
 .click-advance :is(.act0-hud-bar, .act0-nav-bar, .act2-hud-bar, .act2-nav-bar, .act3-hud-bar, .act3-nav-bar) { cursor: auto; }
 
+
+/* "Click anywhere to continue" at the foot of the newest speech bubble, in every part
+   (added and removed by syncBubbleClickHints in js/shared-ui.js). Moved here from Act 1. */
+.bubble-click-hint {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed rgba(56, 36, 24, 0.18);
+  font-family: var(--font-family-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--palette-brown-light);
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+  transition: opacity 0.2s ease, color 0.2s ease;
+  user-select: none;
+}
+
+.speech-bubble:hover .bubble-click-hint {
+  opacity: 1;
+  color: var(--palette-brown-dark);
+}
+
+.bubble-click-hint .hint-arrow {
+  font-size: 0.68rem;
+  animation: hintArrowBounce 1.2s infinite ease-in-out;
+}
+
+@keyframes hintArrowBounce {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(3px); }
+}
+
+/* On Dana's dark phone bubble the rule and text go light. */
+.phone-radio-bubble .bubble-click-hint {
+  border-top-color: var(--hairline-light);
+  color: var(--text-radio);
+}
+.phone-radio-bubble:hover .bubble-click-hint {
+  color: var(--text-inverse);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bubble-click-hint .hint-arrow { animation: none; }
+}

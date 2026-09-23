@@ -99,3 +99,22 @@ export function actMarkerHtml(actNumber) {
   const label = actNumber === 0 ? 'Introduction' : `Part ${actNumber} of 3`;
   return `<div class="act-marker-pill" data-editor-id="act${actNumber}-hud-act-marker" aria-label="${label}">${text}</div>`;
 }
+
+/**
+ * The "Click anywhere to continue" line at the foot of the newest speech bubble, shown only
+ * while a click on the scene will advance the dialogue (see each act's updateCardAffordance).
+ * Styled once in css/shared-components.css so it is the same in every part.
+ */
+const BUBBLE_HINT_HTML = '<div class="bubble-click-hint" aria-hidden="true"><span>Click anywhere to continue</span><span class="hint-arrow">▶</span></div>';
+
+export function syncBubbleClickHints(card, canAdvance) {
+  if (!card) return;
+  const bubbles = [...card.querySelectorAll('.speech-bubble')];
+  const newest = bubbles[bubbles.length - 1];
+  bubbles.forEach((bubble) => {
+    const hint = bubble.querySelector(':scope > .bubble-click-hint');
+    const want = canAdvance && bubble === newest;
+    if (want && !hint) bubble.insertAdjacentHTML('beforeend', BUBBLE_HINT_HTML);
+    else if (!want && hint) hint.remove();
+  });
+}

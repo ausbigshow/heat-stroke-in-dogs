@@ -40,7 +40,7 @@
 
 import { renderPreservingFocus, focusInto, containFocusIn, releaseFocusContainment } from './a11y-focus.js';
 import { progressStore } from './progress-store.js';
-import { confirmLeave, actMarkerHtml } from './shared-ui.js';
+import { confirmLeave, actMarkerHtml, syncBubbleClickHints } from './shared-ui.js';
 
 export class Act3Screen {
   constructor(app) {
@@ -698,6 +698,7 @@ export class Act3Screen {
     const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
     const hasAdvance = !!(advanceBtn && advanceBtn.offsetParent !== null);
     card.classList.toggle('click-advance', hasAdvance);
+    syncBubbleClickHints(card, hasAdvance);
     if (hasAdvance) {
       card.setAttribute('title', 'Click anywhere to continue');
     } else {

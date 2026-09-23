@@ -1324,39 +1324,6 @@
 }
 
 /* Subtle click-through guidance at the bottom of cold open dialogue */
-.bubble-click-hint {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.35rem;
-  margin-top: 0.6rem;
-  padding-top: 0.4rem;
-  border-top: 1px dashed rgba(56, 36, 24, 0.18);
-  font-family: var(--font-family-body);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--palette-brown-light);
-  letter-spacing: 0.02em;
-  opacity: 0.85;
-  transition: opacity 0.2s ease, color 0.2s ease;
-  user-select: none;
-}
-
-.speech-bubble:hover .bubble-click-hint {
-  opacity: 1;
-  color: var(--palette-brown-dark);
-}
-
-.bubble-click-hint .hint-arrow {
-  font-size: 0.68rem;
-  animation: hintArrowBounce 1.2s infinite ease-in-out;
-}
-
-@keyframes hintArrowBounce {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(3px); }
-}
-
 /* Cold Open Nudge Pill in Navigation Bar */
 .act1-hud-pill.act1-nudge-pill {
   background: var(--surface-hud);

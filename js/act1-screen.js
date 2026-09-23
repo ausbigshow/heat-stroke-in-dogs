@@ -16,7 +16,7 @@
 
 import { renderPreservingFocus, focusInto, containFocusIn, releaseFocusContainment } from './a11y-focus.js';
 import { progressStore } from './progress-store.js';
-import { confirmLeave, actMarkerHtml } from './shared-ui.js';
+import { confirmLeave, actMarkerHtml, syncBubbleClickHints } from './shared-ui.js';
 
 export class Act1Screen {
   constructor(app) {
@@ -773,6 +773,7 @@ export class Act1Screen {
     const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
     const hasAdvance = !!(advanceBtn && advanceBtn.offsetParent !== null);
     card.classList.toggle('click-advance', hasAdvance);
+    syncBubbleClickHints(card, hasAdvance);
     if (hasAdvance) {
       card.setAttribute('title', 'Click anywhere to continue');
     } else {
@@ -894,11 +895,7 @@ export class Act1Screen {
     }
 
     if (step.speaker === 'callie_offscreen') {
-      return this.renderOffscreenCallie(step.text, 'act1-coldopen-callie', isNewLineClass, `
-        <div class="bubble-click-hint" aria-hidden="true">
-          <span>Click anywhere to continue</span>
-          <span class="hint-arrow">▶</span>
-        </div>`);
+      return this.renderOffscreenCallie(step.text, 'act1-coldopen-callie', isNewLineClass, ``);
     }
     return `
       <div 
@@ -913,10 +910,6 @@ export class Act1Screen {
           <span class="tay-onomatopoeia">${step.onomatopoeia}</span>
           <span class="tay-sub-dialogue">(${step.dialogue})</span>
         </p>
-        <div class="bubble-click-hint" aria-hidden="true">
-          <span>Click anywhere to continue</span>
-          <span class="hint-arrow">▶</span>
-        </div>
       </div>
     `;
   }

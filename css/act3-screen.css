@@ -558,6 +558,24 @@
   --stem-left: 24px;
 }
 
+/* While the discharge sheet is up it fills the left of the room, so Dr. Reyes's bubble
+   moves to her upper RIGHT (head ~40% in the handing-over pose), with the base stem on its
+   left end leaning left, down to her. */
+#act3-card:has(.act3-discharge-sheet) .act3-reyes-bubble {
+  right: auto;
+  left: 37.7%;
+  max-width: 32%;
+  --stem-left: 24px;
+}
+#act3-card:has(.act3-discharge-sheet) .act3-reyes-bubble::before {
+  border-left: 6px solid transparent;
+  border-right: 18px solid transparent;
+}
+#act3-card:has(.act3-discharge-sheet) .act3-reyes-bubble::after {
+  border-left: 5px solid transparent;
+  border-right: 15px solid transparent;
+}
+
 /* The recheck swaps sides: Reyes is left of centre (~42.5%), Callie right (~61%). */
 [data-beat="recheck"] .act3-reyes-bubble { right: 54.9%; }
 [data-beat="recheck"] .act3-callie-bubble {
