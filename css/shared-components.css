@@ -95,6 +95,7 @@
 }
 
 .act-marker-pill {
+  white-space: nowrap;
   background: var(--surface-hud);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -117,6 +118,14 @@
   .act-marker-pill {
     height: 32px;
     font-size: 0.78rem;
+  }
+}
+
+/* On a phone the act HUDs are already full; the marker would squeeze every pill onto two
+   lines. Lives here, not in an act file, because this file loads after the act stylesheets. */
+@media (max-width: 480px) {
+  .act-marker-pill {
+    display: none;
   }
 }
 
