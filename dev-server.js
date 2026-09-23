@@ -162,7 +162,7 @@ const server = http.createServer(async (req, res) => {
   // POST /api/save-visual-edits: Surgically persist CSS overrides & git commit
   if (req.method === 'POST' && pathname === '/api/save-visual-edits') {
     try {
-      const { target, cssContent, rulesMap } = await parseBody(req);
+      const { target, cssContent, rulesMap, removedSelectors = [] } = await parseBody(req);
       const targetDesc = target || 'visual adjustments';
       
       const overridesPath = path.join(ROOT_DIR, 'css', 'visual-overrides.css');
@@ -171,16 +171,79 @@ const server = http.createServer(async (req, res) => {
       if (cssContent !== undefined) {
         finalCss = cssContent;
       } else if (rulesMap && typeof rulesMap === 'object') {
-        // Format rulesMap cleanly
-        const blocks = [];
-        blocks.push(`/* Visual Edit Mode Overrides - Last updated: ${new Date().toISOString()} */\n`);
-        for (const [selector, decls] of Object.entries(rulesMap)) {
-          const props = Object.entries(decls)
-            .map(([prop, val]) => `  ${prop}: ${val} !important;`)
-            .join('\n');
-          blocks.push(`${selector} {\n${props}\n}`);
+        let existingCss = '';
+        if (fs.existsSync(overridesPath)) {
+          existingCss = fs.readFileSync(overridesPath, 'utf8');
         }
-        finalCss = blocks.join('\n\n') + '\n';
+
+        const mergedMap = {};
+        const rawBlocks = [];
+        const existingBlocks = existingCss.split(/(?:\r?\n){2,}/);
+
+        for (const block of existingBlocks) {
+          if (!block.trim()) continue;
+          if (block.startsWith('/* Visual Edit Mode Overrides')) continue;
+          
+          const match = block.trim().match(/^(\[data-editor-id="[^"]+"\])\s*\{([\s\S]*?)\}$/);
+          if (match) {
+            const selector = match[1];
+            const body = match[2];
+            const decls = {};
+            let parseable = true;
+            const lines = body.split(';');
+            for (const line of lines) {
+               const l = line.trim();
+               if (!l) continue;
+               const propMatch = l.match(/^([^:]+):\s*(.*?)(?:\s*!important)?$/);
+               if (propMatch) {
+                 decls[propMatch[1].trim()] = propMatch[2].trim();
+               } else {
+                 parseable = false;
+                 break;
+               }
+            }
+            if (parseable) {
+               mergedMap[selector] = decls;
+            } else {
+               rawBlocks.push(block.trim());
+            }
+          } else {
+            rawBlocks.push(block.trim());
+          }
+        }
+
+        // Check if there are actual changes
+        if (Object.keys(rulesMap).length === 0 && removedSelectors.length === 0) {
+          finalCss = existingCss;
+        } else {
+          // Apply removals
+          for (const sel of removedSelectors) {
+            delete mergedMap[sel];
+          }
+
+          // Apply additions/updates
+          for (const [selector, decls] of Object.entries(rulesMap)) {
+            mergedMap[selector] = decls;
+          }
+
+          const outBlocks = [];
+          outBlocks.push(`/* Visual Edit Mode Overrides - Last updated: ${new Date().toISOString()} */`);
+          
+          for (const rb of rawBlocks) {
+            outBlocks.push(rb);
+          }
+          
+          const sortedSelectors = Object.keys(mergedMap).sort();
+          for (const selector of sortedSelectors) {
+            const decls = mergedMap[selector];
+            const props = Object.entries(decls)
+              .map(([prop, val]) => `  ${prop}: ${val} !important;`)
+              .join('\n');
+            outBlocks.push(`${selector} {\n${props}\n}`);
+          }
+
+          finalCss = outBlocks.join('\n\n') + '\n';
+        }
       }
 
       // Ensure css directory exists

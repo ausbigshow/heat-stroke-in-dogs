@@ -19,8 +19,17 @@ export class SaveManager {
     // custom properties driving the palette/shade-drift animation), and sweeping those
     // up here would freeze them as permanent overrides on every unrelated Save.
     this.state.modifiedStyles.forEach((decls, id) => {
-      if (decls && Object.keys(decls).length > 0) {
-        rulesMap[`[data-editor-id="${id}"]`] = { ...decls };
+      if (!decls) return;
+      const validDecls = {};
+      let hasValid = false;
+      for (const [prop, val] of Object.entries(decls)) {
+        if (val !== '' && val !== null && val !== undefined) {
+          validDecls[prop] = val;
+          hasValid = true;
+        }
+      }
+      if (hasValid) {
+        rulesMap[`[data-editor-id="${id}"]`] = validDecls;
       }
     });
 
@@ -28,13 +37,16 @@ export class SaveManager {
       ? `element #${this.state.selectedElement.getAttribute('data-editor-id')}` 
       : 'course visual layout';
 
+    const removedSelectors = Array.from(this.state.removedOverrides).map(id => `[data-editor-id="${id}"]`);
+
     try {
       const response = await fetch('/api/save-visual-edits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           target: targetDesc,
-          rulesMap
+          rulesMap,
+          removedSelectors
         })
       });
 
@@ -44,6 +56,7 @@ export class SaveManager {
 
       const result = await response.json();
       if (result.success) {
+        this.state.removedOverrides.clear();
         this.state.setDirty(false);
         this.showToast('Saved to source & committed to Git', 'success');
         return true;
@@ -66,8 +79,9 @@ export class SaveManager {
       el.style.removeProperty(el.style[i]);
     }
 
-    if (id && this.state.modifiedStyles.has(id)) {
+    if (id) {
       this.state.modifiedStyles.delete(id);
+      this.state.removedOverrides.add(id);
       this.state.setDirty(true);
     }
 
