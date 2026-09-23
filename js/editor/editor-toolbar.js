@@ -243,10 +243,12 @@ export class EditorToolbar {
       }
     });
 
-    // Reset element
+    // Reset element. The method lives on the save manager, not the selection manager —
+    // clearing an element's overrides is a change that has to be recorded for the next
+    // Save, not just wiped off the DOM.
     this.toolbar.querySelector('#btn-reset-element').addEventListener('click', () => {
       if (this.state.selectedElement) {
-        this.selection.resetElement(this.state.selectedElement);
+        this.saveManager.resetSelectedElement();
       }
     });
 
@@ -427,7 +429,7 @@ export class EditorToolbar {
       if (e.altKey && (e.key === 'r' || e.key === 'R')) {
         e.preventDefault();
         if (this.state.selectedElement) {
-          this.selection.resetElement(this.state.selectedElement);
+          this.saveManager.resetSelectedElement();
         }
         return;
       }
