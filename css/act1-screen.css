@@ -1701,11 +1701,11 @@
 }
 .case-file-card::-webkit-scrollbar-track {
   background: rgba(15, 23, 42, 0.6);
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
 }
 .case-file-card::-webkit-scrollbar-thumb {
   background: var(--color-info-mid);
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
 }
 
 .case-file-header {
