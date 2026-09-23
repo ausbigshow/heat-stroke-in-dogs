@@ -504,29 +504,33 @@
   scrollbar-width: thin;
 }
 
+/* Stems face the speaker. Each bubble is anchored by the edge NEAREST its speaker, with
+   the stem at that end leaning in, so the tip lands over the speaker's head (tip = 34px in
+   from the anchored edge for the base stems). Head positions per beat were measured at
+   1440x900 (percent of the card width) and are noted beside each rule.
+   - Bubble up-LEFT of the speaker: right-anchored, base Callie stem (right end, leans right).
+   - Bubble up-RIGHT of the speaker: left-anchored, base Tay stem (left end, leans left).
+   Long lines grow away from the speaker, never over them. */
+
+/* Callie: up-left of her, stem on the right leaning right (the §6.3 base stem). */
 .scene-clinic .act3-callie-bubble,
 .scene-home .act3-callie-bubble {
-  left: 8%;
-  right: auto;
-  max-width: 34%;
-  --stem-right: 72%;
-}
-.scene-clinic .act3-callie-bubble::before,
-.scene-home .act3-callie-bubble::before {
-  border-left: 6px solid transparent;
-  border-right: 18px solid transparent;
-}
-.scene-clinic .act3-callie-bubble::after,
-.scene-home .act3-callie-bubble::after {
-  border-left: 4px solid transparent;
-  border-right: 15px solid transparent;
-}
-
-.scene-clinic .act3-reyes-bubble {
-  right: 8%;
   left: auto;
-  max-width: 36%;
-  --stem-left: 74%;
+  right: 61%;            /* verdict / report: her head at ~36.4% */
+  max-width: 34%;
+  --stem-right: 28px;
+}
+[data-beat="tayReturn"] .act3-callie-bubble { right: 75.3%; max-width: 23%; }   /* on the floor, head ~22.1% */
+[data-beat="nextTime"] .act3-callie-bubble { right: 76.9%; max-width: 22%; }    /* head ~20.5% */
+.scene-home .act3-callie-bubble { right: 69%; max-width: 26%; }                 /* clear of her hair; she is to the right */
+
+/* Dr. Reyes: up-left of her too (the room opens that way), so her stem mirrors the base:
+   on the right end, leaning right. */
+.scene-clinic .act3-reyes-bubble {
+  left: auto;
+  right: 26.4%;          /* verdict: her head at ~71% */
+  max-width: 34%;
+  --stem-left: calc(100% - 52px);
 }
 .scene-clinic .act3-reyes-bubble::before {
   border-left: 18px solid transparent;
@@ -534,50 +538,40 @@
 }
 .scene-clinic .act3-reyes-bubble::after {
   border-left: 15px solid transparent;
-  border-right: 4px solid transparent;
+  border-right: 5px solid transparent;
 }
+[data-beat="report"] .act3-reyes-bubble,
+[data-beat="nextTime"] .act3-reyes-bubble { right: 28%; }       /* head ~69.4% */
+[data-beat="tayReturn"] .act3-reyes-bubble { right: 28.9%; }    /* head ~68.5% */
 
-.scene-clinic .act3-tay-bubble,
-.scene-home .act3-tay-bubble {
-  left: 33%;
+/* Tay: up-right of her, stem on the left leaning left (the §6.3 base stem). */
+.scene-clinic .act3-tay-bubble {
+  left: 39.5%;           /* tayReturn: her head at ~41.8% */
   right: auto;
-  max-width: 34%;
-  --stem-left: 46%;
+  max-width: 23%;        /* stops short of Dr. Reyes (from ~64%) */
+  --stem-left: 24px;
+}
+.scene-home .act3-tay-bubble {
+  left: 56%;             /* just right of her face (~52%) on the couch */
+  right: auto;
+  max-width: 30%;
+  --stem-left: 24px;
 }
 
-/* Beat-specific bubble positioning */
-[data-beat="verdict"] .act3-callie-bubble,
-[data-beat="report"] .act3-callie-bubble {
-  left: 14%;
-  --stem-right: 60%;
-}
-[data-beat="verdict"] .act3-reyes-bubble,
-[data-beat="report"] .act3-reyes-bubble {
-  right: 14%;
-  --stem-left: 62%;
-}
-
-[data-beat="tayReturn"] .act3-callie-bubble,
-[data-beat="nextTime"] .act3-callie-bubble {
-  left: 2%;
-}
-[data-beat="tayReturn"] .act3-tay-bubble,
-[data-beat="nextTime"] .act3-tay-bubble {
-  left: 26%;
-  --stem-left: 46%;
-}
-[data-beat="tayReturn"] .act3-reyes-bubble,
-[data-beat="nextTime"] .act3-reyes-bubble {
-  right: 14%;
-}
-
+/* The recheck swaps sides: Reyes is left of centre (~42.5%), Callie right (~61%). */
+[data-beat="recheck"] .act3-reyes-bubble { right: 54.9%; }
 [data-beat="recheck"] .act3-callie-bubble {
-  left: auto;
-  right: 16%;
-  --stem-right: 22%;
+  right: auto;
+  left: 58.7%;
+  --stem-right: calc(100% - 48px);   /* stem at the LEFT end... */
 }
-[data-beat="recheck"] .act3-reyes-bubble {
-  right: 40%;
+[data-beat="recheck"] .act3-callie-bubble::before {   /* ...leaning left, toward her */
+  border-left: 6px solid transparent;
+  border-right: 18px solid transparent;
+}
+[data-beat="recheck"] .act3-callie-bubble::after {
+  border-left: 4px solid transparent;
+  border-right: 15px solid transparent;
 }
 
 /* The Act 0 callback. Written for the learner — recognition is the payoff, so it names
