@@ -525,6 +525,13 @@ teal-dark text, `--color-info-strong` label, stem via `--stem-left` like Tay's. 
 padding, radius, shadow and `bubblePop` entrance as every other bubble. Her stage direction
 rides the label as `.act3-business`.
 
+**Aimed stems (Act 3).** The Act 3 cast moves between beats, so a fixed stem pointed at
+empty floor. `aimBubbleStems()` measures the speaker's face (per-image face points in
+`ACT3_FACE_POINTS`; fixed points for the single home painting) and draws a slanted comic
+tail from the bubble's bottom edge toward it (`.is-aimed`, `--aim-base/-dx/-len`). It
+overrides `--stem-left/--stem-right` there, so Edit Mode moves the bubble and the stem
+re-aims itself on the next render. Never put `overflow: hidden` on a bubble: it clips the stem.
+
 **Every bubble** (all speakers, all acts) enters with `bubblePop 0.3s --ease-back`, and no
 dialogue line is ever wrapped in quote marks — in a bubble, a card or a heading (v1.1 audit).
 

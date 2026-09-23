@@ -2568,3 +2568,40 @@
     animation-duration: 0.01s !important;
   }
 }
+
+/* ---- Aimed stems (Part 3) ------------------------------------------------
+   In Part 3 the cast moves between beats and the bubbles sit in a fixed band above the
+   heads, so a fixed stem pointed at empty floor. aimBubbleStems() in act3-screen.js
+   measures the speaker's face and sets, per bubble:
+     --aim-base  x of the stem's root along the bubble's bottom edge (px from its left)
+     --aim-dx    how far the tip leans left/right of the root (px)
+     --aim-len   stem length (px)
+     --aim-edge / --aim-fill  the bubble's own border and fill colours
+   The stem is a slanted comic tail: an outer triangle in the border colour and an inner one
+   in the fill colour laid over it, which also erases the bubble's bottom border under the
+   root so the join is seamless. Without .is-aimed (no speaker found) the §6.3 stems apply. */
+#screen-act3 .speech-bubble.is-aimed::before,
+#screen-act3 .speech-bubble.is-aimed::after {
+  content: '';
+  position: absolute;
+  top: calc(100% - 1px);
+  bottom: auto;
+  right: auto;
+  left: calc(var(--aim-base, 40px) - 120px);
+  width: 240px;
+  height: var(--aim-len, 26px);
+  border: 0;
+  pointer-events: none;
+}
+#screen-act3 .speech-bubble.is-aimed::before {
+  background: var(--aim-edge);
+  clip-path: polygon(calc(120px - 13px) 0, calc(120px + 13px) 0, calc(120px + var(--aim-dx, 0px)) 100%);
+  z-index: 1;
+}
+#screen-act3 .speech-bubble.is-aimed::after {
+  top: calc(100% - 4px);
+  height: calc(var(--aim-len, 26px) - 1px);
+  background: var(--aim-fill);
+  clip-path: polygon(calc(120px - 9px) 0, calc(120px + 9px) 0, calc(120px + var(--aim-dx, 0px) * 0.82) calc(100% - 6px));
+  z-index: 2;
+}
