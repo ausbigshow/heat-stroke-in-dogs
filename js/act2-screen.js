@@ -1652,6 +1652,13 @@ export class Act2Screen {
     const s = this.getTransportStateStrings();
     const acInviteClass = !this.acInteracted && !this.arriving ? 'needs-invite' : '';
     const winInviteClass = !this.winInteracted && !this.arriving ? 'needs-invite' : '';
+    // Wind streaks fanning out of each vent (the vent sits at the top centre of the box).
+    // Thin dashes travelling along curved lines read as moving air; soft blobs read as fog.
+    const airLines = [
+      'M100 10 C 92 50, 60 70, 62 110 S 34 168, 28 196',
+      'M100 10 C 104 55, 92 100, 100 140 S 108 180, 100 198',
+      'M100 10 C 108 50, 140 70, 138 110 S 166 168, 172 196',
+    ].map((d, i) => `<path class="act2-air-line" d="${d}" pathLength="100" style="animation-delay: ${(-0.37 * i).toFixed(2)}s" />`).join('');
 
     return `
       <div class="${s.sceneClass}" data-editor-id="act2-transport-scene">
@@ -1659,10 +1666,11 @@ export class Act2Screen {
         <div class="act2-car-sway-container">
           <img src="Assets/Image/Car-FPV-Interior.jpg" alt="" class="act2-scene-img act2-car-plate" style="z-index: 1;" />
           <div class="act2-exterior-motion" style="z-index: 2;">
+            <!-- The centre line is a strip lying flat on the road in CSS 3D, so every dash
+                 shrinks toward the vanishing point by true perspective and moves at one steady
+                 road speed. -->
             <div class="act2-lane-dashes">
-              <div class="act2-dash"></div>
-              <div class="act2-dash" style="animation-delay: calc(var(--road-dash-cadence) * -0.33)"></div>
-              <div class="act2-dash" style="animation-delay: calc(var(--road-dash-cadence) * -0.66)"></div>
+              <div class="act2-road-plane"><div class="act2-road-stripe"></div></div>
             </div>
             <div class="act2-roadside-drift">
               <div class="act2-drift act2-drift-left"></div>
@@ -1687,9 +1695,9 @@ export class Act2Screen {
             </div>
 
             <div class="act2-airflow-layer">
-              <div class="act2-stream act2-stream-1"></div>
-              <div class="act2-stream act2-stream-2"></div>
-              <div class="act2-stream act2-stream-3"></div>
+              <svg class="act2-stream act2-stream-1" viewBox="0 0 200 200">${airLines}</svg>
+              <svg class="act2-stream act2-stream-2" viewBox="0 0 200 200">${airLines}</svg>
+              <svg class="act2-stream act2-stream-3" viewBox="0 0 200 200">${airLines}</svg>
             </div>
             <div class="act2-ac-tint"></div>
           </div>
