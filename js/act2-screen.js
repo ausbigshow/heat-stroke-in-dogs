@@ -38,6 +38,11 @@ import { renderPreservingFocus, focusInto, containFocusIn, releaseFocusContainme
 import { progressStore } from './progress-store.js';
 import { confirmLeave, actMarkerHtml } from './shared-ui.js';
 
+// How long the air has to run over Tay before the clinic turn-in is offered. The drive is
+// the cooling, not a formality: the arrive button stays hidden until she has had this long
+// with the AC on and the windows cracked. Keep in step with --cool-delay in act2-screen.css.
+const COOL_DELAY_MS = 6000;
+
 export class Act2Screen {
   constructor(app) {
     this.app = app;
@@ -91,6 +96,10 @@ export class Act2Screen {
     this.arriving = false;
     this.arriveTimeout = null;
     this.skipListener = null;
+    // True once the air has run over her for COOL_DELAY_MS. Transient, never saved: a
+    // resumed drive runs the cooling again.
+    this.cooled = false;
+    this.coolTimer = null;
     // Pre-paid off by the phone call in Beat 2A — the learner does not have to do this.
     this.calledAhead = true;
 
@@ -330,6 +339,10 @@ export class Act2Screen {
   unmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
     this.stopElapsedClock();
+    if (this.coolTimer) {
+      clearTimeout(this.coolTimer);
+      this.coolTimer = null;
+    }
     if (this.arriveTimeout) {
       clearTimeout(this.arriveTimeout);
       this.arriveTimeout = null;
@@ -1630,11 +1643,30 @@ export class Act2Screen {
     `;
   }
 
+  // Starts the cooling clock when both air sources are on; stops and resets it the moment
+  // either goes off, so the learner cannot bank cooling time and then shut the air.
+  syncCoolTimer() {
+    const airOn = this.acOn && this.windowsOpen;
+    if (!airOn || this.currentBeat !== 'transport') {
+      if (this.coolTimer) clearTimeout(this.coolTimer);
+      this.coolTimer = null;
+      if (!airOn) this.cooled = false;
+      return;
+    }
+    if (this.cooled || this.coolTimer) return;
+    this.coolTimer = setTimeout(() => {
+      this.coolTimer = null;
+      this.cooled = true;
+      this.patchTransportControls();
+    }, COOL_DELAY_MS);
+  }
+
   getTransportStateStrings() {
-    const ready = this.acOn && this.windowsOpen;
+    const airOn = this.acOn && this.windowsOpen;
+    const ready = airOn && this.cooled;
     return {
       ready,
-      sceneClass: `act2-transport-scene ${this.acOn ? 'ac-on' : ''} ${this.windowsOpen ? 'windows-open' : ''}`,
+      sceneClass: `act2-transport-scene ${this.acOn ? 'ac-on' : ''} ${this.windowsOpen ? 'windows-open' : ''} ${airOn && !this.cooled ? 'is-cooling' : ''}`,
       acAria: this.acOn ? 'Air conditioning, currently on' : 'Air conditioning, currently off',
       acPillText: `AC · ${this.acOn ? 'ON' : 'OFF'}`,
       acChecked: this.acOn ? 'true' : 'false',
@@ -1643,7 +1675,9 @@ export class Act2Screen {
       winChecked: this.windowsOpen ? 'true' : 'false',
       hintText: ready
         ? 'Air is moving over her, she is on the cool towel, and they are expecting you.'
-        : 'She is on the cool towel. Now get air moving over her.'
+        : airOn
+          ? 'Air is moving over her now. Give it a little time to carry the heat off her.'
+          : 'She is on the cool towel. Now get air moving over her.'
     };
   }
 
@@ -1659,6 +1693,10 @@ export class Act2Screen {
       'M100 10 C 104 55, 92 100, 100 140 S 108 180, 100 198',
       'M100 10 C 108 50, 140 70, 138 110 S 166 168, 172 196',
     ].map((d, i) => `<path class="act2-air-line" d="${d}" pathLength="100" style="animation-delay: ${(-0.37 * i).toFixed(2)}s" />`).join('');
+    // Streak rays for the window gap: [y where it enters at the pillar, y where it leaves
+    // at the left edge]. Staggered delays so the gusts never march in step.
+    const windLines = [[21, -200], [58, -140], [95, -80], [132, -20], [169, 40], [206, 100], [242, 160], [279, 220], [316, 280], [353, 340], [390, 400], [426, 460], [463, 520], [500, 580], [537, 640], [574, 700], [610, 760]]
+      .map(([a, b], i) => `<path class="act2-wind-line" d="M440 ${a} L-40 ${b}" pathLength="100" style="animation-delay: ${(-0.23 * ((i * 7) % 11)).toFixed(2)}s" />`).join('');
 
     return `
       <div class="${s.sceneClass}" data-editor-id="act2-transport-scene">
@@ -1680,10 +1718,40 @@ export class Act2Screen {
           </div>
           
           <div class="act2-car-overlays" aria-hidden="true" style="pointer-events: none; z-index: 3;">
-            <img src="Assets/Image/Car-Mirror-Tay.png" alt="Tay lying on her side on the back seat on a cool wet towel spread flat underneath her, panting" class="act2-rear-view-mirror" />
+            <!-- The mirror glass: the back seat seen from the front, with Tay drawn over it as
+                 her own layer so her flank can heave with the same panting as every other
+                 shot of her. The nested svg is her own 1376x768 art space, so the shared
+                 heave transform-origin lands on her flank here too. -->
+            <svg class="act2-rear-view-mirror" viewBox="0 0 1036 290" preserveAspectRatio="xMidYMid slice"
+                 data-editor-id="act2-art-rear-view-mirror" role="img"
+                 aria-label="In the rear-view mirror, Tay lying on her side on the back seat on a cool wet towel, panting">
+              <defs>
+                <clipPath id="act2-mirror-tay-abdomen-clip">
+                  <path d="M936,245 C856,215 696,215 616,220 C606,300 616,420 626,560 C696,565 856,565 926,545 C936,460 941,330 936,245 Z" />
+                </clipPath>
+              </defs>
+              <image href="Assets/Image/Car-Mirror-Cabin.png" x="0" y="0" width="1036" height="290" />
+              <svg x="281.2" y="58.7" width="534" height="298.1" viewBox="0 0 1376 768" overflow="visible">
+                <image href="Assets/Image/Tay-LayingLateralPanting.png" x="0" y="0" width="1376" height="768" />
+                <g class="act2-tay-labored-abdomen tay-labored-abdomen">
+                  <image href="Assets/Image/Tay-LayingLateralPanting.png" x="0" y="0" width="1376" height="768" clip-path="url(#act2-mirror-tay-abdomen-clip)" />
+                </g>
+              </svg>
+            </svg>
             
             <div class="act2-window-aperture">
-              <div class="act2-wind-gap"></div>
+              <!-- Wind through the cracked gap: streaks running back along the car. Each line
+                   sits on a ray from the road's vanishing point (lines along the car's length
+                   converge there), clipped to the band the lowered glass opens up. Units are
+                   the painting's own pixels inside the aperture box (1920x1080 source). -->
+              <svg class="act2-wind-gap" viewBox="0 0 414.7 842.4" preserveAspectRatio="none">
+                <defs>
+                  <clipPath id="act2-window-gap-clip">
+                    <polygon points="0,15 100,48 190,98 240,148 280,225 330,318 380,400 410,475 412,677 410,677 380,602 330,520 280,427 240,350 190,300 100,250 0,217" />
+                  </clipPath>
+                </defs>
+                <g clip-path="url(#act2-window-gap-clip)">${windLines}</g>
+              </svg>
               <div class="act2-window-pane"></div>
             </div>
 
@@ -1713,14 +1781,15 @@ export class Act2Screen {
 
         <div class="act2-transport-hud">
           <div class="act2-transport-hud-msg">Cool her on the way. Don't just drive.</div>
-          <div class="act2-transport-hud-hint" id="act2-transport-hint">${s.hintText}</div>
+          <div class="act2-transport-hud-hint" id="act2-transport-hint" aria-live="polite">${s.hintText}</div>
+          <div class="act2-cool-meter" aria-hidden="true"><div class="act2-cool-meter-fill"></div></div>
           <div class="act2-transport-hud-prepaid">
             Clinic called ahead — already done, Dana has been on the line since the lake
           </div>
         </div>
 
         <div class="act2-transport-footer">
-          <button id="act2-btn-arrive" class="act2-hud-btn btn-action-primary ${s.ready && !this.arriving ? 'pulse-btn' : ''}" data-editor-id="act2-btn-arrive" ${s.ready && !this.arriving ? '' : 'disabled="true"'}>
+          <button id="act2-btn-arrive" class="act2-hud-btn btn-action-primary ${s.ready && !this.arriving ? 'pulse-btn' : ''}" data-editor-id="act2-btn-arrive" ${s.ready || this.arriving ? '' : 'hidden'}>
             Pull in at the clinic ➔
           </button>
         </div>
@@ -1729,6 +1798,7 @@ export class Act2Screen {
   }
 
   patchTransportControls() {
+    this.syncCoolTimer();
     const s = this.getTransportStateStrings();
     const scene = this.container.querySelector('.act2-transport-scene');
     if (scene) {
@@ -1773,12 +1843,10 @@ export class Act2Screen {
     
     const arrive = this.container.querySelector('#act2-btn-arrive');
     if (arrive) {
-      if (s.ready && !this.arriving) {
-        arrive.removeAttribute('disabled');
-        arrive.classList.add('pulse-btn');
-      } else {
-        arrive.setAttribute('disabled', 'true');
-      }
+      // Hidden, not disabled, until the cooling has run: a greyed button would read as
+      // "pull in now" the moment the air goes on. During the arrival it stays up as skip.
+      arrive.hidden = !(s.ready || this.arriving);
+      arrive.classList.toggle('pulse-btn', s.ready && !this.arriving);
     }
     if (this.hasProgress()) this.saveProgress();
   }
@@ -2027,6 +2095,7 @@ export class Act2Screen {
       this.patchTransportControls(); 
     });
     on('#act2-btn-arrive', () => this.handleArriveClick());
+    if (this.currentBeat === 'transport') this.syncCoolTimer();
     // Act 3's central claim is that every number lands on a decision the learner already
     // made, so the playthrough travels with them. Without this the survival payoff has to
     // fall back to its neutral variant. See Act3Screen.applyHandoff().
@@ -2042,6 +2111,7 @@ export class Act2Screen {
       this.skipArrival();
       return;
     }
+    if (!(this.acOn && this.windowsOpen && this.cooled)) return;
     this.arriving = true;
     
     this.patchTransportControls();
@@ -2061,9 +2131,10 @@ export class Act2Screen {
       });
     }
 
+    // Matches clinicApproach (5s) plus a short hold once the car has pulled in.
     this.arriveTimeout = setTimeout(() => {
       this.finishArrival();
-    }, 2500);
+    }, 5600);
   }
 
   skipArrival() {

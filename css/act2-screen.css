@@ -1847,10 +1847,12 @@
   --ac-top: 82.9%;
   --ac-size: 7%;
 
-  --mirror-left: 65.1%;
-  --mirror-top: 11.5%;
-  --mirror-width: 27.0%;
-  --mirror-height: 13.5%;
+  /* The painted mirror's glass, measured off Car-FPV-Interior.jpg (x 1257-1762,
+     y 118-266 of 1920x1080), inset a hair so the image never covers the frame. */
+  --mirror-left: 65.6%;
+  --mirror-top: 11.2%;
+  --mirror-width: 26.1%;
+  --mirror-height: 13.4%;
 
   /* The driver's side window, measured off Car-FPV-Interior.jpg: the box is its bounding
      rectangle, --win-shape its outline inside that box (frame edge, quarter-light post,
@@ -1890,7 +1892,11 @@
   top: var(--mirror-top);
   width: var(--mirror-width);
   height: var(--mirror-height);
-  object-fit: cover;
+  overflow: hidden;
+  /* the glass's corners: small at the top, the bottom-right sweeps round */
+  border-radius: 4% 4% 14% 5% / 14% 14% 30% 16%;
+  /* Clips everything drawn inside, Tay's heaving flank included, to the glass. */
+  clip-path: inset(0 round 4% 4% 14% 5% / 14% 14% 30% 16%);
   z-index: 10;
 }
 
@@ -1913,17 +1919,34 @@
   clip-path: var(--win-shape);
   pointer-events: none;
 }
-/* Behind the glass: only visible through the gap once the glass drops. */
+/* Wind streaks in the gap the lowered glass opens (clipped to that band in the SVG).
+   They fade in once the glass is on its way down. */
 .act2-wind-gap {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, var(--hairline-light), transparent);
-  background-size: 200% 100%;
+  width: 100%;
+  height: 100%;
   opacity: 0;
+  transition: opacity 0.3s ease;
 }
 .act2-transport-scene.windows-open .act2-wind-gap {
   opacity: 1;
-  animation: windSpeed 0.6s linear infinite;
+  transition-delay: 0.35s;
+}
+.act2-wind-line {
+  fill: none;
+  stroke: var(--hairline-light-strong);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 9 23;
+  stroke-dashoffset: 32;
+}
+.act2-transport-scene.windows-open .act2-wind-line {
+  animation: act2WindStreak 0.55s linear infinite;
+}
+@keyframes act2WindStreak {
+  from { stroke-dashoffset: 32; }
+  to   { stroke-dashoffset: 0; }
 }
 .act2-window-pane {
   position: absolute;
@@ -1947,10 +1970,6 @@
 .act2-transport-scene.windows-open .act2-window-pane {
   transform: translateY(var(--win-drop));
 }
-@keyframes windSpeed {
-  0% { background-position: 200% 0; }
-  100% { background-position: -100% 0; }
-}
 
 /* --- Task A: AC knob turns --- */
 .act2-ac-knob-well {
@@ -1968,10 +1987,11 @@
   transform-origin: center;
   transform-box: fill-box;
   transform: rotate(-135deg);
-  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
+/* On is full blast: the knob sweeps all the way round to max. */
 .act2-transport-scene.ac-on .act2-ac-knob-svg {
-  transform: rotate(-15deg);
+  transform: rotate(135deg);
 }
 
 /* --- Task C: Airflow --- */
@@ -2129,7 +2149,7 @@
 .act2-transport-scene.is-arriving .act2-lane-dashes,
 .act2-transport-scene.is-arriving .act2-roadside-drift {
   opacity: 0;
-  transition: opacity 2.5s ease-out;
+  transition: opacity 4s ease-out;
 }
 
 .act2-clinic-approach {
@@ -2140,13 +2160,17 @@
   transform: translate(-50%, -50%) scale(0);
   opacity: 0;
 }
+/* A steady pull-in that eases to a stop with the building filling about half the
+   windshield. It used to grow 15x in 2.5s and read as driving into the wall. Keep the
+   duration in step with the arrive timeout in act2-screen.js (5s + a short hold). */
 .act2-transport-scene.is-arriving .act2-clinic-approach {
-  animation: clinicApproach 2.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  animation: clinicApproach 5s cubic-bezier(0.45, 0, 0.35, 1) forwards;
 }
+/* Ends a touch low so the sign sits clear of the rear-view mirror. */
 @keyframes clinicApproach {
   0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-  10% { opacity: 1; }
-  100% { transform: translate(-50%, -30%) scale(15); opacity: 1; }
+  8% { opacity: 1; }
+  100% { transform: translate(-50%, -24%) scale(5.6); opacity: 1; }
 }
 
 .act2-diegetic-btn {
@@ -2167,8 +2191,42 @@
   border-radius: var(--radius-sm);
 }
 
-.act2-diegetic-btn.needs-invite {
-  animation: act2HotspotInvite 2.2s ease-in-out infinite;
+/* Each control carries a visible ring around the drawn control (the knob, the switch
+   plate) so the learner can find it: --color-food-glow at rest, brighter amber with a glow
+   on hover and focus. The untouched ring breathes (the invite) until first use. */
+.act2-diegetic-btn::before {
+  content: '';
+  position: absolute;
+  border: 2.5px solid var(--color-food-glow);
+  pointer-events: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.act2-diegetic-btn:hover::before,
+.act2-diegetic-btn:focus-visible::before {
+  border-color: var(--color-amber-tint-2);
+  box-shadow: 0 0 0 3px var(--color-food-glow), 0 0 18px var(--color-food-glow);
+}
+.act2-diegetic-btn:disabled::before { opacity: 0; }
+/* The knob: a circle on its centre (79.8%, 82.9% of the scene) inside the AC hit box. */
+#act2-toggle-ac::before {
+  left: 52.3%;
+  top: 66.2%;
+  width: 57.6%;
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+/* The switch plate on the door. */
+#act2-toggle-windows::before {
+  inset: 4% 2% 3% 2%;
+  border-radius: var(--radius-md);
+}
+.act2-diegetic-btn.needs-invite::before {
+  animation: act2ControlInvite 2.2s ease-in-out infinite;
+}
+@keyframes act2ControlInvite {
+  0%, 100% { box-shadow: 0 0 0 0 var(--color-food-glow); }
+  50% { box-shadow: 0 0 0 10px transparent; }
 }
 
 #act2-toggle-ac {
@@ -2236,6 +2294,42 @@
   margin-bottom: 0.8rem;
   line-height: 1.4;
 }
+/* Fills over the cooling delay (COOL_DELAY_MS in act2-screen.js) while the air runs. */
+.act2-transport-scene { --cool-delay: 6s; }
+.act2-cool-meter {
+  display: none;
+  height: 6px;
+  margin: -0.3rem 0 0.8rem;
+  border-radius: var(--radius-pill);
+  background: rgba(56, 36, 24, 0.12);
+  overflow: hidden;
+}
+.act2-cool-meter-fill {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--color-info-mid);
+}
+.act2-transport-scene.is-cooling .act2-cool-meter { display: block; }
+.act2-transport-scene.is-cooling .act2-cool-meter-fill {
+  animation: act2CoolFill var(--cool-delay) linear forwards;
+}
+@keyframes act2CoolFill {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+#act2-btn-arrive:not([hidden]) {
+  animation: act2ArriveIn 0.45s var(--ease-out-expo) both;
+}
+/* The id rule above outranks .pulse-btn, so the pulse is restated alongside the entrance. */
+#act2-btn-arrive.pulse-btn:not([hidden]) {
+  animation: act2ArriveIn 0.45s var(--ease-out-expo) both, act2PulseBtn 1.8s 0.45s infinite;
+}
+@keyframes act2ArriveIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .act2-transport-hud-prepaid {
   font-size: 0.8rem;
   color: var(--palette-text-muted);
@@ -2351,7 +2445,8 @@
   .act2-transport-scene.ac-on .act2-air-line,
   .act2-road-stripe,
   .act2-drift,
-  .act2-transport-scene.windows-open .act2-wind-gap,
+  .act2-transport-scene.windows-open .act2-wind-line,
+  .act2-diegetic-btn.needs-invite::before,
   .act2-diegetic-btn.needs-invite {
     animation: none !important;
   }
@@ -2366,6 +2461,9 @@
   .act2-window-pane {
     transition-duration: 0.01s !important;
   }
+
+  /* the meter carries the wait, so it keeps running (it is a progress bar, not motion) */
+  #act2-btn-arrive:not([hidden]) { animation: act2ArriveIn 0.01s both !important; }
 
   .act2-transport-scene.is-arriving .act2-clinic-approach {
     animation-duration: 0.01s !important;
