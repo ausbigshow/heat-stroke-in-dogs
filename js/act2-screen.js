@@ -1780,7 +1780,7 @@ export class Act2Screen {
 
       case 'payoff':
         return this.stepIndex === 0 ? `
-          <button id="act2-btn-next-step" class="act2-hud-btn btn-action-primary"
+          <button id="act2-btn-next-step" class="act2-hud-btn"
                   data-editor-id="act2-btn-next-step">Tell her ▶</button>
         ` : '';
 
