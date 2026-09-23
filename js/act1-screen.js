@@ -1159,7 +1159,7 @@ export class Act1Screen {
         <div class="speech-bubble-speaker">
           <span>Callie</span>
         </div>
-        <p class="speech-bubble-text" style="font-size: 1.35rem; font-weight: 800; color: #DC2626;">
+        <p class="speech-bubble-text" style="font-size: 1.35rem; font-weight: 800; color: var(--color-danger);">
           "Tay?"
         </p>
       </div>
