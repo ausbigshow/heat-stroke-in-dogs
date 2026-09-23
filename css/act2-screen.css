@@ -1160,7 +1160,7 @@
 }
 .act2-check-conversation::-webkit-scrollbar-thumb {
   background: var(--hairline-light-strong);
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-pill);
 }
 
 .act2-check-readout-wrap {

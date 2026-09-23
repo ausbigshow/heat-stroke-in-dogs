@@ -1149,7 +1149,7 @@ export class Act2Screen {
             "${step.text}"
           </p>
           <svg class="electric-lightning-tail" viewBox="0 0 40 40" aria-hidden="true">
-            <polygon points="2,0 36,0 26,14 38,18 10,38 18,22 4,18" fill="var(--surface-radio)" stroke="var(--color-radio)" stroke-width="2.5" stroke-linejoin="miter" />
+            <polygon points="2,0 36,0 26,14 38,18 10,38 18,22 4,18" style="fill: var(--surface-radio); stroke: var(--color-radio);" stroke-width="2.5" stroke-linejoin="miter" />
           </svg>
         </div>
       `;
@@ -2175,7 +2175,7 @@ export class Act2Screen {
 
             <div class="act2-cool-feedback-footer">
               ${correct ? `
-                <button class="act2-hud-btn btn-action-primary pulse-btn act2-btn-cool-next"
+                <button class="act2-hud-btn ${isLastStep ? 'btn-action-primary pulse-btn' : ''} act2-btn-cool-next"
                         data-editor-id="act2-btn-cool-next-${opt.id}">
                   ${isLastStep ? 'Get her in the car ➔' : 'Next ▶'}
                 </button>
