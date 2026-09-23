@@ -168,6 +168,49 @@
   bottom: 3.5rem;
   z-index: 20;
   pointer-events: auto;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.resume-btn {
+  background: transparent;
+  color: var(--palette-teal-dark);
+  border: 2px solid var(--palette-teal-dark);
+  font-family: var(--font-family-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  padding: 1.1rem 2.6rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+  pointer-events: none;
+  transition: 
+    opacity var(--dur-slow) var(--ease-out-expo),
+    transform var(--dur-slow) var(--ease-out-expo),
+    background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+}
+
+.resume-btn.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.resume-btn:hover,
+.resume-btn:focus-visible {
+  background-color: var(--palette-teal-dark);
+  color: var(--text-inverse);
+}
+
+.resume-btn:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.resume-btn:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-on-light);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .continue-btn {
@@ -329,18 +372,21 @@
     animation-delay: 0s;
   }
 
-  .continue-btn {
+  .continue-btn, .resume-btn {
     transition: opacity 0.01s linear, background-color var(--dur-fast) ease;
     transform: none;
   }
 
-  .continue-btn.is-visible {
+  .continue-btn.is-visible, .resume-btn.is-visible {
     transform: none;
   }
 
   .continue-btn:hover,
   .continue-btn:focus-visible,
-  .continue-btn:active {
+  .continue-btn:active,
+  .resume-btn:hover,
+  .resume-btn:focus-visible,
+  .resume-btn:active {
     transform: none;
   }
 
@@ -458,7 +504,7 @@
     z-index: 50;
   }
 
-  .continue-btn {
+  .continue-btn, .resume-btn {
     width: 100%;
     max-width: 300px;
     min-height: 48px;
@@ -483,7 +529,7 @@
     height: clamp(200px, 42vh, 320px);
   }
 
-  .continue-btn {
+  .continue-btn, .resume-btn {
     max-width: 100%;
   }
 }

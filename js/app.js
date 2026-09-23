@@ -8,6 +8,7 @@ import { Act0Screen } from './act0-screen.js';
 import { Act1Screen } from './act1-screen.js';
 import { Act2Screen } from './act2-screen.js';
 import { Act3Screen } from './act3-screen.js';
+import { progressStore } from './progress-store.js';
 
 /**
  * Edit Mode is the AUTHORING tool, not part of the course.
@@ -96,12 +97,20 @@ class CourseApp {
       if (options.activeLeadId) {
         this.screens.act1.activeLeadId = options.activeLeadId;
       }
+      if (options.resume) {
+        try { this.screens.act1.applyResumeState?.(options.resume); }
+        catch(e) { progressStore.clear(); }
+      }
       this.screens.act1.mount();
     } else if (screenKey === 'act0') {
       stage.innerHTML = `<section id="screen-act0" aria-label="Act 0 Introduction Scene"></section>`;
       this.screens.act0 = new Act0Screen(this);
       if (options.stepIndex !== undefined) {
         this.screens.act0.currentStepIndex = options.stepIndex;
+      }
+      if (options.resume) {
+        try { this.screens.act0.applyResumeState?.(options.resume); }
+        catch(e) { progressStore.clear(); }
       }
       this.screens.act0.mount();
     } else if (screenKey === 'act2') {
@@ -121,6 +130,10 @@ class CourseApp {
       if (options.activeCheckId) {
         this.screens.act2.activeCheckId = options.activeCheckId;
       }
+      if (options.resume) {
+        try { this.screens.act2.applyResumeState?.(options.resume); }
+        catch(e) { progressStore.clear(); }
+      }
       this.screens.act2.mount(options);
     } else if (screenKey === 'act3') {
       stage.innerHTML = `<section id="screen-act3" aria-label="Act 3: At the Clinic, Then Home"></section>`;
@@ -132,10 +145,13 @@ class CourseApp {
       }
       if (options.beat) {
         this.screens.act3.currentBeat = options.beat;
-        if (options.beat !== 'wait') this.screens.act3.waitOver = true;
       }
       if (options.stepIndex !== undefined) {
         this.screens.act3.stepIndex = options.stepIndex;
+      }
+      if (options.resume) {
+        try { this.screens.act3.applyResumeState?.(options.resume); }
+        catch(e) { progressStore.clear(); }
       }
       this.screens.act3.mount();
     } else if (screenKey === 'opening') {
@@ -186,6 +202,7 @@ class CourseApp {
 
         <!-- Lower Right Continue Button Container -->
         <div class="continue-btn-container" data-editor-id="opening-continue-container">
+          <button id="btn-resume" class="resume-btn" data-editor-id="opening-resume-btn" hidden>Resume Act N</button>
           <button 
             id="btn-continue" 
             class="continue-btn is-visible" 
