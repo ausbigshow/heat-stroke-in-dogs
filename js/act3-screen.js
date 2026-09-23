@@ -42,27 +42,6 @@ import { renderPreservingFocus, focusInto, containFocusIn, releaseFocusContainme
 import { progressStore } from './progress-store.js';
 import { confirmLeave, actMarkerHtml } from './shared-ui.js';
 
-// Where each speaker's face sits inside their cast art, as fractions of the image box
-// [x, y], measured from the art's alpha (top of the head, then a little way down to the
-// face). Mirrored cast (scaleX(-1)) is flipped at runtime. Used to aim bubble stems.
-const ACT3_FACE_POINTS = {
-  'Callie-Clinic-Seated.png': [0.54, 0.07],
-  'Callie-Clinic-Relief.png': [0.62, 0.07],
-  'Callie-Clinic-FloorLaughing.png': [0.56, 0.09],
-  'Callie-Clinic-Leaving.png': [0.54, 0.07],
-  'Reyes-Chart.png': [0.55, 0.06],
-  'Reyes-Warm.png': [0.55, 0.06],
-  'Reyes-Serious.png': [0.42, 0.06],
-  'Reyes-HandingSheet.png': [0.71, 0.06],
-  'Tay-StandingStage2-Warm.png': [0.65, 0.2],
-  'Tay-SniffingGround.png': [0.47, 0.42],
-  'Tay-StandingSideProfile.png': [0.65, 0.2],
-  'Tay-StandingStage1-Alert.png': [0.65, 0.2]
-};
-// The home scene is one painting (CallieAndTay-Home.jpg), so its faces are fixed points on
-// the 16:9 card, allowing for object-fit: cover trimming ~1.5% off each side.
-const ACT3_HOME_FACES = { callie: [0.395, 0.32], tay: [0.523, 0.53] };
-
 export class Act3Screen {
   constructor(app) {
     this.app = app;
@@ -486,8 +465,6 @@ export class Act3Screen {
       advanceBtn.click();
     };
     this.container.addEventListener('click', this.handleClickAdvance);
-    this.handleResizeAim = () => this.aimBubbleStems();
-    window.addEventListener('resize', this.handleResizeAim);
 
     this.render();
     window.addEventListener('keydown', this.handleKeyDown);
@@ -499,7 +476,6 @@ export class Act3Screen {
     if (this.container && this.handleClickAdvance) {
       this.container.removeEventListener('click', this.handleClickAdvance);
     }
-    if (this.handleResizeAim) window.removeEventListener('resize', this.handleResizeAim);
     releaseFocusContainment(this.container || document);
   }
 
@@ -713,70 +689,7 @@ export class Act3Screen {
 
     this.bindEvents();
     this.updateCardAffordance();
-    this.aimBubbleStems();
     this._renderedStep = `${this.currentBeat}-${this.stepIndex}`;
-  }
-
-  // Part 3's cast moves between beats while the bubbles keep a fixed band above the heads,
-  // so each stem is aimed at render time: rooted on the bubble's bottom edge as close to the
-  // speaker as the bubble allows, leaning toward their face and stopping short of it. Uses
-  // layout offsets (not bounding rects) so the bubble's pop-in scale can't skew the maths.
-  // Sets the --aim-* properties read by the .is-aimed rules in act3-screen.css.
-  aimBubbleStems() {
-    const card = this.container?.querySelector('#act3-card');
-    if (!card) return;
-    const offsetIn = (el) => {
-      let x = 0, y = 0, n = el;
-      while (n && n !== card) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
-      return n === card ? { x, y } : null;
-    };
-    card.querySelectorAll('.speech-bubble').forEach((bubble) => {
-      bubble.classList.remove('is-aimed');
-      const who = bubble.classList.contains('reyes-bubble') ? 'reyes'
-        : bubble.classList.contains('tay-bubble') ? 'tay' : 'callie';
-      const face = this.speakerFacePoint(card, who, offsetIn);
-      const at = offsetIn(bubble);
-      if (!face || !at) return;
-      const w = bubble.offsetWidth;
-      const bottom = at.y + bubble.offsetHeight;
-      const base = Math.max(32, Math.min(w - 32, face.x - at.x));
-      const run = face.x - (at.x + base);
-      const drop = face.y - bottom;
-      const len = Math.max(22, Math.min(46, drop - 16));
-      let lean = drop > 6 ? run * (len / drop) : Math.sign(run) * 64;
-      lean = Math.max(-72, Math.min(72, lean));
-      const cs = getComputedStyle(bubble);
-      bubble.style.setProperty('--aim-base', `${Math.round(base)}px`);
-      bubble.style.setProperty('--aim-dx', `${Math.round(lean)}px`);
-      bubble.style.setProperty('--aim-len', `${Math.round(len)}px`);
-      bubble.style.setProperty('--aim-edge', cs.borderTopColor);
-      bubble.style.setProperty('--aim-fill', cs.backgroundColor);
-      bubble.classList.add('is-aimed');
-    });
-  }
-
-  speakerFacePoint(card, who, offsetIn) {
-    if (card.classList.contains('scene-home')) {
-      const p = ACT3_HOME_FACES[who];
-      return p ? { x: p[0] * card.clientWidth, y: p[1] * card.clientHeight } : null;
-    }
-    const img = card.querySelector(`.act3-cast-${who}.is-active`);
-    if (!img) return null;
-    // Art not decoded yet has no size; aim again once it lands.
-    if (!img.complete || !img.offsetWidth) {
-      img.addEventListener('load', () => this.aimBubbleStems(), { once: true });
-      return null;
-    }
-    const at = offsetIn(img);
-    if (!at) return null;
-    const file = (img.getAttribute('src') || '').split('/').pop();
-    const [fx, fy] = ACT3_FACE_POINTS[file] || [0.5, 0.08];
-    const m = getComputedStyle(img).transform;
-    const flipped = m && m !== 'none' && parseFloat(m.slice(m.indexOf('(') + 1)) < 0;
-    return {
-      x: at.x + (flipped ? 1 - fx : fx) * img.offsetWidth,
-      y: at.y + fy * img.offsetHeight
-    };
   }
 
   updateCardAffordance() {
