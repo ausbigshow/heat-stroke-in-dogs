@@ -1204,8 +1204,10 @@ export class Act2Screen {
 
     if (step.speaker === 'tech') {
       return `
+        <!-- Anchored by its BOTTOM edge: the bolt hangs off the bottom, so a top anchor let
+             longer lines push the bolt down past the phone. Taller bubbles grow upward. -->
         <div class="speech-bubble phone-radio-bubble ${isNewLineClass}"
-             style="top: 33.5%; left: 34%; max-width: min(420px, 34vw);"
+             style="bottom: 54.5%; left: 34%; max-width: min(420px, 34vw);"
              data-editor-id="act2-art-phone-bezel">
           <div class="speech-bubble-speaker comic-radio-speaker">
             
