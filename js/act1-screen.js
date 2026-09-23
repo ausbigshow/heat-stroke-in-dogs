@@ -978,7 +978,7 @@ export class Act1Screen {
                 </div>
                 <p class="speech-bubble-text">
                   ${step.onomatopoeia ? `<span class="tay-onomatopoeia">${step.onomatopoeia}</span>` : ''}
-                  <span class="tay-sub-dialogue">"${step.text}"</span>
+                  <span class="tay-sub-dialogue">(${step.text})</span>
                 </p>
               </div>
             ` : `
