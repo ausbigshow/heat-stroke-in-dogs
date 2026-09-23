@@ -1534,7 +1534,7 @@ export class Act2Screen {
         </p>
         <div class="act2-payoff-footer">
           <button id="act2-btn-to-decision" class="act2-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act2-btn-to-decision">What do you do? ➔</button>
+                  data-editor-id="act2-btn-to-decision" data-advance-line>What do you do? ➔</button>
         </div>
       </div>
     `;
@@ -1940,7 +1940,7 @@ export class Act2Screen {
         const isLast = this.stepIndex === this.arrivalSteps.length - 1;
         return isLast ? `
           <button id="act2-btn-start-call" class="act2-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act2-btn-start-call">Call the clinic ➔</button>
+                  data-editor-id="act2-btn-start-call" data-advance-line>Call the clinic ➔</button>
         ` : `
           <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step" data-advance-line>Next ▶</button>
         `;
@@ -1950,7 +1950,7 @@ export class Act2Screen {
         const isLast = this.stepIndex === this.callSteps.length - 1;
         return isLast ? `
           <button id="act2-btn-start-checks" class="act2-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act2-btn-start-checks">Start looking ➔</button>
+                  data-editor-id="act2-btn-start-checks" data-advance-line>Start looking ➔</button>
         ` : `
           <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step" data-advance-line>Next ▶</button>
         `;
@@ -1983,7 +1983,7 @@ export class Act2Screen {
           <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act2-btn-start-cooling" class="act2-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act2-btn-start-cooling">Start cooling her ➔</button>
+                  data-editor-id="act2-btn-start-cooling" data-advance-line>Start cooling her ➔</button>
         `;
 
       default:
@@ -2399,7 +2399,7 @@ export class Act2Screen {
             <div class="act2-cool-feedback-footer">
               ${correct ? `
                 <button class="act2-hud-btn ${isLastStep ? 'btn-action-primary pulse-btn' : ''} act2-btn-cool-next"
-                        data-editor-id="act2-btn-cool-next-${opt.id}">
+                        data-editor-id="act2-btn-cool-next-${opt.id}" data-advance-line>
                   ${isLastStep ? 'Get her in the car ➔' : 'Next ▶'}
                 </button>
               ` : `

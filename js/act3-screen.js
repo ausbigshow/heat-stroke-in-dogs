@@ -1087,7 +1087,7 @@ export class Act3Screen {
           <footer class="act3-recap-footer">
             <div class="act3-recap-nav">
               <button id="act3-btn-prev-step" class="act3-hud-btn act3-btn-quiet" data-editor-id="act3-btn-prev-step">◀ Back</button>
-              <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary" data-editor-id="act3-btn-beat-advance">Finish ➔</button>
+              <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary" data-editor-id="act3-btn-beat-advance" data-advance-line>Finish ➔</button>
             </div>
           </footer>
         </div>
@@ -1550,7 +1550,7 @@ export class Act3Screen {
           <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">Look at the chart ➔</button>
+                  data-editor-id="act3-btn-beat-advance" data-advance-line>Look at the chart ➔</button>
         `;
 
       case 'report':
@@ -1558,7 +1558,7 @@ export class Act3Screen {
           <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">Where's Tay? ➔</button>
+                  data-editor-id="act3-btn-beat-advance" data-advance-line>Where's Tay? ➔</button>
         `;
 
       case 'tayReturn':
@@ -1566,7 +1566,7 @@ export class Act3Screen {
           <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">Next time ➔</button>
+                  data-editor-id="act3-btn-beat-advance" data-advance-line>Next time ➔</button>
         `;
 
       case 'nextTime': {
@@ -1583,7 +1583,7 @@ export class Act3Screen {
           <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">Pick up your keys ➔</button>
+                  data-editor-id="act3-btn-beat-advance" data-advance-line>Pick up your keys ➔</button>
         `;
       }
 
@@ -1592,7 +1592,7 @@ export class Act3Screen {
           <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">Take her home ➔</button>
+                  data-editor-id="act3-btn-beat-advance" data-advance-line>Take her home ➔</button>
         `;
 
       case 'home':
@@ -1600,7 +1600,7 @@ export class Act3Screen {
           <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
-                  data-editor-id="act3-btn-beat-advance">Fade ➔</button>
+                  data-editor-id="act3-btn-beat-advance" data-advance-line>Fade ➔</button>
         `;
 
       case 'recap':

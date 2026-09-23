@@ -487,21 +487,12 @@
    centre, so her bubble hangs to her upper right and the stem points back down-left; Reyes
    stands by the door, so hers hangs to her upper left and the stem points down-right; Tay
    is centred under hers. */
-/* Height-capped, but the BUBBLE never clips: overflow:hidden here cut off the stem (it hangs
-   below the box). The bubble is a column instead, and only the text scrolls if a long line
-   ever outgrows the band. */
+/* Bubbles never scroll: they grow to fit the line (the learner should never have to scroll
+   dialogue). No overflow clipping either, or the stem below the box is cut off. Widths are
+   set per speaker below so the longest lines still end above the heads. */
 #screen-act3 .speech-bubble {
   top: 13%;
-  max-height: 30%;
   overflow: visible;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-#screen-act3 .speech-bubble .speech-bubble-text {
-  min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: thin;
 }
 
 /* Stems face the speaker. Each bubble is anchored by the edge NEAREST its speaker, with

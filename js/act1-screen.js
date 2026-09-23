@@ -512,7 +512,7 @@ export class Act1Screen {
         aria-pressed="false"
       >
         <span class="interactable-art">
-        ${leadId !== 'lake' ? '<div class="prop-ground-shadow"></div><div class="prop-affordance-ring ring-back"></div>' : ''}${artHtml}${leadId !== 'lake' ? '<div class="prop-affordance-ring ring-front"></div>' : ''}</span>
+        ${leadId !== 'lake' ? '<div class="prop-ground-shadow"></div><div class="prop-affordance-ring ring-back"></div>' : ''}${artHtml}${leadId !== 'lake' ? '<div class="prop-affordance-ring ring-front"></div>' : '<div class="prop-affordance-ring lake-ring"></div>'}</span>
         <span class="interactable-tooltip" aria-hidden="true">${lead.tayName}</span>
       </button>
     `;
@@ -886,7 +886,7 @@ export class Act1Screen {
             </div>
           </div>
           <div class="mission-card-footer">
-            <button id="act1-btn-start-hub-modal" class="act1-hud-btn btn-action-primary pulse-btn" data-editor-id="act1-btn-start-hub-modal" aria-label="Start the investigation">
+            <button id="act1-btn-start-hub-modal" class="act1-hud-btn btn-action-primary pulse-btn" data-editor-id="act1-btn-start-hub-modal" data-advance-line aria-label="Start the investigation">
               Start Investigation ➔
             </button>
           </div>
@@ -1065,7 +1065,7 @@ export class Act1Screen {
           <!-- Advance / finish -->
           <nav class="act1-nav-bar" style="bottom: 0.9rem; left: 1.1rem; right: 1.1rem; justify-content: flex-end;">
             ${isLastStep ? `
-              <button id="act1-btn-finish-lead" class="act1-hud-btn btn-action-primary pulse-btn" data-editor-id="act1-btn-finish-lead" aria-label="Done investigating this lead">
+              <button id="act1-btn-finish-lead" class="act1-hud-btn btn-action-primary pulse-btn" data-editor-id="act1-btn-finish-lead" data-advance-line aria-label="Done investigating this lead">
                 Done Investigating ➔
               </button>
             ` : `
@@ -1207,7 +1207,7 @@ export class Act1Screen {
           <button 
             id="act1-btn-proceed-pov" 
             class="act1-hud-btn btn-action-primary pulse-btn" 
-            data-editor-id="act1-btn-proceed-pov" aria-label="See what Callie sees"
+            data-editor-id="act1-btn-proceed-pov" data-advance-line aria-label="See what Callie sees"
           >
             See What Callie Sees ➔
           </button>
@@ -1267,7 +1267,7 @@ export class Act1Screen {
           <button
             id="act1-btn-start-hub"
             class="act1-hud-btn btn-action-primary pulse-btn"
-            data-editor-id="act1-btn-start-hub" aria-label="Start the investigation"
+            data-editor-id="act1-btn-start-hub" data-advance-line aria-label="Start the investigation"
           >
             Start Investigation ➔
           </button>
@@ -1323,7 +1323,7 @@ export class Act1Screen {
           <button 
             id="act1-btn-start-drift" 
             class="act1-hud-btn btn-action-primary" 
-            data-editor-id="act1-btn-start-drift" aria-label="Let her sleep"
+            data-editor-id="act1-btn-start-drift" data-advance-line aria-label="Let her sleep"
           >
             Let her sleep ➔
           </button>
@@ -1344,7 +1344,7 @@ export class Act1Screen {
           <button 
             id="act1-btn-start-alarm" 
             class="act1-hud-btn btn-action-primary pulse-btn" 
-            data-editor-id="act1-btn-start-alarm" aria-label="Continue: later that afternoon"
+            data-editor-id="act1-btn-start-alarm" data-advance-line aria-label="Continue: later that afternoon"
           >
             Later That Afternoon ➔
           </button>
@@ -1356,7 +1356,7 @@ export class Act1Screen {
           <button 
             id="act1-btn-start-case-file" 
             class="act1-hud-btn btn-action-primary pulse-btn" 
-            data-editor-id="act1-btn-start-case-file" aria-label="Review the case file"
+            data-editor-id="act1-btn-start-case-file" data-advance-line aria-label="Review the case file"
           >
             Review Case File ➔
           </button>

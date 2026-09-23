@@ -366,6 +366,16 @@
   bottom: 9%;
 }
 
+/* The lake gets the same amber ring as the other leads, lying flat on the water around the
+   ripple point, so it reads as clickable in the same language. The art box clips (the
+   ripples), so this ring is sized inside it. */
+.interactable-lake .prop-affordance-ring.lake-ring {
+  bottom: 12%;
+  width: 46%;
+  aspect-ratio: 1 / 0.3;
+  border-width: 2.5px;
+}
+
 @keyframes propRingPulse {
   0%, 100% { transform: translateX(-50%) scale(0.95); opacity: 0.4; }
   50% { transform: translateX(-50%) scale(1.05); opacity: 0.8; }
@@ -848,8 +858,8 @@
 
 .lake-touch-ring {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.92);
-  stroke-width: 1.7;
+  stroke: rgba(255, 255, 255, 0.95);
+  stroke-width: 2.4;
   vector-effect: non-scaling-stroke;
   transform-box: view-box;
   transform-origin: 50px 50px;
