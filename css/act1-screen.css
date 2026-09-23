@@ -2273,3 +2273,19 @@
 }
 
 #screen-act1 .speech-bubble:not(.is-new-line) { animation: none; }
+
+/* Leads are only live in the hub (see syncSceneState). In every other beat the props stay in
+   the scene as scenery: no invitation ring, no touch ripples, no tooltip, no hover lift, no
+   pointer. Their clicks still bubble, so "click anywhere" in the cold open keeps working. */
+.act1-viewport-card:not(.leads-live) .act1-interactable {
+  cursor: inherit;
+}
+.act1-viewport-card:not(.leads-live) .prop-affordance-ring,
+.act1-viewport-card:not(.leads-live) .lake-touch-ring,
+.act1-viewport-card:not(.leads-live) .interactable-tooltip {
+  animation: none;
+  opacity: 0;
+}
+.act1-viewport-card:not(.leads-live) .act1-interactable:hover .interactable-art {
+  transform: none;
+}

@@ -11,40 +11,30 @@
 
 [data-editor-id="act2-screen-container"] {
   position: relative !important;
-  left:  !important;
-  top:  !important;
   right: auto !important;
   bottom: auto !important;
 }
 
 [data-editor-id="act2-check-tech-line"] {
   position: static !important;
-  left:  !important;
-  top:  !important;
   right: auto !important;
   bottom: auto !important;
 }
 
 [data-editor-id="act2-btn-check-close"] {
   position: static !important;
-  left:  !important;
-  top:  !important;
   right: auto !important;
   bottom: auto !important;
 }
 
 [data-editor-id="act2-art-name"] {
   position: static !important;
-  left:  !important;
-  top:  !important;
   right: auto !important;
   bottom: auto !important;
 }
 
 [data-editor-id="act2-art-ears"] {
   position: static !important;
-  left:  !important;
-  top:  !important;
   right: auto !important;
   bottom: auto !important;
 }

@@ -196,7 +196,10 @@ const server = http.createServer(async (req, res) => {
                if (!l) continue;
                const propMatch = l.match(/^([^:]+):\s*(.*?)(?:\s*!important)?$/);
                if (propMatch) {
-                 decls[propMatch[1].trim()] = propMatch[2].trim();
+                 // An empty value ("left:  !important") is an invalid declaration the browser
+                 // already drops. Older saves wrote some; don't carry them forward.
+                 const val = propMatch[2].trim();
+                 if (val) decls[propMatch[1].trim()] = val;
                } else {
                  parseable = false;
                  break;

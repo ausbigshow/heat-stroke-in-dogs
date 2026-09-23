@@ -594,6 +594,11 @@ export class Act1Screen {
     card.classList.toggle('canopy-focus', isCanopyFocus);
     card.classList.toggle('is-cold-open-active', isColdOpenClickable);
     card.classList.toggle('is-entering', entering);
+    // The scene is mounted once and persists across beats, so the leads are on screen during
+    // the cold open, the nap and the alarm too. Only the hub acts on a click; everywhere else
+    // they must stop inviting one (no ring, no cursor, out of the tab order).
+    const leadsLive = this.currentBeat === 'hub';
+    card.classList.toggle('leads-live', leadsLive);
     
     card.style.setProperty('--act1-drift-opacity', escalation.driftOpacity);
     card.style.setProperty('--act1-saturation-drop', `${escalation.saturationDrop}%`);
@@ -615,6 +620,9 @@ export class Act1Screen {
         const lead = this.leadsData[leadId];
         el.classList.toggle('visited', visited);
         el.setAttribute('aria-pressed', visited.toString());
+        el.tabIndex = leadsLive ? 0 : -1;
+        if (leadsLive) el.removeAttribute('aria-disabled');
+        else el.setAttribute('aria-disabled', 'true');
         el.setAttribute('aria-label', `Investigate ${lead.tayName}${visited ? ' (already investigated)' : ''}`);
         
         let checkSpan = el.querySelector('.interactable-check');
