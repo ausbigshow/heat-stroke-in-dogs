@@ -345,7 +345,7 @@ shorthands pairing a duration with `--ease-out-expo`.
 - **Escalation is slow.** 1.8–2.5s eased, so the clock advancing feels like weather, not a state
   change.
 - **Infinite animation is an invitation or an alarm, never decoration.** Currently legitimate:
-  interactable pulse, lake invite, canopy invite, pill pulse, start-button pulse, temp-critical,
+  prop ground ring, lake invite, canopy invite, pill pulse, start-button pulse, temp-critical,
   heat haze, Tay's breathing/panting/ear rig, lake waves. If a new looping animation is not
   saying "click me" or "something is wrong," delete it.
 - **Hover pauses the invitation.** `animation-play-state: paused` on hover/focus — once the
@@ -564,14 +564,17 @@ stacks metric-above-line. `.stamp-temp-badge` is the same chip reused in the cas
 A `<button>` with a transparent ground, absolutely positioned over the scene, wrapping the drawn
 object itself. Four parts:
 
-1. **`.interactable-art`** — the SVG. Carries `interactablePulse 2.6s infinite`, an amber
-   `drop-shadow` glow breathing 0 → `--color-food-glow`. Hover/focus: `scale(1.1) translateY(-3px)`
-   with `--ease-pop`, animation paused, glow raised.
+1. **`.interactable-art`** — the rendered prop. No glow on the art itself: an outward glow
+   tracing a silhouette makes a cutout look pasted on (changed 2026-09-22, `e75e7ed`). The
+   invitation is **`.prop-affordance-ring`** — a 2px `--color-food-glow` ellipse lying on the
+   ground at the object's base, breathing via `propRingPulse 2.6s infinite`, plus a
+   `.prop-ground-shadow` contact shadow. Hover/focus: art `scale(1.04)` with `--ease-pop`; ring
+   paused at full opacity. Visited: ring fades out.
 2. **`.interactable-tooltip`** — the name. Hidden at rest (`opacity: 0`), revealed on hover **and
    `:focus-visible`**, sliding up 6px. `--surface-tooltip`, pill radius, `pointer-events: none`.
 3. **`.interactable-check`** — a 20px `--color-success-strong` disc with a 2px white ring and a
-   white glyph, pinned top-right at `-6px/-6px`. Appears with `.visited`, which also swaps the
-   glow amber → green and stops the pulse.
+   white glyph, pinned top-right at `-6px/-6px`. Appears with `.visited`, which also retires the
+   ground ring.
 4. **`:focus-visible`** — `3px solid --color-amber-tint`, `outline-offset: 4px`,
    `border-radius: 12px`.
 

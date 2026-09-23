@@ -1104,7 +1104,7 @@ export class Act1Screen {
             <span class="case-file-badge">Act 1 Case File</span>
             <h2 class="case-file-title" id="act1-case-file-title">The Four Leads vs. Heat Stroke Reality</h2>
           </div>
-          <div class="stamp-temp-badge" style="background: var(--color-info-mid); border-color: var(--color-info);">3:05 PM</div>
+          <div class="stamp-temp-badge" style="background: var(--color-info-strong); border-color: var(--color-info);">3:05 PM</div>
         </div>
 
         <table class="case-file-table" data-editor-id="act1-case-file-table">
