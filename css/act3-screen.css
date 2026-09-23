@@ -2547,8 +2547,14 @@
   display: none;
 }
 
+/* Print: one US Letter page (8.5 x 11 in) with 0.5 in safe margins on every side, so the
+   printable area is 7.5 x 10 in (720 x 960 CSS px). The on-screen sheet is untouched; these
+   rules only style the body-level print copy (#act3-print-root). */
 @media print {
-  @page { margin: 12mm; }
+  @page {
+    size: 8.5in 11in;
+    margin: 0.5in;
+  }
   html, body, #app {
     height: auto;
     overflow: visible;
@@ -2563,8 +2569,12 @@
     font-family: var(--font-family-body);
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-    /* the on-screen sheet is ~1150px tall; 0.8 fits it on one Letter or A4 page */
-    zoom: 0.8;
+    width: auto;
+    margin: 0;
+    /* Scaled to the 7.5 in width, the sheet fits the 10 in page on one sheet. Measured by
+       rendering a Letter PDF in headless Chromium: 0.90 is the largest that stays on one page,
+       0.92 spills to a second. 0.88 keeps a buffer for other browsers' fonts and printers. */
+    zoom: 0.88;
   }
   #act3-print-root .act3-takeaway-body {
     overflow: visible;
