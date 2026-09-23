@@ -15,6 +15,8 @@
  */
 
 import { renderPreservingFocus, focusInto, containFocusIn, releaseFocusContainment } from './a11y-focus.js';
+import { progressStore } from './progress-store.js';
+import { confirmLeave, actMarkerHtml } from './shared-ui.js';
 
 export class Act1Screen {
   constructor(app) {
@@ -252,6 +254,46 @@ export class Act1Screen {
     this._mounted = false;
   }
 
+  getResumeState() {
+    return {
+      currentBeat: this.currentBeat,
+      clockMinutes: this.clockMinutes,
+      visitedLeads: Array.from(this.visitedLeads),
+      leadVisitOrder: this.leadVisitOrder,
+      leadVisitCounts: this.leadVisitCounts,
+      pantingLevel: this.pantingLevel,
+      stepIndex: this.stepIndex,
+      activeLeadId: this.activeLeadId,
+      returnFocusLeadId: this.returnFocusLeadId,
+      povStepIndex: this.povStepIndex,
+      tayHasEnteredScene: this.tayHasEnteredScene,
+      tayPosition: this.tayPosition,
+      tayFacingLeft: this.tayFacingLeft
+    };
+  }
+
+  applyResumeState(state) {
+    if (!state) return;
+    this.currentBeat = state.currentBeat ?? 'cold_open';
+    this.clockMinutes = state.clockMinutes ?? 90;
+    this.visitedLeads = new Set(state.visitedLeads || []);
+    this.leadVisitOrder = state.leadVisitOrder ?? [];
+    this.leadVisitCounts = state.leadVisitCounts ?? { cooler: 0, dock: 0, bowl: 0, lake: 0 };
+    this.pantingLevel = state.pantingLevel ?? 1;
+    this.stepIndex = state.stepIndex ?? 0;
+    this.activeLeadId = state.activeLeadId ?? null;
+    this.returnFocusLeadId = state.returnFocusLeadId ?? null;
+    this.povStepIndex = state.povStepIndex ?? 0;
+    this.tayHasEnteredScene = state.tayHasEnteredScene ?? false;
+    this.tayPosition = state.tayPosition ?? { top: 72, left: 52 };
+    this.tayFacingLeft = state.tayFacingLeft ?? true;
+  }
+
+  hasProgress() {
+    if (this.currentBeat !== 'cold_open') return true;
+    return this.stepIndex > 0;
+  }
+
   getFormattedTime() {
     const startHour = 1;
     const totalMinutes = this.clockMinutes;
@@ -330,6 +372,12 @@ export class Act1Screen {
     
     const dialog = this.container.querySelector('[role="dialog"]');
     if (dialog) containFocusIn(dialog);
+
+    if (this.hasProgress()) {
+      try {
+        progressStore.save('act1', this.getResumeState());
+      } catch (e) {}
+    }
   }
 
   mountScene() {
@@ -347,13 +395,14 @@ export class Act1Screen {
             </div>
 
             <div class="act1-hud-group">
+              ${actMarkerHtml(1)}
               <div class="act1-hud-pill clock-pill" data-editor-id="act1-hud-clock" title="Lake Time" role="status" aria-live="polite">
                 <span id="act1-clock-text"></span>
               </div>
               
               <div class="act1-hud-pill hints-dropped-pill" id="act1-hud-hints-pill" data-editor-id="act1-hud-hints" role="status" aria-live="polite" hidden>
-                <span class="hud-label-full">HINTS DROPPED: 4</span>
-                <span class="hud-label-short">HINTS: 4</span>
+                <span class="hud-label-full">WARNING SIGNS: 4</span>
+                <span class="hud-label-short">WARNINGS: 4</span>
               </div>
               <div class="act1-hud-pill leads-pill" id="act1-hud-leads-pill" data-editor-id="act1-hud-leads">
                 <span class="hud-label-full"></span>
@@ -1200,17 +1249,7 @@ export class Act1Screen {
     }
 
     if (this.currentBeat === 'lead_active') {
-      return `
-        <button 
-          id="act1-btn-return-hub" 
-          class="act1-hud-btn" 
-          data-editor-id="act1-btn-return-hub"
-          title="Return to Lake Hub"
-          aria-label="Back to the lake hub"
-        >
-          ◀ Back to Hub
-        </button>
-      `;
+      return '';
     }
 
     return '';
@@ -1283,9 +1322,9 @@ export class Act1Screen {
           <button 
             id="act1-btn-start-drift" 
             class="act1-hud-btn btn-action-primary" 
-            data-editor-id="act1-btn-start-drift" aria-label="Rest in the shade"
+            data-editor-id="act1-btn-start-drift" aria-label="Let her sleep"
           >
-            Rest in Shade ➔
+            Let her sleep ➔
           </button>
         ` : `
           <button 
@@ -1348,18 +1387,37 @@ export class Act1Screen {
   }
 
   bindEvents() {
-    this.handleClick = this.handleClick || ((e) => {
+    this.handleClick = this.handleClick || (async (e) => {
       if (this.isEditModeActive()) return;
 
       const target = e.target;
 
       if (target.closest('#act1-btn-back-act0')) {
+        e.preventDefault();
         e.stopPropagation();
+        if (this.hasProgress()) {
+          const leave = await confirmLeave({
+            title: 'Go back to Act 0?',
+            message: 'Act 0 starts again from the beginning, and your progress in Act 1 will be cleared.',
+            leaveLabel: 'Go back'
+          });
+          if (!leave) return;
+        }
         this.app?.navigateTo('act0');
         return;
       }
       if (target.closest('#act1-btn-title')) {
+        e.preventDefault();
         e.stopPropagation();
+        if (this.hasProgress()) {
+          const leave = await confirmLeave({
+            title: 'Leave the story?',
+            message: "You'll go back to the title screen, and everything you've done in Act 1 so far will be cleared.",
+            leaveLabel: 'Leave anyway'
+          });
+          if (!leave) return;
+        }
+        progressStore.clear();
         this.app?.navigateTo('opening');
         return;
       }

@@ -420,3 +420,28 @@
   padding: 0;
   border-radius: 50%;
 }
+
+/* Act 0 HUD marker */
+.act0-hud-top {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.5rem;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  z-index: 40;
+}
+
+@media (max-width: 768px) {
+  .act0-hud-top {
+    top: 0.6rem;
+    right: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .act0-hud-top {
+    display: none;
+  }
+}

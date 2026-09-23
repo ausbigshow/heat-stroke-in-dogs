@@ -35,6 +35,8 @@
  */
 
 import { renderPreservingFocus, focusInto, containFocusIn, releaseFocusContainment } from './a11y-focus.js';
+import { progressStore } from './progress-store.js';
+import { confirmLeave, actMarkerHtml } from './shared-ui.js';
 
 export class Act2Screen {
   constructor(app) {
@@ -371,6 +373,66 @@ export class Act2Screen {
     };
   }
 
+  hasProgress() {
+    return !(this.currentBeat === 'arrival' && this.stepIndex === 0);
+  }
+
+  getResumeState() {
+    return {
+      currentBeat: this.currentBeat,
+      stepIndex: this.stepIndex,
+      activeCheckId: this.activeCheckId,
+      checkStepIndex: this.checkStepIndex,
+      checkReportOrder: [...this.checkReportOrder],
+      decisionChoice: this.decisionChoice,
+      coolingIndex: this.coolingIndex,
+      coolingFeedback: this.coolingFeedback ? { ...this.coolingFeedback } : null,
+      coolingWrongCount: this.coolingWrongCount,
+      acOn: this.acOn,
+      acInteracted: this.acInteracted,
+      windowsOpen: this.windowsOpen,
+      winInteracted: this.winInteracted,
+      calledAhead: this.calledAhead,
+      clockMinutes: this.clockMinutes,
+      elapsedSeconds: this.elapsedSeconds,
+      clockVisible: this.clockVisible,
+      severity: this.severity,
+      hintsDropped: this.hintsDropped,
+      hintsCashedOut: this.hintsCashedOut
+    };
+  }
+
+  applyResumeState(state) {
+    if (!state) return;
+    this.currentBeat = state.currentBeat ?? 'arrival';
+    this.stepIndex = state.stepIndex ?? 0;
+    this.activeCheckId = state.activeCheckId ?? null;
+    this.checkStepIndex = state.checkStepIndex ?? 0;
+    this.checkReportOrder = state.checkReportOrder ? [...state.checkReportOrder] : [];
+    this.checksDone = new Set(this.checkReportOrder);
+    this.decisionChoice = state.decisionChoice ?? null;
+    this.coolingIndex = state.coolingIndex ?? 0;
+    this.coolingFeedback = state.coolingFeedback ? { ...state.coolingFeedback } : null;
+    this.coolingWrongCount = state.coolingWrongCount ?? 0;
+    this.acOn = state.acOn ?? false;
+    this.acInteracted = state.acInteracted ?? false;
+    this.windowsOpen = state.windowsOpen ?? false;
+    this.winInteracted = state.winInteracted ?? false;
+    this.calledAhead = state.calledAhead ?? true;
+    this.clockMinutes = state.clockMinutes ?? 185;
+    this.elapsedSeconds = state.elapsedSeconds ?? 0;
+    this.clockVisible = state.clockVisible ?? false;
+    this.severity = state.severity ?? 0.5;
+    this.hintsDropped = state.hintsDropped ?? 4;
+    this.hintsCashedOut = state.hintsCashedOut ?? false;
+  }
+
+  saveProgress() {
+    try {
+      progressStore.save('act2', this.getResumeState());
+    } catch (e) {}
+  }
+
   /** Restore a playthrough produced by getHandoff(). Partial payloads are fine. */
   applyHandoff(handoff = {}) {
     if (handoff.decisionChoice === 'act_now' || handoff.decisionChoice === 'wait') {
@@ -521,6 +583,10 @@ export class Act2Screen {
         conv.scrollTop = conv.scrollHeight;
       });
     }
+
+    if (this.hasProgress()) {
+      this.saveProgress();
+    }
   }
 
   getEntranceKey(beat) {
@@ -640,6 +706,7 @@ export class Act2Screen {
         </div>
 
         <div class="act2-hud-group">
+          ${actMarkerHtml(2)}
           <div class="act2-hud-pill clock-pill" data-editor-id="act2-hud-clock" title="Lake time">
             <span>${timeStr}</span>
           </div>
@@ -655,12 +722,12 @@ export class Act2Screen {
           ${this.hintsCashedOut ? `
             <div class="act2-hud-pill hints-cashed-pill" data-editor-id="act2-hud-hints"
                  aria-label="4 warning signs from Act 1, all reported to the clinic">
-              <span>HINTS DROPPED: ${this.hintsDropped} — REPORTED</span>
+              <span>WARNING SIGNS: ${this.hintsDropped} — REPORTED</span>
             </div>
           ` : `
             <div class="act2-hud-pill hints-pill" data-editor-id="act2-hud-hints"
-                 aria-label="4 warning signs dropped during Act 1, not yet reported">
-              <span>HINTS DROPPED: ${this.hintsDropped}</span>
+                 aria-label="4 warning signs from Act 1, not yet reported">
+              <span>WARNING SIGNS: ${this.hintsDropped}</span>
             </div>
           `}
 
@@ -1402,7 +1469,7 @@ export class Act2Screen {
     return `
       <div class="act2-payoff-card" data-editor-id="act2-payoff-card">
         <div class="act2-payoff-header">
-          <span class="act2-payoff-badge">Hints Dropped · 4 / 4</span>
+          <span class="act2-payoff-badge">Warning Signs · 4 / 4</span>
           <h2 class="act2-payoff-title">It has been going on since 1:30 this afternoon.</h2>
         </div>
         <ol class="act2-payoff-timeline" data-editor-id="act2-payoff-timeline">
@@ -1434,7 +1501,7 @@ export class Act2Screen {
     return `
       <div class="act2-decision-card" data-editor-id="act2-decision-card" role="group"
            aria-label="The decision: act now, or give her 5 minutes">
-        <span class="act2-decision-badge">Beat 2B · Your call</span>
+        <span class="act2-decision-badge">Your call</span>
         <h2 class="act2-decision-title">She's flat on the grass and she isn't answering you.</h2>
         <p class="act2-decision-sub">
           The lake is 20 feet away. The car is 40. Dana is still on the line.
@@ -1698,9 +1765,9 @@ export class Act2Screen {
         arrive.classList.add('pulse-btn');
       } else {
         arrive.setAttribute('disabled', 'true');
-        arrive.classList.remove('pulse-btn');
       }
     }
+    if (this.hasProgress()) this.saveProgress();
   }
 
   renderHandoff() {
@@ -1816,8 +1883,31 @@ export class Act2Screen {
     };
 
     // --- Global nav ---
-    on('#act2-btn-back-act1', () => this.app?.navigateTo('act1', { beat: 'pov_rise' }));
-    on('#act2-btn-title', () => this.app?.navigateTo('opening'));
+    on('#act2-btn-back-act1', async () => {
+      if (this.hasProgress()) {
+        const leave = await confirmLeave({
+          title: 'Go back to Act 1?',
+          message: 'Act 1 starts again from the beginning, and your progress in Act 2 will be cleared.',
+          leaveLabel: 'Go back'
+        });
+        if (!leave) return;
+        try { progressStore.clear(); } catch(e) {}
+      }
+      this.app?.navigateTo('act1', { beat: 'pov_rise' });
+    });
+
+    on('#act2-btn-title', async () => {
+      if (this.hasProgress()) {
+        const leave = await confirmLeave({
+          title: 'Leave the story?',
+          message: 'You\'ll go back to the title screen, and everything you\'ve done in Act 2 so far will be cleared.',
+          leaveLabel: 'Leave anyway'
+        });
+        if (!leave) return;
+        try { progressStore.clear(); } catch(e) {}
+      }
+      this.app?.navigateTo('opening');
+    });
 
     // --- Generic advance ---
     on('#act2-btn-next-step', () => this.nextSubStep());
@@ -2074,6 +2164,7 @@ export class Act2Screen {
       }
 
       this.focusInModal();
+      if (this.hasProgress()) this.saveProgress();
     } else {
       this.reportCheck();
     }
@@ -2199,6 +2290,7 @@ export class Act2Screen {
     if (cooler) cooler.classList.toggle('is-tempting', this.isCoolerTempting());
     const elapsedEl = this.container.querySelector('#act2-elapsed-text');
     if (elapsedEl) elapsedEl.textContent = this.getFormattedElapsed();
+    if (this.hasProgress()) this.saveProgress();
   }
 
   chooseCooling(optionId) {

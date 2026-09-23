@@ -10,6 +10,8 @@
 
 import { audioManager } from './audio-manager.js';
 import { renderPreservingFocus } from './a11y-focus.js';
+import { progressStore } from './progress-store.js';
+import { confirmLeave, actMarkerHtml } from './shared-ui.js';
 
 export class Act0Screen {
   constructor(app) {
@@ -141,6 +143,20 @@ export class Act0Screen {
     window.removeEventListener('keydown', this.handleKeyDown);
   }
 
+  getResumeState() {
+    return {
+      stepIndex: this.currentStepIndex
+    };
+  }
+
+  applyResumeState(state) {
+    this.currentStepIndex = state?.stepIndex ?? 0;
+  }
+
+  hasProgress() {
+    return this.currentStepIndex > 0;
+  }
+
   /**
    * Play the current step's voiceover clip. Waits for the manifest to be ready, then
    * re-checks that the learner hasn't already advanced past this step (rapid clicking)
@@ -217,6 +233,8 @@ export class Act0Screen {
         <!-- Main Front-and-Center Viewport Card -->
         <div id="act0-card" class="act0-viewport-card" data-editor-id="act0-viewport-card" title="Click anywhere to continue">
           
+          <div class="act0-hud-top" data-editor-id="act0-hud-top">${actMarkerHtml(0)}</div>
+
           <!-- Background Scene Illustration -->
           <img 
             src="Assets/Image/CallieAndTay-Home.jpg" 
@@ -302,6 +320,12 @@ export class Act0Screen {
 
     this.bindEvents();
     this.playStepAudio();
+
+    try {
+      progressStore.save('act0', this.getResumeState());
+    } catch (e) {
+      // Ignore
+    }
   }
 
   bindEvents() {
@@ -338,9 +362,21 @@ export class Act0Screen {
 
     const titleBtn = this.container.querySelector('#act0-btn-title');
     if (titleBtn) {
-      titleBtn.addEventListener('click', (e) => {
+      titleBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         if (this.isEditModeActive()) return;
+        
+        if (this.hasProgress()) {
+          const leave = await confirmLeave({
+            title: 'Leave the story?',
+            message: "You'll go back to the title screen, and everything you've done in Act 0 so far will be cleared.",
+            leaveLabel: 'Leave anyway'
+          });
+          if (!leave) return;
+        }
+
+        try { progressStore.clear(); } catch (err) {}
+
         if (this.app && typeof this.app.navigateTo === 'function') {
           this.app.navigateTo('opening');
         }

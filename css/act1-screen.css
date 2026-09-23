@@ -1965,6 +1965,15 @@
     gap: 0.35rem;
   }
 
+  .interactable-lake .interactable-tooltip {
+    left: 0;
+    transform: translate(0, 6px);
+  }
+  .act1-interactable.interactable-lake:hover .interactable-tooltip,
+  .act1-interactable.interactable-lake:focus-visible .interactable-tooltip {
+    transform: translate(0, 0);
+  }
+
   .act1-hud-group {
     gap: 0.35rem;
   }
@@ -2201,6 +2210,10 @@
     height: 30px;
     padding: 0 0.45rem;
     font-size: 0.72rem;
+  }
+
+  .act-marker-pill {
+    display: none;
   }
 
   .act1-temp-gauge {

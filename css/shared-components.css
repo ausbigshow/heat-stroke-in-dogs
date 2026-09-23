@@ -119,3 +119,13 @@
     font-size: 0.78rem;
   }
 }
+
+/* A modal dialog makes the HUD and nav bars behind it inert (js/a11y-focus.js containFocusIn).
+   Those bars sit above the dialog's scrim, so without this they stayed at full strength — a
+   row of buttons that looked live and did nothing. Fade them so the state reads honestly.
+   (Act 3 solves the same thing by lifting its speech layer above the HUD; see beatHasModal.) */
+:is(.act0-nav-bar, .act1-hud-bar, .act1-nav-bar, .act2-hud-bar, .act2-nav-bar, .act3-hud-bar, .act3-nav-bar)[data-inert-by-dialog] {
+  opacity: 0.35;
+  filter: saturate(0.4);
+  transition: opacity var(--dur-fast) var(--ease-out-expo);
+}

@@ -533,3 +533,41 @@
     max-width: 100%;
   }
 }
+
+/* Returning learner: Resume is the primary (right, filled), Start over the secondary (outline).
+   Tab order stays Resume first, which is also the likelier choice. */
+.continue-btn-container.has-resume {
+  flex-direction: row-reverse;
+}
+
+.has-resume .resume-btn {
+  background-color: var(--palette-teal);
+  color: var(--palette-warm-white);
+  border-color: transparent;
+  box-shadow:
+    0 10px 25px -4px rgba(54, 107, 119, 0.35),
+    0 4px 10px -2px rgba(54, 107, 119, 0.2);
+}
+
+.has-resume .resume-btn:hover,
+.has-resume .resume-btn:focus-visible {
+  background-color: var(--palette-brown-dark);
+  color: var(--palette-warm-white);
+}
+
+.has-resume .continue-btn {
+  background-color: transparent;
+  color: var(--palette-teal-dark);
+  border-color: var(--palette-teal-dark);
+  box-shadow: none;
+}
+
+.has-resume .continue-btn:hover,
+.has-resume .continue-btn:focus-visible {
+  background-color: var(--palette-teal-dark);
+  color: var(--palette-warm-white);
+}
+
+.has-resume .continue-btn .continue-arrow {
+  display: none;
+}

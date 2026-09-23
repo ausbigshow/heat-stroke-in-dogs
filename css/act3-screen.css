@@ -290,10 +290,6 @@
   color: var(--text-inverse);
 }
 
-.act3-hud-pill.act3-nudge-pill {
-  font-weight: 600;
-  font-size: 0.82rem;
-}
 
 /* ==========================================================
    BUTTONS (geometry matched to .act2-hud-btn)
@@ -2217,4 +2213,154 @@
 #screen-act3 .tay-sub-dialogue {
   font-style: italic;
   color: var(--color-heat-deep);
+}
+
+
+/* ==========================================================
+   TAKEAWAY CARD
+   ========================================================== */
+
+.act3-takeaway-scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--surface-scrim);
+  backdrop-filter: blur(8px);
+  z-index: 60;
+  pointer-events: auto;
+}
+
+.act3-takeaway {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92%, 720px);
+  max-height: 90%;
+  background: var(--palette-warm-white);
+  border: 3px solid var(--palette-teal-dark);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-modal);
+  z-index: 65;
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+  animation: stampSlamCentered 0.35s var(--ease-out-expo) forwards;
+}
+
+.act3-takeaway-header {
+  padding: 1.5rem 1.5rem 0.5rem;
+}
+
+.act3-takeaway-badge {
+  display: inline-block;
+  background: var(--palette-teal-dark);
+  color: var(--text-inverse);
+  font-family: var(--font-family-display);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-xs);
+  margin-bottom: 0.5rem;
+}
+
+.act3-takeaway-title {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  font-weight: 800;
+  color: var(--palette-brown-dark);
+}
+
+.act3-takeaway-body {
+  padding: 0 1.5rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.act3-takeaway-body::-webkit-scrollbar {
+  width: 6px;
+}
+.act3-takeaway-body::-webkit-scrollbar-thumb {
+  background: var(--palette-brown-light);
+  border-radius: 3px;
+}
+
+.act3-takeaway-section {
+  margin: 1rem 0;
+}
+
+.act3-takeaway-section h3 {
+  font-family: var(--font-family-display);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--palette-brown-dark);
+}
+
+.act3-takeaway-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1.5rem;
+}
+
+.act3-takeaway-list li {
+  font-family: var(--font-family-body);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--palette-text-muted);
+}
+.act3-takeaway-list li strong {
+  color: var(--palette-brown-dark);
+}
+
+.act3-takeaway-footer {
+  padding: 1rem 1.5rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .act3-takeaway-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Print copy of the takeaway card, built on demand by the Print button (see act3-screen.js). */
+#act3-print-root {
+  display: none;
+}
+
+@media print {
+  html, body, #app {
+    height: auto;
+    overflow: visible;
+    background: var(--palette-warm-white);
+  }
+  body > :not(#act3-print-root) {
+    display: none !important;
+  }
+  #act3-print-root {
+    display: block;
+    color: var(--palette-text-dark);
+    font-family: var(--font-family-body);
+  }
+  #act3-print-root .act3-takeaway-body {
+    overflow: visible;
+    max-height: none;
+  }
+  #act3-print-root .act3-takeaway-list li {
+    color: var(--palette-text-dark);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .act3-takeaway {
+    animation-duration: 0.01s !important;
+  }
 }

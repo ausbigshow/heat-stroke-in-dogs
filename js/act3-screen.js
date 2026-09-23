@@ -39,6 +39,8 @@
  */
 
 import { renderPreservingFocus, focusInto, containFocusIn, releaseFocusContainment } from './a11y-focus.js';
+import { progressStore } from './progress-store.js';
+import { confirmLeave, actMarkerHtml } from './shared-ui.js';
 
 export class Act3Screen {
   constructor(app) {
@@ -47,6 +49,7 @@ export class Act3Screen {
 
     // ---- Core beat state -------------------------------------------------
     // 'wait' | 'verdict' | 'report' | 'tayReturn' | 'nextTime' | 'recheck' | 'home' | 'recap' | 'end'
+    this.takeawayOpen = false;
     this.currentBeat = 'wait';
     this.stepIndex = 0;
     this._enteredBeat = null;
@@ -54,9 +57,8 @@ export class Act3Screen {
 
     // ---- Beat 3A: the wait ----------------------------------------------
     // Twelve seconds of nothing, which is what makes the vet's entrance land. It is a real
-    // wait, not a loading bar — but it is never a trap: `#act3-btn-skip-wait` is present and
-    // focusable from the first frame (H3, user control and freedom).
-    this.waitOver = false;
+    // wait, not a loading bar — but it is never a trap: the wait beat advances with `Next ▶`.
+
     this.castState = { callie: 'waiting', reyes: 'absent', tay: 'absent' };
 
     // ---- Handed forward from Act 2 (see applyHandoff) --------------------
@@ -525,12 +527,6 @@ export class Act3Screen {
   // BEAT 3A — THE WAIT
   // =======================================================================
 
-  endWait() {
-    this.waitOver = true;
-    this.currentBeat = 'verdict';
-    this.stepIndex = 0;
-    this.render();
-  }
 
   
   // =======================================================================
@@ -547,9 +543,9 @@ export class Act3Screen {
       this.container,
       () => this.renderNow(),
       ['#act3-btn-next-step', '#act3-btn-report-next', '#act3-btn-report-done',
-       '#act3-btn-beat-advance', '#act3-btn-skip-wait', '#act3-btn-report-table']
+       '#act3-btn-beat-advance', '#act3-btn-report-table']
     );
-    const dialog = this.container?.querySelector('[role="dialog"]');
+    const dialog = this.container?.querySelector('.act3-takeaway') || this.container?.querySelector('[role="dialog"]');
     if (dialog) containFocusIn(dialog);
 
     const steps = this.stepsForBeat();
@@ -570,6 +566,13 @@ export class Act3Screen {
         }
       }
     }
+    try {
+      if (this.currentBeat === 'end') {
+        progressStore.clear();
+      } else {
+        progressStore.save('act3', this.getResumeState());
+      }
+    } catch (e) { console.warn('Failed to save progress', e); }
   }
 
   renderNow() {
@@ -818,9 +821,10 @@ export class Act3Screen {
         </div>
 
         <div class="act3-hud-group">
+          ${actMarkerHtml(3)}
           <div class="act3-hud-pill progress-pill" data-editor-id="act3-hud-progress"
-               aria-label="Act 3 progress: Beat ${currentBeatNum} of ${totalBeats}">
-            <span class="act3-hud-label" aria-hidden="true">BEAT</span>
+               aria-label="Act 3 progress: step ${currentBeatNum} of ${totalBeats}">
+            <span class="act3-hud-label" aria-hidden="true">STEP</span>
             <span class="act3-hud-count">${currentBeatNum}/${totalBeats}</span>
           </div>
 
@@ -1308,6 +1312,7 @@ export class Act3Screen {
           </p>
 
           <div class="act3-end-actions">
+            <button id="act3-btn-takeaway" class="act3-hud-btn btn-action-primary" data-editor-id="act3-btn-takeaway">Before your next lake day ➔</button>
             <button id="act3-btn-replay-act3" class="act3-hud-btn"
                     data-editor-id="act3-btn-replay-act3">Replay Act 3</button>
             <button id="act3-btn-replay-act1" class="act3-hud-btn" data-editor-id="act3-btn-replay-act1">Replay Act 1</button>
@@ -1322,6 +1327,44 @@ export class Act3Screen {
             ${this.sources.map(src => `<li>${src}</li>`).join('')}
           </ul>
         </div>
+      </div>
+      ${this.takeawayOpen ? this.renderTakeawayCard() : ''}
+    `;
+  }
+
+
+  renderTakeawayCard() {
+    return `
+      <div class="act3-takeaway-scrim" data-editor-id="act3-takeaway-scrim"></div>
+      <div class="act3-takeaway" role="dialog" aria-modal="true" aria-labelledby="act3-takeaway-title" data-editor-id="act3-takeaway">
+        <header class="act3-takeaway-header">
+          <span class="act3-takeaway-badge">Take this with you</span>
+          <h2 id="act3-takeaway-title" class="act3-takeaway-title">Before your next lake day</h2>
+        </header>
+        <div class="act3-takeaway-body">
+          <section class="act3-takeaway-section">
+            <h3>Set up before you settle in</h3>
+            <ul class="act3-takeaway-list">
+              ${this.hintsTimeline.map(hint => `<li><strong>${hint.title}</strong>: ${hint.nextTime}</li>`).join('')}
+            </ul>
+          </section>
+          <section class="act3-takeaway-section">
+            <h3>Plan the day</h3>
+            <ul class="act3-takeaway-list">
+              ${this.preventionOptions.map(opt => `<li>${opt.label}</li>`).join('')}
+            </ul>
+          </section>
+          <section class="act3-takeaway-section">
+            <h3>Call the vet on the way if you see</h3>
+            <ul class="act3-takeaway-list">
+              ${this.reportRows.map(row => `<li><strong>${row.sign}</strong>: ${row.reported}</li>`).join('')}
+            </ul>
+          </section>
+        </div>
+        <footer class="act3-takeaway-footer">
+          <button id="act3-btn-takeaway-print" class="act3-hud-btn" data-editor-id="act3-btn-takeaway-print">Print</button>
+          <button id="act3-btn-takeaway-close" class="act3-hud-btn" data-editor-id="act3-btn-takeaway-close">✕ Close</button>
+        </footer>
       </div>
     `;
   }
@@ -1338,14 +1381,6 @@ export class Act3Screen {
                 aria-label="Go back one step">◀ Back</button>
     ` : '';
 
-    if (this.currentBeat === 'nextTime' && this.stepIndex === 0 && this.preventionChosen.size === 0) {
-      return `
-        ${back}
-        <div class="act3-hud-pill act3-nudge-pill" data-editor-id="act3-nudge-pill">
-          <span>Pick the ones you'd actually do</span>
-        </div>
-      `;
-    }
     return back;
   }
 
@@ -1448,11 +1483,34 @@ export class Act3Screen {
       });
     };
 
-    on('#act3-btn-back-act2', () => this.app?.navigateTo('act2', {
-      beat: 'transport',
-      handoff: this.getHandoff()
-    }));
-    on('#act3-btn-title', () => this.app?.navigateTo('opening'));
+    on('#act3-btn-back-act2', async (e) => {
+      e.preventDefault();
+      if (this.hasProgress()) {
+        const leave = await confirmLeave({
+          title: 'Go back to Act 2?',
+          message: 'Act 2 starts again from the beginning, and your progress in Act 3 will be cleared.',
+          leaveLabel: 'Go back'
+        });
+        if (!leave) return;
+      }
+      this.app?.navigateTo('act2', {
+        beat: 'transport',
+        handoff: this.getHandoff()
+      });
+    });
+    on('#act3-btn-title', async (e) => {
+      e.preventDefault();
+      if (this.hasProgress()) {
+        const leave = await confirmLeave({
+          title: 'Leave the story?',
+          message: "You'll go back to the title screen, and everything you've done in Act 3 so far will be cleared.",
+          leaveLabel: 'Leave anyway'
+        });
+        if (!leave) return;
+      }
+      try { progressStore.clear(); } catch(err) {}
+      this.app?.navigateTo('opening');
+    });
 
     on('#act3-btn-next-step', () => this.nextSubStep());
     on('#act3-btn-prev-step', () => this.prevSubStep());
@@ -1474,6 +1532,33 @@ export class Act3Screen {
     });
 
     // --- The close ---
+    on('#act3-btn-takeaway', () => {
+      this.takeawayOpen = true;
+      this.render();
+      focusInto(this.container, ['#act3-btn-takeaway-close']);
+    });
+    on('#act3-btn-takeaway-close', () => {
+      this.takeawayOpen = false;
+      this.render();
+      setTimeout(() => {
+        const btn = this.container.querySelector('#act3-btn-takeaway');
+        if (btn) btn.focus();
+      }, 0);
+    });
+    // The card lives inside a transformed, overflow-clipped viewport card on a page that never
+    // scrolls, so printing it in place gets cut off. Print a clean body-level copy instead.
+    on('#act3-btn-takeaway-print', () => {
+      const card = this.container.querySelector('.act3-takeaway');
+      if (!card) return;
+      document.getElementById('act3-print-root')?.remove();
+      const root = document.createElement('div');
+      root.id = 'act3-print-root';
+      root.innerHTML = card.querySelector('.act3-takeaway-header').outerHTML
+        + card.querySelector('.act3-takeaway-body').outerHTML;
+      document.body.appendChild(root);
+      window.addEventListener('afterprint', () => root.remove(), { once: true });
+      window.print();
+    });
     on('#act3-btn-replay-act3', () => this.app?.navigateTo('act3', { handoff: this.getHandoff() }));
     on('#act3-btn-replay-act1', () => this.app?.navigateTo('act1'));
     on('#act3-btn-end-title', () => this.app?.navigateTo('opening'));
@@ -1492,6 +1577,38 @@ export class Act3Screen {
       hintsDropped: this.hintsDropped,
       coolingWrongCount: this.coolingWrongCount
     };
+  }
+
+  // ---- Resume point (js/progress-store.js) -------------------------------
+  // Everything render() needs to put the learner back where they were. Timers, the takeaway
+  // dialog and entrance flags are transient and start fresh.
+  getResumeState() {
+    return {
+      currentBeat: this.currentBeat,
+      stepIndex: this.stepIndex,
+      clockMinutes: this.clockMinutes,
+      castState: { ...this.castState },
+      reportTableExpanded: this.reportTableExpanded,
+      preventionChosen: [...this.preventionChosen],
+      activePrevention: this.activePrevention,
+      handoff: this.getHandoff()
+    };
+  }
+
+  applyResumeState(state) {
+    if (!state || typeof state !== 'object') return;
+    if (state.handoff) this.applyHandoff(state.handoff);
+    if (typeof state.currentBeat === 'string') this.currentBeat = state.currentBeat;
+    if (Number.isInteger(state.stepIndex)) this.stepIndex = state.stepIndex;
+    if (Number.isFinite(state.clockMinutes)) this.clockMinutes = state.clockMinutes;
+    if (state.castState && typeof state.castState === 'object') this.castState = { ...this.castState, ...state.castState };
+    this.reportTableExpanded = !!state.reportTableExpanded;
+    if (Array.isArray(state.preventionChosen)) this.preventionChosen = new Set(state.preventionChosen);
+    if (state.activePrevention !== undefined) this.activePrevention = state.activePrevention;
+  }
+
+  hasProgress() {
+    return !(this.currentBeat === 'wait' && this.stepIndex === 0);
   }
 
   /**
@@ -1560,6 +1677,7 @@ export class Act3Screen {
       nextBtn.className = state.className;
       nextBtn.innerHTML = state.html;
     }
+    try { progressStore.save('act3', this.getResumeState()); } catch (e) { console.warn('Failed to save progress', e); }
   }
 
   // =======================================================================
@@ -1673,6 +1791,16 @@ export class Act3Screen {
     // the file is a beat the story passes through, not an optional overlay, and dropping the
     // learner back into an empty clinic would be a dead end rather than an exit.
     if (e.key === 'Escape') {
+      if (this.takeawayOpen) {
+        e.preventDefault();
+        this.takeawayOpen = false;
+        this.render();
+        setTimeout(() => {
+          const btn = this.container.querySelector('#act3-btn-takeaway');
+          if (btn) btn.focus();
+        }, 0);
+        return;
+      }
       if (this.currentBeat === 'recap') {
         e.preventDefault();
         this.nextBeat();
@@ -1700,7 +1828,7 @@ export class Act3Screen {
 
     if (this.currentBeat === 'wait') {
       e.preventDefault();
-      this.endWait();
+      this.nextBeat();
       return;
     }
 

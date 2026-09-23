@@ -21,6 +21,9 @@ export class OpeningScreen {
     
     const saved = progressStore.load();
     if (saved && /^act[0-3]$/.test(saved.screen)) {
+      // A returning learner almost always wants to pick up where they were, so Resume takes
+      // the primary treatment and Start over steps down to the outline style.
+      this.continueBtn?.parentElement?.classList.add('has-resume');
       if (this.resumeBtn) {
         const nStr = saved.screen.replace('act', '');
         const label = nStr === '0' ? 'Resume the intro' : `Resume Act ${nStr}`;
