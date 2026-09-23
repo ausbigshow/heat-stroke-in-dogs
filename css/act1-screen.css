@@ -2200,3 +2200,10 @@
   z-index: 2;
   clip-path: inset(50% 0 0 0);
 }
+
+/* The case file (recap) zooms the painted background out, but the scene props stay at the
+   hub's scale, so they sat wrong against the plate. Behind the case file the scene is
+   backdrop only: the props layer (leads, canopy, Tay) is hidden while the card is up. */
+#screen-act1:has(.case-file-card) .act1-scene-layer {
+  visibility: hidden;
+}
