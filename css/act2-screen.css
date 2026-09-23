@@ -449,7 +449,7 @@
   width: 26px;
   height: 28px;
   pointer-events: none;
-  filter: drop-shadow(0 2px 4px rgba(6, 182, 212, 0.5));
+  filter: drop-shadow(0 2px 4px var(--color-radio-glow));
 }
 
 .act2-call-calling-pill {
