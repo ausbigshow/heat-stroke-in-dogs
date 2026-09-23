@@ -1187,10 +1187,11 @@
   animation: povBeatIn 0.32s var(--ease-out-expo) both;
 }
 
+/* Callie's words take the bubble standard (§6.3.1) from their .speech-bubble-text parent —
+   never their own size or weight. A 1.02rem/700 override here made Callie visibly smaller and
+   heavier than Tay and Dana in the same scene (Acts 1 and 2, incl. the symptom cards). */
 .callie-dialogue {
-  font-family: var(--font-family-display);
-  font-size: 1.02rem;
-  font-weight: 700;
+  font: inherit;
   color: var(--palette-brown-dark);
 }
 

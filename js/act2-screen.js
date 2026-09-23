@@ -107,7 +107,6 @@ export class Act2Screen {
         speaker: 'tay_final',
         onomatopoeia: 'Huff…',
         dialogue: "I'm okay. I'm okay.",
-        note: "Tay's last line of the act."
       },
       { speaker: 'callie', text: "You're not okay. You're not okay. Where's my phone —" }
     ];
@@ -1150,7 +1149,7 @@ export class Act2Screen {
             <span class="tay-onomatopoeia">${step.onomatopoeia}</span>
             <span class="tay-sub-dialogue">(${step.dialogue})</span>
           </p>
-          <span class="act2-final-line-tag">${step.note}</span>
+          ${step.note ? `<span class="act2-final-line-tag">${step.note}</span>` : ''}
         </div>
       `;
     }
@@ -1206,17 +1205,21 @@ export class Act2Screen {
     if (step.speaker === 'tech') {
       return `
         <div class="speech-bubble phone-radio-bubble ${isNewLineClass}"
-             style="top: 12%; left: 26%; max-width: min(440px, 36vw);"
+             style="top: 33.5%; left: 34%; max-width: min(420px, 34vw);"
              data-editor-id="act2-art-phone-bezel">
           <div class="speech-bubble-speaker comic-radio-speaker">
             
             <span>Dana · Lakeside Emergency (Phone)</span>
           </div>
-          <p class="speech-bubble-text comic-radio-text">
-            "${step.text}"
-          </p>
-          <svg class="electric-lightning-tail" viewBox="0 0 40 40" aria-hidden="true">
-            <polygon points="2,0 36,0 26,14 38,18 10,38 18,22 4,18" style="fill: var(--surface-radio); stroke: var(--color-radio);" stroke-width="2.5" stroke-linejoin="miter" />
+          <p class="speech-bubble-text comic-radio-text">${step.text}</p>
+          <!-- Comic-book "electric" tail: a zig-zag bolt down to the phone in Callie's hand.
+               Filled like the bubble, outlined on its two outer edges only, so its top edge
+               sits over the bubble's border and the join is seamless. -->
+          <svg class="electric-lightning-tail" viewBox="0 0 80 60" aria-hidden="true">
+            <polygon points="46,0 74,0 54,20 64,22 34,42 42,44 4,58 24,38 16,36 40,16 32,14"
+                     style="fill: var(--surface-radio);" />
+            <polyline points="74,0 54,20 64,22 34,42 42,44 4,58 24,38 16,36 40,16 32,14 46,0"
+                      style="fill: none; stroke: var(--color-radio);" stroke-width="3" stroke-linejoin="miter" />
           </svg>
         </div>
       `;
@@ -1235,9 +1238,9 @@ export class Act2Screen {
     const body = `
       <div class="act2-phone-line line-tech">
         <span class="act2-phone-line-who">Dana · Vet Tech</span>
-        <p class="act2-phone-line-text">"${remaining.length
+        <p class="act2-phone-line-text">${remaining.length
           ? "Whichever one you can get to. I'll take them in any order."
-          : "That's all 4. Stay on the line."}"</p>
+          : "That's all 4. Stay on the line."}</p>
       </div>
       <ul class="act2-triage-list" data-editor-id="act2-triage-list">
         ${Object.values(this.checksData).map(c => {
@@ -1331,7 +1334,7 @@ export class Act2Screen {
               
               <span>Dana · Lakeside Emergency (Phone)</span>
             </div>
-            <p class="speech-bubble-text comic-radio-text">"${step.text}"</p>
+            <p class="speech-bubble-text comic-radio-text">${step.text}</p>
           </div>
         `;
       } else if (step.type === 'report') {
@@ -1485,8 +1488,8 @@ export class Act2Screen {
         </ol>
         <p class="act2-payoff-tech">
           <span class="act2-phone-line-who">Dana · Vet Tech</span>
-          "95 minutes of build-up, and everything you just described to me. I'm not
-          going to make you wait for a number. Bring her in — and start cooling her before you drive."
+          95 minutes of build-up, and everything you just described to me. I'm not
+          going to make you wait for a number. Bring her in — and start cooling her before you drive.
         </p>
         <div class="act2-payoff-footer">
           <button id="act2-btn-to-decision" class="act2-hud-btn btn-action-primary pulse-btn"
@@ -1598,7 +1601,7 @@ export class Act2Screen {
 
         <p class="act2-cool-prompt">
           <span class="act2-phone-line-who">Dana · Vet Tech</span>
-          "${step.techPrompt}"
+          ${step.techPrompt}
         </p>
 
         ${step.commonBelief ? `

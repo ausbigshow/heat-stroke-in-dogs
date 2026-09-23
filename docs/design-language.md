@@ -505,6 +505,14 @@ the template, never typed into the data. `.tay-sub-dialogue` is italic, `--color
 never a line break between them. On an exit line, add `.is-exit-line` to the bubble: the sub
 dialogue goes italic at 0.9 opacity, reading as trailing off.
 
+**Phone / radio voice** — `.phone-radio-bubble` (Act 2, Dana on the phone): `--surface-radio`
+ground, `3px solid --color-radio`, `--text-radio` text, `--radius-xs`, same §6.3.1 type as every
+other bubble. Its tail is a comic-book zig-zag bolt (`.electric-lightning-tail`, inline SVG)
+running to the phone in the speaker's hand — filled like the bubble, outlined on its outer edges
+only, overlapping the border by 3px for a seamless join. **Never put `clip-path` on a bubble:** it
+clips the tail (this is how the bolt went missing before v1.1). Every line Dana speaks — bubble,
+phone panel, symptom cards, cooling card — uses the §6.3.1 dialogue size, without quote marks.
+
 ### 6.4 Modal card
 
 Two grounds. **Dark** (`--surface-card-dark`) for in-world clinical documents — mission card,

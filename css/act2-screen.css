@@ -403,12 +403,6 @@
   color: var(--text-radio);
   border-radius: var(--radius-xs);
   box-shadow: 0 0 18px var(--color-radio-glow), var(--elev-modal);
-  clip-path: polygon(
-    0 8px, 8px 0,
-    calc(100% - 8px) 0, 100% 8px,
-    100% calc(100% - 8px), calc(100% - 8px) 100%,
-    8px 100%, 0 calc(100% - 8px)
-  );
   padding: 1.1rem 1.35rem 1.1rem;
   pointer-events: auto;
   z-index: 35;
@@ -443,11 +437,12 @@
 }
 
 .speech-bubble.phone-radio-bubble .electric-lightning-tail {
+  /* No clip-path on the bubble: it used to chamfer the corners and silently cut this off. */
   position: absolute;
-  bottom: -25px;
-  left: 36px;
-  width: 26px;
-  height: 28px;
+  top: calc(100% - 3px); /* overlaps the 3px border so the join is seamless */
+  left: -14px;
+  width: 80px;
+  height: 60px;
   pointer-events: none;
   filter: drop-shadow(0 2px 4px var(--color-radio-glow));
 }
@@ -925,9 +920,10 @@
 }
 
 .act2-phone-line-text {
-  font-size: 1.02rem;
-  line-height: 1.55;
-  font-weight: 500;
+  font-family: var(--font-family-display);
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+  font-weight: 600;
+  line-height: 1.4;
   color: var(--text-on-dark);
 }
 
@@ -1103,7 +1099,9 @@
 
 .act2-check-art {
   display: grid;
-  grid-template-columns: minmax(240px, 1.3fr) minmax(220px, 1fr);
+  /* Conversation gets the wider column: at the §6.3.1 dialogue size the old 1.3fr/1fr split
+     made the three-line exchange scroll while empty space sat under the art. */
+  grid-template-columns: minmax(220px, 1fr) minmax(240px, 1.15fr);
   gap: 1rem;
   /* start, not stretch: the right column sizes to its OWN content and the row grows to
      whichever column is taller. Stretching it to the image height is what squeezed the
@@ -1415,7 +1413,7 @@
   to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
-.act2-payoff-header { margin-bottom: 1rem; }
+.act2-payoff-header { margin-bottom: 0.75rem; }
 
 .act2-payoff-badge {
   display: inline-block;
@@ -1445,23 +1443,23 @@
 
 .act2-payoff-timeline {
   list-style: none;
-  margin: 0 0 1rem;
+  margin: 0 0 0.8rem;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .act2-payoff-item {
   display: grid;
-  grid-template-columns: 84px 32px 1fr;
+  grid-template-columns: 84px 1fr;
   gap: 0.7rem;
   align-items: center;
   background: var(--palette-warm-white);
   border: 1.5px solid rgba(56, 36, 24, 0.14);
   border-left: 5px solid var(--color-heat);
   border-radius: var(--radius-sm);
-  padding: 0.6rem 0.8rem;
+  padding: 0.45rem 0.8rem;
 }
 
 .act2-payoff-time {
@@ -1472,7 +1470,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.act2-payoff-icon { font-size: 1.2rem; text-align: center; }
 
 .act2-payoff-copy {
   display: flex;
@@ -1493,8 +1490,10 @@
   border-left: 5px solid var(--palette-teal);
   border-radius: var(--radius-sm);
   padding: 0.8rem 1rem;
-  font-size: 1rem;
-  line-height: 1.55;
+  font-family: var(--font-family-display);
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+  font-weight: 600;
+  line-height: 1.4;
   color: var(--palette-text-dark);
 }
 
@@ -1507,7 +1506,7 @@
 .act2-payoff-footer {
   display: flex;
   justify-content: center;
-  margin-top: 1.4rem;
+  margin-top: 1rem;
   pointer-events: auto;
 }
 
@@ -1679,8 +1678,10 @@
   border-left: 5px solid var(--palette-teal);
   border-radius: var(--radius-sm);
   padding: 0.75rem 0.95rem;
-  font-size: 1.02rem;
-  line-height: 1.55;
+  font-family: var(--font-family-display);
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+  font-weight: 600;
+  line-height: 1.4;
   color: var(--palette-text-dark);
   margin-bottom: 0.7rem;
 }
