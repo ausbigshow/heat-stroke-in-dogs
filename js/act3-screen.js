@@ -122,7 +122,7 @@ export class Act3Screen {
         { icon: 'shade', label: 'Shade first', text: 'Set up real shade before anything else, and check it every 30 minutes. Shade moves. A sleeping dog doesn\'t.' },
         { icon: 'water', label: 'Water in the shade', text: 'Top off your dog\'s water whenever you top off your own. Warm water in the sun doesn\'t get drunk.' },
         { icon: 'clock', label: 'Go early or late', text: 'Mornings and evenings. The middle of the afternoon is the hottest part of the day.' },
-        { icon: 'hand', label: 'The 5-second test', text: 'Palm flat on the sand, pavement, or boards for 5 seconds. If you can\'t hold it there, your dog can\'t stand on it.' },
+        { icon: 'hand', label: 'The 7-second test', text: 'Back of your hand on the sand, pavement, or boards for 7 seconds. If you can\'t hold it there, your dog can\'t stand on it.' },
         { icon: 'sun', label: 'Cooler in the shade', text: 'Put the cooler in the shade and keep your dog there with it. Cold on the outside is still an oven on the inside.' },
         { icon: 'home', label: 'Some days, stay in', text: 'Too hot or too humid? Air conditioning and a puzzle toy at home.' }
       ],
@@ -222,7 +222,7 @@ export class Act3Screen {
     // if one changes, change both.
     this.hintsTimeline = [
       { time: '1:30 PM', title: 'The cooler, in open sun', line: '15 minutes against a cold box, in full sun.', nextTime: 'Put the cooler in the shade and keep her with it. Cold on the outside is still an oven on the inside.' },
-      { time: '1:48 PM', title: 'The dock', line: '137°F boards, patrolled twice.', widest: true, nextTime: "Press your palm on the boards for 5 seconds before she walks them. If you can't hold it there, she can't stand on it." },
+      { time: '1:48 PM', title: 'The dock', line: '137°F boards, patrolled twice.', widest: true, nextTime: "Press the back of your hand on the boards for 7 seconds before she walks them. If you can't hold it there, she can't stand on it." },
       { time: '2:03 PM', title: 'The water bowl', line: 'Sun-warm, half empty, untouched.', nextTime: "Bowl in the shade, refilled every time you refill your own. Warm water in the sun doesn't get drunk." },
       { time: '2:38 PM', title: 'The shade that moved', line: '27 minutes asleep in full sun.', nextTime: "Look at where the shadow is every 30 minutes. It moves. A sleeping dog doesn't." }
     ];
@@ -354,13 +354,13 @@ export class Act3Screen {
         speaker: 'reyes',
         business: 'washing her hands',
         cast: { reyes: 'serious' },
-        text: "You'd think. It's 20 degrees hotter inside within the first 10 minutes. And cracking the windows? That takes it from about 3.5 degrees every 5 minutes to about 3. It does <strong>next to nothing</strong>.",
+        text: "You'd think. It's 20 degrees hotter inside within the first 10 minutes. And cracking the windows? That takes it from about 3.4 degrees every 5 minutes to about 3.1. It does <strong>next to nothing</strong>.",
         stamp: {
           metric: '+20°F in 10 min',
           line: 'Cracking the windows barely moves it: about 3.4°F every 5 minutes becomes about 3.1°F. It does next to nothing.'
         }
       },
-      { speaker: 'callie', text: "That's — that's it? Half a degree?" },
+      { speaker: 'callie', text: "That's — that's it? A third of a degree?" },
       { speaker: 'reyes', business: 'handing it over, not lecturing', cast: { reyes: 'warm' }, text: "That's it. You don't need this lecture. Somebody you know does — so now you've got the number." },
             {
         speaker: 'reyes',
