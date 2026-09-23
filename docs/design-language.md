@@ -195,7 +195,6 @@ load-bearing for contrast (Appendix A composites against them).
 | `#1E293B` | `.act1-viewport-card` background | The card ground *behind* the scene image; only ever visible for one frame while the image decodes. |
 | `#FFEDD5` | `.clock-pill` text | Warm off-white chosen against `--surface-clock`; 9.99:1. |
 | `#FB923C` | `.leads-pill` border | Non-text hairline tuned to the pill's own brown ground. |
-| `#F1F5F9` | `.truth-stamp-line` text | One step darker than `--text-on-dark`; 16.45:1. |
 | `rgba(255,255,255,0.05 … 0.3)` | Hairlines and inner rules throughout Act 1 | Hand-tuned alphas on a photographic backdrop. The four `--hairline-*` tokens (`0.08 / 0.15 / 0.25 / 0.6`) are the rule for **new** work; these eight existing alphas are optical adjustments, same reasoning as the grandfathered spacing in §4.1. |
 | `rgba(185,28,28,0.95)` | `.hints-dropped-pill` ground | `--color-danger` at 95%. CSS cannot apply alpha to a hex token without `color-mix()`; composited it is `#BD2727` at 6.04:1. |
 
@@ -559,6 +558,11 @@ Two children: `.truth-stamp-metric` — a hard number in an `--color-amber-deep`
 `--color-amber-pale` text and an `--color-amber-tint-2` hairline, `white-space: nowrap`, never
 wrapping — and `.truth-stamp-line`, body family, one sentence, in `#F1F5F9` (a grandfathered
 literal one step darker than `--text-on-dark`; §2.5 — new work uses the token).
+
+**Where it appears (v1.1).** Acts 2 and 3 use it in the moment. Act 1 no longer does: the
+author wanted the lake-hunt facts to land in retrospect, so each lead's `stamp.metric` now
+appears as a chip inside its row of the Act 1 case file, and the POV close-ups carry dialogue
+only.
 
 **Rule:** the metric is a *measurement* (`131°F`, `2.5 sec`), not a label. If you cannot put a
 number in the chip, you do not have a truth stamp; you have a caption. On narrow viewports it

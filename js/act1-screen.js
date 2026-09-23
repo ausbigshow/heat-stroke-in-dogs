@@ -492,7 +492,7 @@ export class Act1Screen {
         aria-pressed="false"
       >
         <span class="interactable-art">
-        ${leadId !== 'lake' ? '<div class="prop-ground-shadow"></div><div class="prop-affordance-ring"></div>' : ''}${artHtml}</span>
+        ${leadId !== 'lake' ? '<div class="prop-ground-shadow"></div><div class="prop-affordance-ring ring-back"></div>' : ''}${artHtml}${leadId !== 'lake' ? '<div class="prop-affordance-ring ring-front"></div>' : ''}</span>
         <span class="interactable-tooltip" aria-hidden="true">${lead.tayName}</span>
       </button>
     `;
@@ -591,16 +591,19 @@ export class Act1Screen {
 
     const targetCoords = {
       cooler: { top: 71, left: 47 },
-      dock: { top: 60, left: 22 },
+      // On the sand at the dock's near end, in front of it (ground line ~64% vs the dock's 61.5%).
+      dock: { top: 60.6, left: 26, scale: 0.7 },
       bowl: { top: 76, left: 48 },
-      lake: { top: 56, left: 11 },
+      // On the sand at the waterline, never in the water. Smaller than her depth scale
+      // alone would make her: the shore reads further off than the grass in front.
+      lake: { top: 53.7, left: 41, scale: 0.66 },
       canopy: { top: 70, left: 74 }
     }[leadId] || { top: 70, left: 50 };
 
     const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const movingLeft = targetCoords.left < this.tayPosition.left;
     this.tayFacingLeft = movingLeft;
-    this.tayPosition = targetCoords;
+    this.tayPosition = { ...targetCoords };
 
     if (isReducedMotion) {
       if (leadId === 'canopy') {
@@ -663,7 +666,7 @@ export class Act1Screen {
       const el = this.container.querySelector(`.interactable-${leadId}`);
       if (el) {
         // Exact ground line = top + height from CSS
-        const depths = { cooler: 73, dock: 64.4, bowl: 79.6, lake: 63 };
+        const depths = { cooler: 73, dock: 61.5, bowl: 79.6, lake: 52 };
         el.style.zIndex = 10 + Math.round(depths[leadId]);
         const visited = this.visitedLeads.has(leadId);
         const lead = this.leadsData[leadId];
@@ -716,10 +719,10 @@ export class Act1Screen {
         // Tay's ground line is offset from her bounding box `top` due to `translate: -73.2%`.
         // Base offset = (0.985 ground contact - 0.732 translate) * 18.58 (height in container %) = 4.7%
         const baseOffset = 4.7;
-        const tayScale = this.getDepthScale(this.tayPosition.top);
+        const tayScale = this.tayPosition.scale !== undefined ? this.tayPosition.scale : this.getDepthScale(this.tayPosition.top);
         const tayGroundLine = this.tayPosition.top + (baseOffset * tayScale);
         tayEl.style.zIndex = 10 + Math.round(tayGroundLine);
-        tayEl.style.setProperty('--tay-scale', this.getDepthScale(this.tayPosition.top));
+        tayEl.style.setProperty('--tay-scale', tayScale);
         
         const standingImg = tayEl.querySelector('.tay-standing-img');
         if (standingImg && standingImg.getAttribute('src') !== info.standingSrc) {
@@ -997,11 +1000,6 @@ export class Act1Screen {
     if (!step) return '';
 
     const isLastStep = stepIdx === steps.length - 1;
-    // The stamp lands with the final beat, once she has had her say. Lake revisits are
-    // gag-only, so they don't re-run the correction.
-    const isLakeRevisit = isLake && (this.leadVisitCounts[this.activeLeadId] || 1) > 1;
-    const stamp = (isLastStep && !isLakeRevisit) ? lead.stamp : null;
-
     const stepKey = `${this.currentBeat}-${this.activeLeadId}-${this.povStepIndex}`;
     const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
 
@@ -1047,17 +1045,10 @@ export class Act1Screen {
                   <span>Callie</span>
                 </div>
                 <p class="speech-bubble-text">
-                  <span class="callie-dialogue">"${step.text}"</span>
+                  <span class="callie-dialogue">${step.text}</span>
                 </p>
               </div>
             `}
-
-            ${stamp ? `
-              <div class="act1-truth-stamp ${isNewLineClass}" data-editor-id="act1-truth-stamp">
-                <span class="truth-stamp-metric">${stamp.metric}</span>
-                <span class="truth-stamp-line">${stamp.line}</span>
-              </div>
-            ` : ''}
           </div>
 
           <!-- Beat counter + advance / finish -->
@@ -1174,19 +1165,19 @@ export class Act1Screen {
           <tbody>
             <tr>
               <td class="tay-term">The Vault</td>
-              <td>Full sun, no shade, 90 minutes — extreme trapped heat</td>
+              <td>Full sun, no shade, 90 minutes — extreme trapped heat<br><span class="truth-stamp-metric">99°F, full sun</span></td>
             </tr>
             <tr>
               <td class="tay-term">High Ground</td>
-              <td>137°F dock wood surface — radiant heat at 4 inches</td>
+              <td>137°F dock wood surface — radiant heat at 4 inches<br><span class="truth-stamp-metric">137°F deck, 96°F air</span></td>
             </tr>
             <tr>
               <td class="tay-term">The Water One</td>
-              <td>Warm sun-baked water — zero hydration since car ride</td>
+              <td>Warm sun-baked water — zero hydration since car ride<br><span class="truth-stamp-metric">Warm since noon</span></td>
             </tr>
             <tr class="lake-row">
               <td class="tay-term">The Biggest Bowl</td>
-              <td class="reality-term">The immediate cooling source she never used</td>
+              <td class="reality-term">The immediate cooling source she never used<br><span class="truth-stamp-metric">72°F water</span></td>
             </tr>
           </tbody>
         </table>
