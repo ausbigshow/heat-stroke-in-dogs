@@ -634,7 +634,7 @@ export class Act2Screen {
       <header class="act2-hud-bar" data-editor-id="act2-hud-bar">
         <div class="act2-hud-group">
           <button id="act2-btn-back-act1" class="act2-hud-btn" data-editor-id="act2-btn-back-act1"
-                  title="Return to Act 1" aria-label="Return to Act 1">Back to Act 1</button>
+                  title="Return to Act 1" aria-label="Return to Act 1">◀ Act 1</button>
           <button id="act2-btn-title" class="act2-hud-btn" data-editor-id="act2-btn-title"
                   title="Return to Title" aria-label="Return to the title screen">Title</button>
         </div>
