@@ -865,7 +865,7 @@ export class Act2Screen {
         }
         @keyframes act2GumBlanchAnim {
           0%, ${pct(0.6)} { background-color: var(--gum-color); animation-timing-function: ease; }
-          ${pct(1.1)} { background-color: #F2DCD6; animation-timing-function: linear; }
+          ${pct(1.1)} { background-color: var(--gum-blanched); animation-timing-function: linear; }
           ${pct(1.1 + refill)} { background-color: var(--gum-color); }
           100% { background-color: var(--gum-color); }
         }
