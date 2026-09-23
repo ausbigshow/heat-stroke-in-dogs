@@ -1097,7 +1097,7 @@ export class Act2Screen {
           <span>Callie</span>
         </div>
         <p class="speech-bubble-text">
-          <span class="callie-dialogue">"${step.text}"</span>
+          <span class="callie-dialogue">${step.text}</span>
         </p>
       </div>
     `;
@@ -1130,7 +1130,7 @@ export class Act2Screen {
             <span>Callie</span>
           </div>
           <p class="speech-bubble-text">
-            <span class="callie-dialogue">"${step.text}"</span>
+            <span class="callie-dialogue">${step.text}</span>
           </p>
         </div>
       `;
@@ -1149,7 +1149,7 @@ export class Act2Screen {
             "${step.text}"
           </p>
           <svg class="electric-lightning-tail" viewBox="0 0 40 40" aria-hidden="true">
-            <polygon points="2,0 36,0 26,14 38,18 10,38 18,22 4,18" fill="#08212C" stroke="#06B6D4" stroke-width="2.5" stroke-linejoin="miter" />
+            <polygon points="2,0 36,0 26,14 38,18 10,38 18,22 4,18" fill="var(--surface-radio)" stroke="var(--color-radio)" stroke-width="2.5" stroke-linejoin="miter" />
           </svg>
         </div>
       `;
@@ -1275,7 +1275,7 @@ export class Act2Screen {
               <span>Callie</span>
             </div>
             <p class="speech-bubble-text">
-              <span class="callie-dialogue">"${this.getCallieReportLine(checkId, v)}"</span>
+              <span class="callie-dialogue">${this.getCallieReportLine(checkId, v)}</span>
             </p>
           </div>
         `;
