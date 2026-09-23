@@ -1317,46 +1317,37 @@
   cursor: default;
 }
 
-/* Callie Off-screen Speech Bubble (Cold Open)
-   Styled consistently with Tay's speech bubble, but with a stem pointing up towards
-   the top off-screen direction where Callie is calling from. */
+/* Callie off-screen — every line she speaks from outside the frame in Act 1 (cold open,
+   alarm, POV rise). Her normal bubble (§6.3: white, brown-dark ink, teal label), pinned to
+   the right edge, with the tail leaving the RIGHT side toward where she is standing.
+   Tail height is overridable with --stem-top, like --stem-left/--stem-right elsewhere. */
 .speech-bubble.callie-bubble.act1-callie-offscreen-bubble {
-  background: var(--palette-warm-white);
-  border: 3px solid var(--palette-brown-dark);
-  color: var(--palette-brown-dark);
+  top: 20%;
+  right: calc(22px + 1.5rem); /* the tail's length, plus a gutter from the card edge */
+  left: auto;
+  max-width: var(--bubble-max-w, 320px);
 }
 
-.speech-bubble.callie-bubble.act1-callie-offscreen-bubble .speech-bubble-speaker {
-  color: var(--palette-teal-dark);
-}
-
-/* Seamless stem pointing UP / outward toward off-screen */
 .speech-bubble.callie-bubble.act1-callie-offscreen-bubble::before {
   bottom: auto;
-  top: -22px;
-  right: var(--stem-right, 38px);
-  width: 0;
-  height: 0;
-  border-left: 10px solid transparent;
-  border-right: 22px solid transparent;
-  border-top: none;
-  border-bottom: 22px solid var(--palette-brown-dark);
-  z-index: 1;
+  left: auto;
+  top: var(--stem-top, 46%);
+  right: -22px;
+  border-top: 8px solid transparent;
+  border-bottom: 14px solid transparent;
+  border-left: 22px solid var(--palette-brown-dark);
+  border-right: none;
 }
 
 .speech-bubble.callie-bubble.act1-callie-offscreen-bubble::after {
-  content: '';
-  position: absolute;
   bottom: auto;
-  top: -18px;
-  right: calc(var(--stem-right, 38px) + 2px);
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 19px solid transparent;
-  border-top: none;
-  border-bottom: 19px solid var(--palette-warm-white);
-  z-index: 2;
+  left: auto;
+  top: calc(var(--stem-top, 46%) + 3px);
+  right: -17px;
+  border-top: 6px solid transparent;
+  border-bottom: 10.5px solid transparent;
+  border-left: 18px solid var(--palette-warm-white);
+  border-right: none;
 }
 
 /* Subtle click-through guidance at the bottom of cold open dialogue */
@@ -1404,42 +1395,8 @@
   animation: pulsePill 2.5s infinite;
 }
 
-/* Ambient Offscreen Voice Notification (Callie offscreen in later beats) */
-.callie-offscreen-banner {
-  position: absolute;
-  top: 5rem;
-  right: 1.5rem;
-  background: var(--surface-glass-light);
-  backdrop-filter: blur(8px);
-  border-left: 5px solid var(--palette-teal-dark);
-  color: var(--palette-brown-dark);
-  padding: 0.75rem 1.1rem;
-  border-radius: var(--radius-sm);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  font-family: var(--font-family-display);
-  font-weight: 600;
-  font-size: 0.95rem;
-  max-width: 320px;
-  pointer-events: auto;
-  z-index: 35;
-}
 
-.callie-offscreen-label {
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: var(--palette-teal-dark);
-  letter-spacing: 0.05em;
-  margin-bottom: 0.2rem;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
 
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
 
 /* ==========================================================
    MODAL ENTRANCE ANIMATIONS
@@ -1878,7 +1835,6 @@
   .case-file-card,
   .act2-placeholder-modal,
   .foil-crinkle-banner,
-  .callie-offscreen-banner,
   .act1-pov-viewport-modal,
   .lake-scene-tay.tay-entering {
     animation-duration: 0.01s;
@@ -2225,10 +2181,6 @@
 
 .is-entering .act1-pov-viewport-modal {
   animation: fadeIn 0.25s ease-out forwards;
-}
-
-.is-entering .callie-offscreen-banner {
-  animation: slideInRight var(--dur-base) var(--ease-out-expo) forwards;
 }
 
 .is-entering .foil-crinkle-banner {

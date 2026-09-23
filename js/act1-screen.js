@@ -865,26 +865,12 @@ export class Act1Screen {
     }
 
     if (step.speaker === 'callie_offscreen') {
-      return `
-        <div 
-          class="speech-bubble callie-bubble act1-callie-offscreen-bubble ${isNewLineClass}" 
-          style="${step.pos || 'top: 24%; left: 45%; max-width: var(--bubble-max-w, 320px);'}" 
-          data-editor-id="act1-coldopen-callie"
-        >
-          <div class="speech-bubble-speaker">
-            <span>Callie (Off-screen)</span>
-          </div>
-          <p class="speech-bubble-text">
-            "${step.text}"
-          </p>
-          <div class="bubble-click-hint" aria-hidden="true">
-            <span>Click anywhere to continue</span>
-            <span class="hint-arrow">▶</span>
-          </div>
-        </div>
-      `;
+      return this.renderOffscreenCallie(step.text, 'act1-coldopen-callie', isNewLineClass, `
+        <div class="bubble-click-hint" aria-hidden="true">
+          <span>Click anywhere to continue</span>
+          <span class="hint-arrow">▶</span>
+        </div>`);
     }
-
     return `
       <div 
         class="speech-bubble tay-bubble act1-coldopen-tay-bubble ${isNewLineClass}" 
@@ -1133,17 +1119,32 @@ export class Act1Screen {
     `;
   }
 
+  /**
+   * Callie speaking from outside the frame. Every off-screen line in Act 1 uses this one
+   * bubble — her normal ink-on-white bubble, pinned to the right edge, with its tail coming
+   * out of the right side toward where she is. No colour or size change per line: the
+   * escalation lives in the words.
+   */
+  renderOffscreenCallie(text, editorId, isNewLineClass = '', extra = '') {
+    return `
+      <div class="speech-bubble callie-bubble act1-callie-offscreen-bubble ${isNewLineClass}"
+           data-editor-id="${editorId}">
+        <div class="speech-bubble-speaker">
+          <span>Callie</span><span class="sr-only"> (off-screen)</span>
+        </div>
+        <p class="speech-bubble-text">${text}</p>
+        ${extra}
+      </div>
+    `;
+  }
+
   renderAlarm() {
     const step = this.alarmSteps[this.stepIndex];
     if (!step) return '';
 
-    const isLast = this.stepIndex === this.alarmSteps.length - 1;
-    return `
-      <div class="callie-offscreen-banner" style="top: 4.5rem; right: 2rem; border-color: ${isLast ? 'var(--color-danger)' : 'var(--palette-teal-dark)'};" data-editor-id="act1-alarm-callie">
-        <div class="callie-offscreen-label" style="color: ${isLast ? 'var(--color-danger)' : 'var(--palette-teal-dark)'};">Callie</div>
-        <div style="font-size: 1.15rem; font-weight: 800;">"${step.text}"</div>
-      </div>
-    `;
+    const stepKey = `${this.currentBeat}-${this.stepIndex}`;
+    const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
+    return this.renderOffscreenCallie(step.text, 'act1-alarm-callie', isNewLineClass);
   }
 
   renderCaseFile() {
@@ -1201,20 +1202,7 @@ export class Act1Screen {
   renderPovRise() {
     const stepKey = `${this.currentBeat}-${this.stepIndex}`;
     const isNewLineClass = this._renderedStep !== stepKey ? 'is-new-line' : '';
-    return `
-      <div 
-        class="speech-bubble callie-bubble ${isNewLineClass}" 
-        style="top: 18%; left: 35%; max-width: var(--bubble-max-w, 340px);" 
-        data-editor-id="act1-pov-callie-bubble"
-      >
-        <div class="speech-bubble-speaker">
-          <span>Callie</span>
-        </div>
-        <p class="speech-bubble-text" style="font-size: 1.35rem; font-weight: 800; color: var(--color-danger);">
-          "Tay?"
-        </p>
-      </div>
-    `;
+    return this.renderOffscreenCallie('Tay?', 'act1-pov-callie-bubble', isNewLineClass);
   }
 
   renderBottomLeftControls() {

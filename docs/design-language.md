@@ -634,9 +634,17 @@ It is `role="img"` with an `aria-label` spelling out the number and the stage in
 
 ### 6.9 Light glass banner
 
-`.callie-offscreen-banner`, `.foil-crinkle-banner`: `--surface-glass-light` + blur, a 5px
-left rule or 2px full border in the speaker's accent, `--palette-brown-dark` text, `--radius-sm`
-or `--radius-md`, `--elev-4`. Used when a voice arrives from outside the frame.
+`.foil-crinkle-banner`: `--surface-glass-light` + blur, a 2px border in the speaker's accent,
+`--palette-brown-dark` text, `--radius-md`, `--elev-4`. A sound effect arriving from outside
+the frame.
+
+**An off-screen *voice* is not a banner (v1.1).** When a character speaks from outside the
+frame it is their normal speech bubble, pinned to the edge they are standing beyond, with the
+tail leaving that side (`.act1-callie-offscreen-bubble`: right edge, tail height via
+`--stem-top`). Same colours, size and weight on every line — no per-line accent or red for
+escalation; the escalation is in the words. The label stays the speaker's name, with
+`(off-screen)` in an `.sr-only` span. This replaced `.callie-offscreen-banner`, whose accent
+flipped teal → red mid-sequence and made one speaker look like two.
 
 ---
 
@@ -869,8 +877,6 @@ stated worst-case backdrop. Sizes are px at a 16px root; "large" = ≥24px, or �
 | A1 `.shade-drift-timelapse-banner` | `#FDBA74` | `#272E3F` | normal | 4.5 | 8.02 |
 | A1 `.foil-crinkle-banner` | `#382418` | `#FFFFFF` | normal | 4.5 | 14.65 |
 | A1 `.foil-crinkle-sound` | `#C2410C` | `#FFFFFF` | normal | 4.5 | 5.18 |
-| A1 `.callie-offscreen-banner` | `#382418` | `#FFFFFF` | normal | 4.5 | 14.65 |
-| A1 `.callie-offscreen-label` | `#244952` | `#FFFFFF` | normal | 4.5 | 9.77 |
 | A1 `.act2-placeholder-title` | `#382418` | `#FFFFFF` | large | 3.0 | 14.65 |
 | A1 `.act2-placeholder-text` | `#6E635C` | `#FFFFFF` | normal | 4.5 | 5.83 |
 
