@@ -779,7 +779,7 @@ export class Act1Screen {
              role="dialog" aria-modal="true" aria-labelledby="act1-mission-card-title">
           <div class="mission-card-header">
             <span class="mission-card-badge">Tay's Detective Mission</span>
-            <span style="font-size: 0.85rem; color: #94A3B8; font-weight: 700;">Lake Shore Hub</span>
+            <span style="font-size: 0.85rem; color: var(--text-on-dark-dim); font-weight: 700;">Lake Shore Hub</span>
           </div>
           <h2 class="mission-card-title" id="act1-mission-card-title">Mission: Find Real Food (No Kibble)</h2>
           <div class="mission-card-body">
