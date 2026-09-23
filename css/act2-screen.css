@@ -419,22 +419,25 @@
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  color: #38BDF8;
+  color: var(--color-info);
   font-family: var(--font-family-display);
-  font-size: 0.78rem;
-  font-weight: 800;
+  font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 0.4rem;
 }
 
+/* Third voice, own colour treatment (design-language.md note, v1.1 pass) — but the same
+   §6.3.1 dialogue metrics as every other bubble: display family, clamp(1rem,1.25vw,1.2rem),
+   600, line-height 1.4. No documented reason to diverge, so it doesn't. */
 .speech-bubble.phone-radio-bubble .comic-radio-text {
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.06rem;
-  font-weight: 700;
-  line-height: 1.5;
+  font-family: var(--font-family-display);
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+  font-weight: 600;
+  line-height: 1.4;
   letter-spacing: 0.02em;
-  color: #FFFFFF;
+  color: var(--text-inverse);
   margin: 0;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
 }
