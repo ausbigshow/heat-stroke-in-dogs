@@ -1971,6 +1971,42 @@
   transform: translateY(var(--win-drop));
 }
 
+/* Air coming in through the gap: drawn over the cabin (outside the window's clip) so it
+   visibly enters the car. Brightest at the gap, gone by the time it reaches the wheel. */
+.act2-window-inflow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  -webkit-mask-image: radial-gradient(ellipse 48% 75% at 8% 22%, #000 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 48% 75% at 8% 22%, #000 40%, transparent 100%);
+}
+.act2-transport-scene.windows-open .act2-window-inflow {
+  opacity: 1;
+  transition-delay: 0.45s;
+}
+.act2-inflow-line {
+  fill: none;
+  stroke: var(--text-inverse);
+  stroke-width: 3.5px;
+  /* a faint dark edge so white air still reads over the pale pillar and headliner */
+  filter: drop-shadow(0 0 1.5px rgba(56, 36, 24, 0.35));
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 12 28;
+  stroke-dashoffset: 40;
+}
+.act2-transport-scene.windows-open .act2-inflow-line {
+  animation: act2InflowStreak 0.9s linear infinite;
+}
+@keyframes act2InflowStreak {
+  from { stroke-dashoffset: 40; }
+  to   { stroke-dashoffset: 0; }
+}
+
 /* --- Task A: AC knob turns --- */
 .act2-ac-knob-well {
   position: absolute;
@@ -2160,17 +2196,20 @@
   transform: translate(-50%, -50%) scale(0);
   opacity: 0;
 }
-/* A steady pull-in that eases to a stop with the building filling about half the
-   windshield. It used to grow 15x in 2.5s and read as driving into the wall. Keep the
-   duration in step with the arrive timeout in act2-screen.js (5s + a short hold). */
+/* The clinic is the road's destination: Clinic-RoadEnd.png (docs/clinic-road-end.py) sets
+   the building behind a paved lot that swallows the road, with verges and trees either
+   side. It grows out of the vanishing point and eases to a stop with the building's base
+   above the dashboard (~44% down) and the lot filling the bottom of the windshield, so the
+   road visibly runs out into the car park. Box is 10% wide at 2.4:1; the end translate puts
+   its centre at ~(60%, 30%) of the scene. Keep the duration in step with the arrive
+   timeout in act2-screen.js (5s + a short hold). */
 .act2-transport-scene.is-arriving .act2-clinic-approach {
   animation: clinicApproach 5s cubic-bezier(0.45, 0, 0.35, 1) forwards;
 }
-/* Ends a touch low so the sign sits clear of the rear-view mirror. */
 @keyframes clinicApproach {
   0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
   8% { opacity: 1; }
-  100% { transform: translate(-50%, -24%) scale(5.6); opacity: 1; }
+  100% { transform: translate(-77%, -106%) scale(8.85); opacity: 1; }
 }
 
 .act2-diegetic-btn {
@@ -2185,48 +2224,46 @@
      .act2-hotspot and the HUD pills above. Without this the controls are inert. */
   pointer-events: auto;
 }
+/* Keyboard focus is shown on the traced ring (brightened below), not as a box around the
+   hit area, so the indicator follows the control's own shape. */
 .act2-diegetic-btn:focus-visible {
-  border-color: var(--palette-peach);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.4);
-  border-radius: var(--radius-sm);
+  border-color: transparent;
 }
 
-/* Each control carries a visible ring around the drawn control (the knob, the switch
-   plate) so the learner can find it: --color-food-glow at rest, brighter amber with a glow
-   on hover and focus. The untouched ring breathes (the invite) until first use. */
-.act2-diegetic-btn::before {
-  content: '';
+/* Each control carries a ring traced on the drawn control itself (the knob's dial, the
+   switch plate's outline), as an SVG in the painting's pixel space inside the button:
+   --color-food-glow at rest, brighter amber with a glow on hover and focus. The untouched
+   ring breathes (the invite) until first use. */
+.act2-control-ring {
   position: absolute;
-  border: 2.5px solid var(--color-food-glow);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
   pointer-events: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.act2-diegetic-btn:hover::before,
-.act2-diegetic-btn:focus-visible::before {
-  border-color: var(--color-amber-tint-2);
-  box-shadow: 0 0 0 3px var(--color-food-glow), 0 0 18px var(--color-food-glow);
+.act2-control-ring circle,
+.act2-control-ring path {
+  fill: none;
+  stroke: var(--color-food-glow);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  transition: stroke 0.2s ease, filter 0.2s ease;
 }
-.act2-diegetic-btn:disabled::before { opacity: 0; }
-/* The knob: a circle on its centre (79.8%, 82.9% of the scene) inside the AC hit box. */
-#act2-toggle-ac::before {
-  left: 52.3%;
-  top: 66.2%;
-  width: 57.6%;
-  aspect-ratio: 1 / 1;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
+.act2-diegetic-btn:hover .act2-control-ring :is(circle, path),
+.act2-diegetic-btn:focus-visible .act2-control-ring :is(circle, path) {
+  stroke: var(--color-amber-tint-2);
+  stroke-width: 4px;
+  filter: drop-shadow(0 0 6px var(--color-amber));
 }
-/* The switch plate on the door. */
-#act2-toggle-windows::before {
-  inset: 4% 2% 3% 2%;
-  border-radius: var(--radius-md);
-}
-.act2-diegetic-btn.needs-invite::before {
+.act2-diegetic-btn:disabled .act2-control-ring { opacity: 0; }
+.act2-diegetic-btn.needs-invite .act2-control-ring {
   animation: act2ControlInvite 2.2s ease-in-out infinite;
 }
 @keyframes act2ControlInvite {
-  0%, 100% { box-shadow: 0 0 0 0 var(--color-food-glow); }
-  50% { box-shadow: 0 0 0 10px transparent; }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
 }
 
 #act2-toggle-ac {
@@ -2241,10 +2278,11 @@
 }
 
 #act2-toggle-windows {
-  --win-left: 12.5%;
-  --win-top: 81.5%;
-  --win-width: 12.2%;
-  --win-height: 18.5%;
+  /* the switch plate's traced outline, plus its ring's 7px offset (175-466, 889-1080) */
+  --win-left: 9.11%;
+  --win-top: 82.31%;
+  --win-width: 15.16%;
+  --win-height: 17.69%;
   left: var(--win-left);
   top: var(--win-top);
   width: var(--win-width);
@@ -2446,7 +2484,8 @@
   .act2-road-stripe,
   .act2-drift,
   .act2-transport-scene.windows-open .act2-wind-line,
-  .act2-diegetic-btn.needs-invite::before,
+  .act2-transport-scene.windows-open .act2-inflow-line,
+  .act2-diegetic-btn.needs-invite .act2-control-ring,
   .act2-diegetic-btn.needs-invite {
     animation: none !important;
   }

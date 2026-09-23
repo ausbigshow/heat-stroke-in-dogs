@@ -1676,7 +1676,7 @@ export class Act2Screen {
       hintText: ready
         ? 'Air is moving over her, she is on the cool towel, and they are expecting you.'
         : airOn
-          ? 'Air is moving over her now. Give it a little time to carry the heat off her.'
+          ? 'Keep the cold air on her the whole way to the clinic.'
           : 'She is on the cool towel. Now get air moving over her.'
     };
   }
@@ -1714,7 +1714,7 @@ export class Act2Screen {
               <div class="act2-drift act2-drift-left"></div>
               <div class="act2-drift act2-drift-right"></div>
             </div>
-            <img src="Assets/Image/Clinic-Exterior-Approach.png" alt="" class="act2-clinic-approach" />
+            <img src="Assets/Image/Clinic-RoadEnd.png" alt="" class="act2-clinic-approach" />
           </div>
           
           <div class="act2-car-overlays" aria-hidden="true" style="pointer-events: none; z-index: 3;">
@@ -1755,6 +1755,18 @@ export class Act2Screen {
               <div class="act2-window-pane"></div>
             </div>
 
+            <!-- Air coming in: streaks that start in the open gap and sweep inward across the
+                 cabin toward the driver, fading as they spread. Painting pixel space. -->
+            <svg class="act2-window-inflow" viewBox="0 0 1920 1080" preserveAspectRatio="none">
+              ${[
+                'M60 135 C 200 170, 330 250, 470 420',
+                'M150 180 C 280 230, 380 330, 520 520',
+                'M230 245 C 330 300, 420 400, 560 610',
+                'M300 360 C 380 420, 450 520, 600 700',
+                'M360 470 C 430 540, 500 640, 640 790',
+              ].map((d, i) => `<path class="act2-inflow-line" d="${d}" pathLength="100" style="animation-delay: ${(-0.29 * ((i * 3) % 5)).toFixed(2)}s" />`).join('')}
+            </svg>
+
             <div class="act2-ac-knob-well">
               <svg class="act2-ac-knob-svg" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="45" fill="#1A1C1A" />
@@ -1772,10 +1784,18 @@ export class Act2Screen {
         </div>
 
         <button id="act2-toggle-ac" class="act2-diegetic-btn ${acInviteClass}" role="switch" aria-checked="${s.acChecked}" aria-label="${s.acAria}" ${this.arriving ? 'disabled="true"' : ''}>
+           <!-- Rings traced on the painting in its own pixels (1920x1080): the viewBox is this
+                button's box, so the ring lands on the drawn control at any card size. -->
+           <svg class="act2-control-ring" viewBox="1359.36 690.12 330.24 309.96" preserveAspectRatio="none" aria-hidden="true">
+             <circle cx="1532" cy="899" r="92" />
+           </svg>
            <span class="act2-diegetic-pill" id="act2-ac-pill">${s.acPillText}</span>
         </button>
 
         <button id="act2-toggle-windows" class="act2-diegetic-btn ${winInviteClass}" role="switch" aria-checked="${s.winChecked}" aria-label="${s.winAria}" ${this.arriving ? 'disabled="true"' : ''}>
+           <svg class="act2-control-ring" viewBox="175 889 291 191" preserveAspectRatio="none" aria-hidden="true">
+             <path d="M175 1084 L231 1032 L259 1010 L371 919 L409 889 L429 892 L443 902 L454 911 L464 924 L466 944 L459 960 L447 977 L409 1023 L359 1081 Z" />
+           </svg>
            <span class="act2-diegetic-pill" id="act2-win-pill">${s.winPillText}</span>
         </button>
 
