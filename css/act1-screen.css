@@ -452,6 +452,11 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+  /* Its own stacking context. The props sort by ground line with z-indexes up to ~90;
+     without this they competed with the speech layer (30) and the HUD/nav bars (40), and
+     drew straight over the case-file modal and the HUD buttons. */
+  z-index: 10;
+  isolation: isolate;
 }
 
 /* Pop-Up Shade Canopy. Scenery during the hunt; the break trigger once all four leads
