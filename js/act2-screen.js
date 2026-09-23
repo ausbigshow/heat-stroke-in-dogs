@@ -328,6 +328,21 @@ export class Act2Screen {
     this._enteredBeat = null;
     this._renderedStep = null;
 
+    this.handleClickAdvance = (e) => {
+      if (this.isEditModeActive()) return;
+      if (document.querySelector('.leave-guard-scrim')) return;
+      const card = this.container?.querySelector('#act2-card');
+      const targetEl = e.target instanceof Element ? e.target : e.target?.parentElement;
+      if (!card || !targetEl || !card.contains(targetEl)) return;
+      if (targetEl.closest('button, a, input, select, textarea, label, summary, [role="button"], [role="switch"], [role="link"], [tabindex]:not([tabindex="-1"]), [data-no-advance]')) {
+        return;
+      }
+      const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+      if (!advanceBtn || advanceBtn.offsetParent === null) return;
+      advanceBtn.click();
+    };
+    this.container.addEventListener('click', this.handleClickAdvance);
+
     if (options.activeCheckId) {
       this.openCheck(options.activeCheckId, options.checkStepIndex ?? 0);
     } else {
@@ -338,6 +353,9 @@ export class Act2Screen {
 
   unmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
+    if (this.container && this.handleClickAdvance) {
+      this.container.removeEventListener('click', this.handleClickAdvance);
+    }
     this.stopElapsedClock();
     if (this.coolTimer) {
       clearTimeout(this.coolTimer);
@@ -677,10 +695,24 @@ export class Act2Screen {
     `;
 
     this.bindEvents();
+    this.updateCardAffordance();
     
     this._renderedStep = this.currentBeat === 'check_active' 
       ? `${this.currentBeat}-${this.activeCheckId}-${this.checkStepIndex}`
       : (this.currentBeat === 'cooling' ? `${this.currentBeat}-${this.coolingIndex}` : `${this.currentBeat}-${this.stepIndex}`);
+  }
+
+  updateCardAffordance() {
+    const card = this.container?.querySelector('#act2-card');
+    if (!card) return;
+    const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+    const hasAdvance = !!(advanceBtn && advanceBtn.offsetParent !== null);
+    card.classList.toggle('click-advance', hasAdvance);
+    if (hasAdvance) {
+      card.setAttribute('title', 'Click anywhere to continue');
+    } else {
+      card.removeAttribute('title');
+    }
   }
 
   /**
@@ -1381,7 +1413,8 @@ export class Act2Screen {
     return {
       id: 'act2-btn-check-nav',
       className: 'act2-hud-btn',
-      html: 'Next ▶'
+      html: 'Next ▶',
+      advanceLine: true
     };
   }
 
@@ -1418,7 +1451,8 @@ export class Act2Screen {
 
           <nav class="act2-check-nav">
             <button id="${btnState.id}" class="${btnState.className}"
-                    data-editor-id="${btnState.id}">${btnState.html}</button>
+                    data-editor-id="${btnState.id}"
+                    ${btnState.advanceLine ? 'data-advance-line' : ''}>${btnState.html}</button>
           </nav>
 
         </div>
@@ -1907,7 +1941,7 @@ export class Act2Screen {
           <button id="act2-btn-start-call" class="act2-hud-btn btn-action-primary pulse-btn"
                   data-editor-id="act2-btn-start-call">Call the clinic ➔</button>
         ` : `
-          <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step">Next ▶</button>
+          <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step" data-advance-line>Next ▶</button>
         `;
       }
 
@@ -1917,7 +1951,7 @@ export class Act2Screen {
           <button id="act2-btn-start-checks" class="act2-hud-btn btn-action-primary pulse-btn"
                   data-editor-id="act2-btn-start-checks">Start looking ➔</button>
         ` : `
-          <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step">Next ▶</button>
+          <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step" data-advance-line>Next ▶</button>
         `;
       }
 
@@ -1940,12 +1974,12 @@ export class Act2Screen {
       case 'payoff':
         return this.stepIndex === 0 ? `
           <button id="act2-btn-next-step" class="act2-hud-btn"
-                  data-editor-id="act2-btn-next-step">Tell her ▶</button>
+                  data-editor-id="act2-btn-next-step" data-advance-line>Tell her ▶</button>
         ` : '';
 
       case 'waiting':
         return this.stepIndex === 0 ? `
-          <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step">Next ▶</button>
+          <button id="act2-btn-next-step" class="act2-hud-btn" data-editor-id="act2-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act2-btn-start-cooling" class="act2-hud-btn btn-action-primary pulse-btn"
                   data-editor-id="act2-btn-start-cooling">Start cooling her ➔</button>
@@ -2245,14 +2279,20 @@ export class Act2Screen {
       }
 
       // Patch the nav button
-      const { id, className, html } = this.getCheckNavButtonState(isLast);
+      const { id, className, html, advanceLine } = this.getCheckNavButtonState(isLast);
       const btn = this.container.querySelector('.act2-check-nav .act2-hud-btn');
       if (btn) {
         btn.id = id;
         btn.className = className;
         btn.innerHTML = html;
         btn.setAttribute('data-editor-id', id);
+        if (advanceLine) {
+          btn.setAttribute('data-advance-line', '');
+        } else {
+          btn.removeAttribute('data-advance-line');
+        }
       }
+      this.updateCardAffordance();
 
       this.focusInModal();
       if (this.hasProgress()) this.saveProgress();

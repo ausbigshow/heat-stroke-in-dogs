@@ -133,6 +133,21 @@ export class Act0Screen {
     // Kick off manifest load + preload; render() will request the first clip once ready.
     audioManager.init();
 
+    this.handleClickAdvance = (e) => {
+      if (this.isEditModeActive()) return;
+      if (document.querySelector('.leave-guard-scrim')) return;
+      const card = this.container?.querySelector('#act0-card');
+      const targetEl = e.target instanceof Element ? e.target : e.target?.parentElement;
+      if (!card || !targetEl || !card.contains(targetEl)) return;
+      if (targetEl.closest('button, a, input, select, textarea, label, summary, [role="button"], [role="switch"], [role="link"], [tabindex]:not([tabindex="-1"]), [data-no-advance]')) {
+        return;
+      }
+      const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+      if (!advanceBtn || advanceBtn.offsetParent === null) return;
+      advanceBtn.click();
+    };
+    this.container.addEventListener('click', this.handleClickAdvance);
+
     this.render();
     window.addEventListener('keydown', this.handleKeyDown);
   }
@@ -141,6 +156,9 @@ export class Act0Screen {
     this.isMounted = false;
     audioManager.stop();
     window.removeEventListener('keydown', this.handleKeyDown);
+    if (this.container && this.handleClickAdvance) {
+      this.container.removeEventListener('click', this.handleClickAdvance);
+    }
   }
 
   getResumeState() {
@@ -231,7 +249,7 @@ export class Act0Screen {
       <div class="act0-container" data-editor-id="act0-screen-container">
         
         <!-- Main Front-and-Center Viewport Card -->
-        <div id="act0-card" class="act0-viewport-card" data-editor-id="act0-viewport-card" title="Click anywhere to continue">
+        <div id="act0-card" class="act0-viewport-card" data-editor-id="act0-viewport-card">
           
           <div class="act0-hud-top" data-editor-id="act0-hud-top">${actMarkerHtml(0)}</div>
 
@@ -286,6 +304,7 @@ export class Act0Screen {
                   id="act0-btn-next" 
                   class="act0-hud-btn" 
                   data-editor-id="act0-btn-next"
+                  data-advance-line
                   title="Next Line (Space / ArrowRight / Click Image)"
                   aria-label="Next line"
                 >
@@ -311,6 +330,7 @@ export class Act0Screen {
     `;
 
     this.bindEvents();
+    this.updateCardAffordance();
     this.playStepAudio();
 
     try {
@@ -320,19 +340,22 @@ export class Act0Screen {
     }
   }
 
+  updateCardAffordance() {
+    const card = this.container?.querySelector('#act0-card');
+    if (!card) return;
+    const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+    const hasAdvance = !!(advanceBtn && advanceBtn.offsetParent !== null);
+    card.classList.toggle('click-advance', hasAdvance);
+    if (hasAdvance) {
+      card.setAttribute('title', 'Click anywhere to continue');
+    } else {
+      card.removeAttribute('title');
+    }
+  }
+
   bindEvents() {
     // Re-bind the HUD mute button; innerHTML re-render discards previous listeners.
     audioManager.bindMuteButton(this.container);
-
-    const card = this.container.querySelector('#act0-card');
-    if (card) {
-      card.addEventListener('click', (e) => {
-        if (this.isEditModeActive()) return;
-        // Do not advance if clicking inside HUD or bubble in edit mode
-        if (e.target.closest('.act0-nav-bar')) return;
-        this.nextStep();
-      });
-    }
 
     const prevBtn = this.container.querySelector('#act0-btn-prev');
     if (prevBtn) {

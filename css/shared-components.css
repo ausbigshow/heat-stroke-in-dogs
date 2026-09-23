@@ -138,3 +138,8 @@
   filter: saturate(0.4);
   transition: opacity var(--dur-fast) var(--ease-out-expo);
 }
+
+.click-advance { cursor: pointer; }
+.click-advance :is(button, a, [role="button"], [role="switch"], .act1-hud-bar, .act1-nav-bar) { cursor: auto; }
+.click-advance :is(.act0-hud-bar, .act0-nav-bar, .act2-hud-bar, .act2-nav-bar, .act3-hud-bar, .act3-nav-bar) { cursor: auto; }
+

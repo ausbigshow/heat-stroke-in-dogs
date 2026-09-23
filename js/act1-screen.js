@@ -241,6 +241,22 @@ export class Act1Screen {
     this._enteredBeat = null;
     this._renderedStep = null;
     this._mounted = false;
+
+    this.handleClickAdvance = (e) => {
+      if (this.isEditModeActive()) return;
+      if (document.querySelector('.leave-guard-scrim')) return;
+      const card = this.container?.querySelector('#act1-card');
+      const targetEl = e.target instanceof Element ? e.target : e.target?.parentElement;
+      if (!card || !targetEl || !card.contains(targetEl)) return;
+      if (targetEl.closest('button, a, input, select, textarea, label, summary, [role="button"], [role="switch"], [role="link"], [tabindex]:not([tabindex="-1"]), [data-no-advance]')) {
+        return;
+      }
+      const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+      if (!advanceBtn || advanceBtn.offsetParent === null) return;
+      advanceBtn.click();
+    };
+    this.container.addEventListener('click', this.handleClickAdvance);
+
     this.render();
     window.addEventListener('keydown', this.handleKeyDown);
   }
@@ -250,6 +266,9 @@ export class Act1Screen {
     window.removeEventListener('keydown', this.handleKeyDown);
     if (this.container && this.handleClick) {
       this.container.removeEventListener('click', this.handleClick);
+    }
+    if (this.container && this.handleClickAdvance) {
+      this.container.removeEventListener('click', this.handleClickAdvance);
     }
     this._mounted = false;
   }
@@ -358,6 +377,7 @@ export class Act1Screen {
         this.syncHud();
         this.renderBeatContent();
         this.renderNav();
+        this.updateCardAffordance();
         
         if (this.currentBeat === 'nap' || this.currentBeat === 'drift') {
           this.tayHasEnteredScene = true;
@@ -656,11 +676,7 @@ export class Act1Screen {
     card.style.setProperty('--act1-saturation-drop', `${escalation.saturationDrop}%`);
     card.style.setProperty('--act1-shade-shift', `${escalation.shadeShiftX}%`);
     card.style.setProperty('--act1-shade-scale-y', escalation.shadeScaleY);
-    if (isColdOpenClickable) {
-      card.setAttribute('title', 'Click anywhere to continue (or press Space)');
-    } else {
-      card.removeAttribute('title');
-    }
+    this.updateCardAffordance();
 
     ['cooler', 'dock', 'bowl', 'lake'].forEach(leadId => {
       const el = this.container.querySelector(`.interactable-${leadId}`);
@@ -748,6 +764,19 @@ export class Act1Screen {
         taySleepEl.classList.toggle('tay-entering', !this.tayHasEnteredScene);
         taySleepEl.classList.toggle('tay-drifting', this.currentBeat !== 'nap');
       }
+    }
+  }
+
+  updateCardAffordance() {
+    const card = this.container?.querySelector('#act1-card');
+    if (!card) return;
+    const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+    const hasAdvance = !!(advanceBtn && advanceBtn.offsetParent !== null);
+    card.classList.toggle('click-advance', hasAdvance);
+    if (hasAdvance) {
+      card.setAttribute('title', 'Click anywhere to continue');
+    } else {
+      card.removeAttribute('title');
     }
   }
 
@@ -1047,7 +1076,7 @@ export class Act1Screen {
                 Done Investigating ➔
               </button>
             ` : `
-              <button id="act1-btn-pov-next" class="act1-hud-btn" data-editor-id="act1-btn-pov-next" aria-label="Next">
+              <button id="act1-btn-pov-next" class="act1-hud-btn" data-editor-id="act1-btn-pov-next" data-advance-line aria-label="Next">
                 Next ▶
               </button>
             `}
@@ -1253,7 +1282,9 @@ export class Act1Screen {
           <button
             id="act1-btn-next-step"
             class="act1-hud-btn"
-            data-editor-id="act1-btn-next-step" aria-label="Next line"
+            data-editor-id="act1-btn-next-step"
+            data-advance-line
+            aria-label="Next line"
           >
             Next ▶
           </button>
@@ -1307,7 +1338,9 @@ export class Act1Screen {
           <button 
             id="act1-btn-next-step" 
             class="act1-hud-btn" 
-            data-editor-id="act1-btn-next-step" aria-label="Next"
+            data-editor-id="act1-btn-next-step"
+            data-advance-line
+            aria-label="Next"
           >
             Next ▶
           </button>
@@ -1338,7 +1371,9 @@ export class Act1Screen {
           <button 
             id="act1-btn-next-step" 
             class="act1-hud-btn" 
-            data-editor-id="act1-btn-next-step" aria-label="Next"
+            data-editor-id="act1-btn-next-step"
+            data-advance-line
+            aria-label="Next"
           >
             Next ▶
           </button>
@@ -1414,14 +1449,6 @@ export class Act1Screen {
         if (this.visitedLeads.size < 4) return;
         this.triggerWalkToLead('canopy');
         return;
-      }
-
-      if (this.currentBeat === 'cold_open') {
-        const isMissionCardStep = this.coldOpenSteps[this.stepIndex]?.type === 'mission_card';
-        if (!isMissionCardStep && !target.closest('.act1-nav-bar, .act1-hud-bar, .act1-mission-card, .act1-interactable, .act1-pov-card')) {
-          this.nextSubStep();
-          return;
-        }
       }
 
       const buttonMap = {

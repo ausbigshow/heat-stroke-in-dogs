@@ -450,14 +450,33 @@ export class Act3Screen {
 
     this._enteredBeat = null;
     this._renderedStep = null;
+
+    this.handleClickAdvance = (e) => {
+      if (this.isEditModeActive()) return;
+      if (document.querySelector('.leave-guard-scrim')) return;
+      const card = this.container?.querySelector('#act3-card');
+      const targetEl = e.target instanceof Element ? e.target : e.target?.parentElement;
+      if (!card || !targetEl || !card.contains(targetEl)) return;
+      if (targetEl.closest('button, a, input, select, textarea, label, summary, [role="button"], [role="switch"], [role="link"], [tabindex]:not([tabindex="-1"]), [data-no-advance]')) {
+        return;
+      }
+      const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+      if (!advanceBtn || advanceBtn.offsetParent === null) return;
+      advanceBtn.click();
+    };
+    this.container.addEventListener('click', this.handleClickAdvance);
+
     this.render();
-        window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('keydown', this.handleKeyDown);
   }
 
   unmount() {
     if (this._autoAdvanceTimer) clearTimeout(this._autoAdvanceTimer);
     window.removeEventListener('keydown', this.handleKeyDown);
-        releaseFocusContainment(this.container || document);
+    if (this.container && this.handleClickAdvance) {
+      this.container.removeEventListener('click', this.handleClickAdvance);
+    }
+    releaseFocusContainment(this.container || document);
   }
 
   /**
@@ -669,7 +688,21 @@ export class Act3Screen {
     `;
 
     this.bindEvents();
+    this.updateCardAffordance();
     this._renderedStep = `${this.currentBeat}-${this.stepIndex}`;
+  }
+
+  updateCardAffordance() {
+    const card = this.container?.querySelector('#act3-card');
+    if (!card) return;
+    const advanceBtn = this.container.querySelector('[data-advance-line]:not([disabled]):not([hidden])');
+    const hasAdvance = !!(advanceBtn && advanceBtn.offsetParent !== null);
+    card.classList.toggle('click-advance', hasAdvance);
+    if (hasAdvance) {
+      card.setAttribute('title', 'Click anywhere to continue');
+    } else {
+      card.removeAttribute('title');
+    }
   }
 
   /**
@@ -1474,12 +1507,12 @@ export class Act3Screen {
       case 'wait':
         return `
           <button id="act3-btn-beat-advance" class="act3-hud-btn"
-                  data-editor-id="act3-btn-beat-advance">Next ▶</button>
+                  data-editor-id="act3-btn-beat-advance" data-advance-line>Next ▶</button>
         `;
 
       case 'verdict':
         return this.stepIndex < this.verdictSteps.length - 1 ? `
-          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
+          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
                   data-editor-id="act3-btn-beat-advance">Look at the chart ➔</button>
@@ -1487,7 +1520,7 @@ export class Act3Screen {
 
       case 'report':
         return this.stepIndex < this.stepsForBeat().length - 1 ? `
-          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
+          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
                   data-editor-id="act3-btn-beat-advance">Where's Tay? ➔</button>
@@ -1495,7 +1528,7 @@ export class Act3Screen {
 
       case 'tayReturn':
         return this.stepIndex < this.tayReturnSteps.length - 1 ? `
-          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
+          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
                   data-editor-id="act3-btn-beat-advance">Next time ➔</button>
@@ -1512,7 +1545,7 @@ export class Act3Screen {
           `;
         }
         return this.stepIndex < this.hotCarSteps.length ? `
-          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
+          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
                   data-editor-id="act3-btn-beat-advance">Pick up your keys ➔</button>
@@ -1521,7 +1554,7 @@ export class Act3Screen {
 
       case 'recheck':
         return this.stepIndex < this.recheckSteps.length - 1 ? `
-          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
+          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
                   data-editor-id="act3-btn-beat-advance">Take her home ➔</button>
@@ -1529,7 +1562,7 @@ export class Act3Screen {
 
       case 'home':
         return this.stepIndex < this.homeSteps.length - 1 ? `
-          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step">Next ▶</button>
+          <button id="act3-btn-next-step" class="act3-hud-btn" data-editor-id="act3-btn-next-step" data-advance-line>Next ▶</button>
         ` : `
           <button id="act3-btn-beat-advance" class="act3-hud-btn btn-action-primary pulse-btn"
                   data-editor-id="act3-btn-beat-advance">Fade ➔</button>
