@@ -15,3 +15,8 @@ Thumbs.db
 
 # Playwright MCP verification artifacts (screenshots + a11y snapshots), never shipped.
 .playwright-mcp/
+
+# Loose screenshots dropped in the repo root. Browser tooling defaults here when given a
+# bare filename, and the autosave hook will commit whatever it finds — which is how scratch
+# files reached the live site once already (see 46c794c). Root only: Assets/Image stays tracked.
+/*.png

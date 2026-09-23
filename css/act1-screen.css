@@ -273,7 +273,6 @@
   margin: 0;
   cursor: pointer;
   pointer-events: auto;
-  z-index: 14;
 }
 
 .act1-interactable:focus-visible {
@@ -297,9 +296,7 @@
   display: block;
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 0 rgba(245, 158, 11, 0));
-  transition: transform var(--dur-fast) var(--ease-pop), filter 0.3s ease;
-  animation: interactablePulse 2.6s infinite ease-in-out;
+  transition: transform var(--dur-fast) var(--ease-pop);
 }
 
 .interactable-art svg {
@@ -308,26 +305,93 @@
   display: block;
 }
 
-@keyframes interactablePulse {
-  0%, 100% { filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 0px rgba(245, 158, 11, 0)); }
+
   50% { filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 16px rgba(245, 158, 11, 0.65)); }
 }
 
 .act1-interactable:hover .interactable-art,
 .act1-interactable:focus-visible .interactable-art {
-  transform: scale(1.1) translateY(-3px);
-  animation-play-state: paused;
-  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 20px rgba(245, 158, 11, 0.75));
+  transform: scale(1.04);
 }
 
 .act1-interactable.visited .interactable-art {
-  animation: none;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 8px rgba(16, 185, 129, 0.55));
 }
 
-.act1-interactable.visited:hover .interactable-art,
-.act1-interactable.visited:focus-visible .interactable-art {
-  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 18px rgba(16, 185, 129, 0.75));
+
+
+
+.prop-ground-shadow {
+  position: absolute;
+  background: radial-gradient(ellipse at center, rgba(24, 36, 24, 0.45) 0%, rgba(24, 36, 24, 0.2) 60%, transparent 100%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.interactable-cooler .prop-ground-shadow {
+  bottom: -2%;
+  left: -8%;
+  width: 95%;
+  height: 20%;
+}
+
+.interactable-dock .prop-ground-shadow {
+  bottom: 0%;
+  left: -4%;
+  width: 90%;
+  height: 25%;
+}
+
+.interactable-bowl .prop-ground-shadow {
+  bottom: -6%;
+  left: -12%;
+  width: 110%;
+  height: 35%;
+}
+
+.prop-affordance-ring {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  aspect-ratio: 1 / 0.3;
+  border: 2px solid var(--color-food-glow);
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: propRingPulse 2.6s infinite ease-in-out;
+  pointer-events: none;
+}
+
+.interactable-bowl .prop-affordance-ring {
+  width: 140%;
+  bottom: -15%;
+}
+
+.interactable-cooler .prop-affordance-ring {
+  width: 100%;
+}
+
+.interactable-dock .prop-affordance-ring {
+  width: 90%;
+  bottom: 5%;
+}
+
+@keyframes propRingPulse {
+  0%, 100% { transform: translateX(-50%) scale(0.95); opacity: 0.4; }
+  50% { transform: translateX(-50%) scale(1.05); opacity: 0.8; }
+}
+
+.act1-interactable.visited .prop-affordance-ring {
+  animation: none;
+  opacity: 0; /* Ring goes quiet when visited */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prop-affordance-ring {
+    animation: none;
+    opacity: 0.6;
+  }
 }
 
 /* Name tooltip — replaces the old always-on floating label pill; only shows on hover/focus */
@@ -406,8 +470,7 @@
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
 }
 
-.canopy-frame-layer,
-.canopy-shade-layer {
+.canopy-frame-layer {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -415,10 +478,24 @@
   display: block;
 }
 
-/* The ground shadow slides east and shortens as the afternoon runs on — by the Shade
-   Drift beat it has crept off the patch of grass Tay chose. Driven by getEscalation(). */
+/* The shade is a separate 900x400 plate (docs/act1-art-prompts.md §9) rather than part of
+   the canopy art, because the sun moves it independently as the act runs on.
+
+   It cannot share the frame layer's box. The canopy's own art fills that box top to bottom
+   with the legs landing on its lower edge, whereas the shade is a flat quad lying on the
+   ground: it has to be centred on the feet line, not on the canopy, and it is wider than
+   the structure because it falls away to the left. Hence its own geometry below — anchored
+   to the bottom of the canopy box and overhanging it on both sides. */
 .canopy-shade-layer {
+  position: absolute;
+  left: -40%;
+  bottom: -38%;
+  width: 150%;
+  height: auto;
+  display: block;
   transform: translateX(var(--act1-shade-shift, 0%)) scaleY(var(--act1-shade-scale-y, 1));
+  /* Anchored at the feet: as the shade shortens through the afternoon it collapses toward
+     the legs, the way a real shadow does, rather than toward its own centre. */
   transform-origin: 50% 92%;
   transition: transform 2.5s ease-in-out;
 }
@@ -720,10 +797,10 @@
 
 /* 3. Water Bowl ("The Water One") — open grass, clear of everything else */
 .interactable-bowl {
-  top: 79%;
-  left: 45%;
-  width: 9.5%;
-  height: 9.7%;
+  top: 74%;
+  left: 47%;
+  width: 5.5%;
+  height: 5.6%;
 }
 
 /* 4. The Lake ("The Biggest Bowl") — the open water left of the dock. No drawn icon,
@@ -1807,10 +1884,7 @@
   }
 
   /* Interactables keep their resting glow but stop pulsing. */
-  .interactable-art {
-    animation: none;
-    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 10px var(--color-food-glow));
-  }
+  .interactable-art { animation: none; }
 
   /* The rings are the affordance, so they stay — they just hold still. Frozen at three
      different radii rather than all at the centre, so the water still reads as disturbed. */
