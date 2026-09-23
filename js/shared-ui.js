@@ -95,7 +95,7 @@ export function confirmLeave({ title, message, stayLabel = 'Keep going', leaveLa
 }
 
 export function actMarkerHtml(actNumber) {
-  const text = actNumber === 0 ? 'Intro' : `Act ${actNumber} of 3`;
-  const label = actNumber === 0 ? 'Introduction' : `Act ${actNumber} of 3`;
+  const text = actNumber === 0 ? 'Intro' : `Part ${actNumber} of 3`;
+  const label = actNumber === 0 ? 'Introduction' : `Part ${actNumber} of 3`;
   return `<div class="act-marker-pill" data-editor-id="act${actNumber}-hud-act-marker" aria-label="${label}">${text}</div>`;
 }

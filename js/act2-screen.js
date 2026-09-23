@@ -712,7 +712,7 @@ export class Act2Screen {
       <header class="act2-hud-bar" data-editor-id="act2-hud-bar">
         <div class="act2-hud-group">
           <button id="act2-btn-back-act1" class="act2-hud-btn" data-editor-id="act2-btn-back-act1"
-                  title="Return to Act 1" aria-label="Return to Act 1">◀ Act 1</button>
+                  title="Return to Part 1" aria-label="Return to Part 1">◀ Part 1</button>
           <button id="act2-btn-title" class="act2-hud-btn" data-editor-id="act2-btn-title"
                   title="Return to Title" aria-label="Return to the title screen">Title</button>
         </div>
@@ -733,12 +733,12 @@ export class Act2Screen {
 
           ${this.hintsCashedOut ? `
             <div class="act2-hud-pill hints-cashed-pill" data-editor-id="act2-hud-hints"
-                 aria-label="4 warning signs from Act 1, all reported to the clinic">
+                 aria-label="4 warning signs from Part 1, all reported to the clinic">
               <span>WARNING SIGNS: ${this.hintsDropped} — REPORTED</span>
             </div>
           ` : `
             <div class="act2-hud-pill hints-pill" data-editor-id="act2-hud-hints"
-                 aria-label="4 warning signs from Act 1, not yet reported">
+                 aria-label="4 warning signs from Part 1, not yet reported">
               <span>WARNING SIGNS: ${this.hintsDropped}</span>
             </div>
           `}
@@ -1370,12 +1370,6 @@ export class Act2Screen {
     return artByCheck[checkId](convHtml);
   }
 
-  getCheckDotsHtml(steps, idx) {
-    return steps.map((s, i) => `
-      <span class="act2-beat-dot ${i === idx ? 'current' : ''} ${i < idx ? 'seen' : ''}"></span>
-    `).join('');
-  }
-
   getCheckNavButtonState(isLast) {
     if (isLast) {
       return {
@@ -1423,9 +1417,6 @@ export class Act2Screen {
           </div>
 
           <nav class="act2-check-nav">
-            <div class="act2-beat-dots" aria-hidden="true">
-              ${this.getCheckDotsHtml(steps, idx)}
-            </div>
             <button id="${btnState.id}" class="${btnState.className}"
                     data-editor-id="${btnState.id}">${btnState.html}</button>
           </nav>
@@ -1879,7 +1870,7 @@ export class Act2Screen {
           Cooled first, drove second, and they were ready for her at the door.
         </p>
         <button id="act2-btn-act3" class="act2-hud-btn btn-action-primary pulse-btn"
-                data-editor-id="act2-btn-act3">Act 3: The Clinic ➔</button>
+                data-editor-id="act2-btn-act3">Part 3: The Clinic ➔</button>
       </div>
     `;
   }
@@ -1987,8 +1978,8 @@ export class Act2Screen {
     on('#act2-btn-back-act1', async () => {
       if (this.hasProgress()) {
         const leave = await confirmLeave({
-          title: 'Go back to Act 1?',
-          message: 'Act 1 starts again from the beginning, and your progress in Act 2 will be cleared.',
+          title: 'Go back to Part 1?',
+          message: 'Part 1 starts again from the beginning, and your progress in Part 2 will be cleared.',
           leaveLabel: 'Go back'
         });
         if (!leave) return;
@@ -2001,7 +1992,7 @@ export class Act2Screen {
       if (this.hasProgress()) {
         const leave = await confirmLeave({
           title: 'Leave the story?',
-          message: 'You\'ll go back to the title screen, and everything you\'ve done in Act 2 so far will be cleared.',
+          message: 'You\'ll go back to the title screen, and everything you\'ve done in Part 2 so far will be cleared.',
           leaveLabel: 'Leave anyway'
         });
         if (!leave) return;
@@ -2252,10 +2243,6 @@ export class Act2Screen {
           conv.scrollTop = conv.scrollHeight;
         });
       }
-
-      // Patch the beat dots
-      const dots = this.container.querySelector('.act2-beat-dots');
-      if (dots) dots.innerHTML = this.getCheckDotsHtml(steps, this.checkStepIndex);
 
       // Patch the nav button
       const { id, className, html } = this.getCheckNavButtonState(isLast);

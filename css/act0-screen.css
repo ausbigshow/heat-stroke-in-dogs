@@ -298,23 +298,6 @@
   50% { box-shadow: 0 8px 28px rgba(251, 146, 60, 0.7); }
 }
 
-.act0-progress-badge {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(8px);
-  color: var(--palette-brown-dark);
-  font-family: var(--font-family-display);
-  font-size: 0.85rem;
-  font-weight: 700;
-  height: 34px;
-  padding: 0 0.9rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  border-radius: var(--radius-pill);
-  box-shadow: var(--elev-1);
-  pointer-events: auto;
-}
 
 /* ==========================================================
    REDUCED MOTION
@@ -387,11 +370,6 @@
     font-size: 0.88rem;
     touch-action: manipulation;
   }
-  .act0-progress-badge {
-    height: 34px;
-    padding: 0 0.75rem;
-    font-size: 0.8rem;
-  }
 }
 
 @media (max-width: 480px) {
@@ -409,9 +387,6 @@
     height: 40px;
     padding: 0 0.85rem;
     font-size: 0.82rem;
-  }
-  .act0-progress-badge {
-    display: none;
   }
 }
 

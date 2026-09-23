@@ -280,14 +280,6 @@ export class Act0Screen {
               ${audioManager.muteButtonHtml('act0-btn-mute', 'act0-hud-btn')}
             </div>
 
-            <!-- The counter is readable on demand but NOT a live region: the speech layer
-                 above is already aria-live, and a second polite region made every advance
-                 announce the line and then "step 4 of 13" behind it. -->
-            <div class="act0-progress-badge" data-editor-id="act0-progress">
-              <span class="sr-only">Step ${this.currentStepIndex + 1} of ${totalSteps}</span>
-              <span aria-hidden="true">${this.currentStepIndex + 1} / ${totalSteps}</span>
-            </div>
-
             <div class="act0-nav-group">
               ${!isLastStep ? `
                 <button 
@@ -304,10 +296,10 @@ export class Act0Screen {
                   id="act0-btn-start-act1" 
                   class="act0-hud-btn btn-start" 
                   data-editor-id="act0-btn-start-act1"
-                  title="Begin Act 1: The Lake Trip"
-                  aria-label="Begin Act 1: The Lake Trip"
+                  title="Begin Part 1: The Lake Trip"
+                  aria-label="Begin Part 1: The Lake Trip"
                 >
-                  Begin Act 1 <span aria-hidden="true">➔</span>
+                  Begin Part 1 <span aria-hidden="true">➔</span>
                 </button>
               `}
             </div>
@@ -369,7 +361,7 @@ export class Act0Screen {
         if (this.hasProgress()) {
           const leave = await confirmLeave({
             title: 'Leave the story?',
-            message: "You'll go back to the title screen, and everything you've done in Act 0 so far will be cleared.",
+            message: "You'll go back to the title screen, and everything you've done in the intro so far will be cleared.",
             leaveLabel: 'Leave anyway'
           });
           if (!leave) return;
@@ -422,7 +414,7 @@ export class Act0Screen {
       this.app.navigateTo('act1');
     } else {
       console.log('🐾 Act 1 starting...');
-      alert('Act 1: The Lake Trip is up next!');
+      alert('Part 1: The Lake Trip is up next!');
     }
   }
 

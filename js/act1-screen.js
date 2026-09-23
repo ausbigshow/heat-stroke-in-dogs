@@ -390,7 +390,7 @@ export class Act1Screen {
 
           <header class="act1-hud-bar" data-editor-id="act1-hud-bar">
             <div class="act1-hud-group">
-              <button id="act1-btn-back-act0" class="act1-hud-btn" data-editor-id="act1-btn-back-act0" title="Return to Act 0" aria-label="Return to Act 0">◀ Act 0</button>
+              <button id="act1-btn-back-act0" class="act1-hud-btn" data-editor-id="act1-btn-back-act0" title="Return to the intro" aria-label="Return to the intro">◀ Intro</button>
               <button id="act1-btn-title" class="act1-hud-btn" data-editor-id="act1-btn-title" title="Return to Title" aria-label="Return to the title screen">Title</button>
             </div>
 
@@ -1040,13 +1040,8 @@ export class Act1Screen {
             `}
           </div>
 
-          <!-- Beat counter + advance / finish -->
-          <nav class="act1-nav-bar" style="bottom: 0.9rem; left: 1.1rem; right: 1.1rem; justify-content: space-between;">
-            <div class="pov-beat-dots" aria-hidden="true">
-              ${steps.map((s, i) => `
-                <span class="pov-beat-dot ${i === stepIdx ? 'current' : ''} ${i < stepIdx ? 'seen' : ''}"></span>
-              `).join('')}
-            </div>
+          <!-- Advance / finish -->
+          <nav class="act1-nav-bar" style="bottom: 0.9rem; left: 1.1rem; right: 1.1rem; justify-content: flex-end;">
             ${isLastStep ? `
               <button id="act1-btn-finish-lead" class="act1-hud-btn btn-action-primary pulse-btn" data-editor-id="act1-btn-finish-lead" aria-label="Done investigating this lead">
                 Done Investigating ➔
@@ -1153,7 +1148,7 @@ export class Act1Screen {
            role="dialog" aria-modal="true" aria-labelledby="act1-case-file-title">
         <div class="case-file-header">
           <div class="case-file-title-group">
-            <span class="case-file-badge">Act 1 Case File</span>
+            <span class="case-file-badge">Part 1 Case File</span>
             <h2 class="case-file-title" id="act1-case-file-title">The Four Leads vs. Heat Stroke Reality</h2>
           </div>
           <div class="stamp-temp-badge" style="background: var(--color-info-strong); border-color: var(--color-info);">3:05 PM</div>
@@ -1357,9 +1352,9 @@ export class Act1Screen {
           <button 
             id="act1-btn-start-act2" 
             class="act1-hud-btn btn-action-primary pulse-btn" 
-            data-editor-id="act1-btn-start-act2" aria-label="Continue to Act 2: Emergency Response"
+            data-editor-id="act1-btn-start-act2" aria-label="Continue to Part 2: Emergency Response"
           >
-            Act 2: Emergency Response ➔
+            Part 2: Emergency Response ➔
           </button>
         `;
 
@@ -1379,8 +1374,8 @@ export class Act1Screen {
         e.stopPropagation();
         if (this.hasProgress()) {
           const leave = await confirmLeave({
-            title: 'Go back to Act 0?',
-            message: 'Act 0 starts again from the beginning, and your progress in Act 1 will be cleared.',
+            title: 'Go back to the intro?',
+            message: 'The intro starts again from the beginning, and your progress in Part 1 will be cleared.',
             leaveLabel: 'Go back'
           });
           if (!leave) return;
@@ -1394,7 +1389,7 @@ export class Act1Screen {
         if (this.hasProgress()) {
           const leave = await confirmLeave({
             title: 'Leave the story?',
-            message: "You'll go back to the title screen, and everything you've done in Act 1 so far will be cleared.",
+            message: "You'll go back to the title screen, and everything you've done in Part 1 so far will be cleared.",
             leaveLabel: 'Leave anyway'
           });
           if (!leave) return;

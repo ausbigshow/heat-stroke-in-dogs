@@ -26,7 +26,7 @@ export class OpeningScreen {
       this.continueBtn?.parentElement?.classList.add('has-resume');
       if (this.resumeBtn) {
         const nStr = saved.screen.replace('act', '');
-        const label = nStr === '0' ? 'Resume the intro' : `Resume Act ${nStr}`;
+        const label = nStr === '0' ? 'Resume the intro' : `Resume Part ${nStr}`;
         this.resumeBtn.textContent = label;
         this.resumeBtn.setAttribute('aria-label', label);
         this.resumeBtn.hidden = false;
@@ -94,7 +94,7 @@ export class OpeningScreen {
       console.log('🐶 Continue clicked -> Proceeding to Act 0: Intro Video');
       // Gentle feedback for learner
       const text = this.continueBtn.querySelector('.continue-text');
-      if (text) text.textContent = 'Loading Act 0...';
+      if (text) text.textContent = 'Loading the intro...';
     }
   }
 

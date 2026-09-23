@@ -86,7 +86,7 @@ class CourseApp {
     if (!stage) return;
 
     if (screenKey === 'act1') {
-      stage.innerHTML = `<section id="screen-act1" aria-label="Act 1 Scene"></section>`;
+      stage.innerHTML = `<section id="screen-act1" aria-label="Part 1: The Lake Trip"></section>`;
       this.screens.act1 = new Act1Screen(this);
       if (options.beat) {
         this.screens.act1.currentBeat = options.beat;
@@ -103,7 +103,7 @@ class CourseApp {
       }
       this.screens.act1.mount();
     } else if (screenKey === 'act0') {
-      stage.innerHTML = `<section id="screen-act0" aria-label="Act 0 Introduction Scene"></section>`;
+      stage.innerHTML = `<section id="screen-act0" aria-label="Introduction"></section>`;
       this.screens.act0 = new Act0Screen(this);
       if (options.stepIndex !== undefined) {
         this.screens.act0.currentStepIndex = options.stepIndex;
@@ -114,7 +114,7 @@ class CourseApp {
       }
       this.screens.act0.mount();
     } else if (screenKey === 'act2') {
-      stage.innerHTML = `<section id="screen-act2" aria-label="Act 2 Emergency Response Scene"></section>`;
+      stage.innerHTML = `<section id="screen-act2" aria-label="Part 2: Emergency Response"></section>`;
       this.screens.act2 = new Act2Screen(this);
       // Restore a playthrough handed back from Act 3, so stepping back and forward does not
       // rebuild this screen from defaults. Options applied after, so they win.
@@ -136,7 +136,7 @@ class CourseApp {
       }
       this.screens.act2.mount(options);
     } else if (screenKey === 'act3') {
-      stage.innerHTML = `<section id="screen-act3" aria-label="Act 3: At the Clinic, Then Home"></section>`;
+      stage.innerHTML = `<section id="screen-act3" aria-label="Part 3: At the Clinic, Then Home"></section>`;
       this.screens.act3 = new Act3Screen(this);
       // Act 2 hands its playthrough forward so every number Dr. Reyes says lands on a
       // decision the learner actually made. Absent state degrades to a neutral variant.
@@ -202,7 +202,7 @@ class CourseApp {
 
         <!-- Lower Right Continue Button Container -->
         <div class="continue-btn-container" data-editor-id="opening-continue-container">
-          <button id="btn-resume" class="resume-btn" data-editor-id="opening-resume-btn" hidden>Resume Act N</button>
+          <button id="btn-resume" class="resume-btn" data-editor-id="opening-resume-btn" hidden>Resume Part N</button>
           <button 
             id="btn-continue" 
             class="continue-btn is-visible" 

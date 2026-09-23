@@ -1347,30 +1347,15 @@
 .act2-check-nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 1rem;
   padding-top: 0.5rem;
   border-top: 1px solid rgba(56, 36, 24, 0.12);
 }
 
-.act2-beat-dots {
-  display: flex;
-  gap: 0.4rem;
-}
 
-.act2-beat-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: rgba(56, 36, 24, 0.18);
-}
 
-.act2-beat-dot.seen { background: rgba(194, 65, 12, 0.45); }
 
-.act2-beat-dot.current {
-  background: var(--color-heat);
-  transform: scale(1.25);
-}
 
 /* ==========================================================
    BEAT 2A: THE HINTS-DROPPED PAYOFF

@@ -103,6 +103,47 @@ export class Act3Screen {
       'Null, Jan. "Heatstroke Deaths of Children in Vehicles." <i>No Heat Stroke</i>, San Francisco State University, www.noheatstroke.org. Accessed 21 Sept. 2026.'
     ];
 
+    // ---- The take-home sheet ------------------------------------------------
+    // For the LEARNER, not the characters: any warm day outside with any dog. Every fact is
+    // one the course already teaches, with the source it was taught from. Printed as a
+    // one-page infographic (see renderTakeawayCard and the print rules in act3-screen.css).
+    this.takeaway = {
+      badge: 'Take this with you',
+      title: 'Hot days outside with your dog',
+      subtitle: 'Lake days, hikes, beaches, parks, the backyard: anywhere your dog spends a warm day outdoors.',
+      stats: [
+        { value: '4×', text: 'Flat-faced breeds (pugs, bulldogs, French bulldogs) get heat illness about 4 times as often.' },
+        { value: '80°F', text: 'Past this, think twice. In high humidity, panting barely cools a dog at all.' },
+        { value: '+20°F', text: 'Inside a parked car within 10 minutes. Cracking the windows barely helps.' },
+        { value: '2.5×', text: 'Dogs cooled before the drive to the vet are about 2.5 times more likely to survive.' }
+      ],
+      habitsTitle: 'Before and during the day',
+      habits: [
+        { icon: 'shade', label: 'Shade first', text: 'Set up real shade before anything else, and check it every 30 minutes. Shade moves. A sleeping dog doesn\'t.' },
+        { icon: 'water', label: 'Water in the shade', text: 'Top up your dog\'s water whenever you top up your own. Warm water in the sun doesn\'t get drunk.' },
+        { icon: 'clock', label: 'Go early or late', text: 'Mornings and evenings. The middle of the afternoon is the hottest part of the day.' },
+        { icon: 'hand', label: 'The 5-second test', text: 'Palm flat on the sand, pavement or boards for 5 seconds. If you can\'t hold it there, your dog can\'t stand on it.' },
+        { icon: 'sun', label: 'Sun heats everything', text: 'A cooler, car or tent in full sun is not a cool spot. Keep your dog in the shade, not beside the gear.' },
+        { icon: 'home', label: 'Some days, stay in', text: 'Too hot or too humid? Air conditioning and a puzzle toy at home.' }
+      ],
+      signsTitle: 'Warning signs, early to late',
+      signsNote: 'The early signs look like a normal hot afternoon. That is what makes them easy to miss.',
+      stages: [
+        { stage: 'Early', signs: ['Fast, heavy panting that never pauses', 'Tired, lagging, lying down more'] },
+        { stage: 'Building', signs: ['Ears hot right through, with no cool spot'] },
+        { stage: 'Advanced', signs: ['Brick-red gums; pressed pink takes over 2 seconds to return', 'Slow to respond to their name, or no response'] }
+      ],
+      actTitle: 'If you see them: cool first, then go',
+      steps: [
+        'Get them into shade and get air moving over them.',
+        'Wet the belly, armpits, groin and paws with cool water. Not ice, and never over the face.',
+        'Offer small sips. Never force water.',
+        'Call the vet and tell them you are coming.',
+        'Drive with the AC on, your dog lying on a flat cool wet towel. Never wrapped in it.'
+      ],
+      footer: 'Caught while mild, about 95% of dogs come through. Caught once severe, about 43%. The difference is how soon cooling starts.'
+    };
+
     // ---- Beat 3B — The verdict --------------------------------------------
     // `business` is Reyes's stage direction, surfaced as her byline. She never stands still.
     this.verdictSteps = [
@@ -807,27 +848,18 @@ export class Act3Screen {
 
   renderHudBar() {
     const status = this.getTayStatus();
-    const order = ['wait', 'verdict', 'report', 'tayReturn', 'nextTime', 'recheck', 'home', 'recap', 'end'];
-    const currentBeatNum = Math.max(1, order.indexOf(this.currentBeat) + 1);
-    const totalBeats = order.length;
 
     return `
       <header class="act3-hud-bar" data-editor-id="act3-hud-bar">
         <div class="act3-hud-group">
           <button id="act3-btn-back-act2" class="act3-hud-btn" data-editor-id="act3-btn-back-act2"
-                  title="Return to Act 2" aria-label="Return to Act 2">◀ Act 2</button>
+                  title="Return to Part 2" aria-label="Return to Part 2">◀ Part 2</button>
           <button id="act3-btn-title" class="act3-hud-btn" data-editor-id="act3-btn-title"
                   title="Return to Title" aria-label="Return to the title screen">Title</button>
         </div>
 
         <div class="act3-hud-group">
           ${actMarkerHtml(3)}
-          <div class="act3-hud-pill progress-pill" data-editor-id="act3-hud-progress"
-               aria-label="Act 3 progress: step ${currentBeatNum} of ${totalBeats}">
-            <span class="act3-hud-label" aria-hidden="true">STEP</span>
-            <span class="act3-hud-count">${currentBeatNum}/${totalBeats}</span>
-          </div>
-
           <div class="act3-hud-pill clock-pill" data-editor-id="act3-hud-clock" title="Clinic time">
             <span>${this.getFormattedTime()}</span>
           </div>
@@ -1114,7 +1146,7 @@ export class Act3Screen {
   renderReportTimeline() {
     return `
       <div class="act3-recap-panel">
-        <h3 class="act3-panel-title">Her afternoon, from Act 1</h3>
+        <h3 class="act3-panel-title">Her afternoon, from Part 1</h3>
         <ol class="act3-recap-timeline">
           ${this.hintsTimeline.map(item => `
             <li class="act3-timeline-item ${item.widest ? 'is-widest' : ''}">
@@ -1312,11 +1344,8 @@ export class Act3Screen {
           </p>
 
           <div class="act3-end-actions">
-            <button id="act3-btn-takeaway" class="act3-hud-btn btn-action-primary" data-editor-id="act3-btn-takeaway">Before your next lake day ➔</button>
-            <button id="act3-btn-replay-act3" class="act3-hud-btn"
-                    data-editor-id="act3-btn-replay-act3">Replay Act 3</button>
-            <button id="act3-btn-replay-act1" class="act3-hud-btn" data-editor-id="act3-btn-replay-act1">Replay Act 1</button>
-            <button id="act3-btn-end-title" class="act3-hud-btn" data-editor-id="act3-btn-end-title">Title</button>
+            <button id="act3-btn-takeaway" class="act3-hud-btn btn-action-primary" data-editor-id="act3-btn-takeaway">Your take-home sheet ➔</button>
+            <button id="act3-btn-start-over" class="act3-hud-btn" data-editor-id="act3-btn-start-over">Start over from the beginning</button>
           </div>
         </div>
 
@@ -1324,7 +1353,7 @@ export class Act3Screen {
           <span class="act3-sources-badge">Works cited</span>
           <h2 class="act3-sources-title">Sources</h2>
           <ul class="act3-mla-list" aria-label="Sources">
-            ${this.sources.map(src => `<li>${src}</li>`).join('')}
+            ${this.sources.map(src => `<li>${this.linkifySource(src)}</li>`).join('')}
           </ul>
         </div>
       </div>
@@ -1333,32 +1362,83 @@ export class Act3Screen {
   }
 
 
+  // Each MLA entry keeps its printed form; its URL becomes a link that opens in a new tab so
+  // the learner never loses their place in the course.
+  linkifySource(src) {
+    const re = /\b(https?:\/\/[^\s<]+|www\.[^\s<]+|[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:com|org|edu)\/[^\s<]*)/i;
+    const m = src.match(re);
+    if (!m) return src;
+    const shown = m[1].replace(/[.,]+$/, '');
+    const href = /^https?:/i.test(shown) ? shown : `https://${shown}`;
+    const link = `<a href="${href}" target="_blank" rel="noopener noreferrer">${shown}<span class="sr-only"> (opens in a new tab)</span></a>`;
+    return src.slice(0, m.index) + link + src.slice(m.index + shown.length);
+  }
+
+  // Small flat line icons for the take-home sheet (decorative; the label carries the meaning).
+  takeawayIcon(name) {
+    const paths = {
+      shade: '<path d="M4 20h16"/><path d="M12 20v-7"/><path d="M5 13a7 7 0 0 1 14 0z"/>',
+      water: '<path d="M12 3c3 4 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 3-7 6-11z"/>',
+      clock: '<circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/>',
+      hand: '<path d="M7 12V6.5a1.5 1.5 0 0 1 3 0V11"/><path d="M10 11V5a1.5 1.5 0 0 1 3 0v6"/><path d="M13 11V6a1.5 1.5 0 0 1 3 0v6"/><path d="M16 12V8.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5A6.5 6.5 0 0 1 6 16.8L4.3 13.6a1.5 1.5 0 0 1 2.6-1.5L7 12"/>',
+      sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>',
+      home: '<path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>'
+    };
+    return `<svg class="act3-tk-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name] || ''}</svg>`;
+  }
+
+  // The take-home sheet: an infographic in four bands (the numbers, habits, warning signs as
+  // an early-to-late scale, what to do). The same markup is copied into #act3-print-root
+  // for the one-page print.
   renderTakeawayCard() {
+    const t = this.takeaway;
     return `
       <div class="act3-takeaway-scrim" data-editor-id="act3-takeaway-scrim"></div>
       <div class="act3-takeaway" role="dialog" aria-modal="true" aria-labelledby="act3-takeaway-title" data-editor-id="act3-takeaway">
         <header class="act3-takeaway-header">
-          <span class="act3-takeaway-badge">Take this with you</span>
-          <h2 id="act3-takeaway-title" class="act3-takeaway-title">Before your next lake day</h2>
+          <span class="act3-takeaway-badge">${t.badge}</span>
+          <h2 id="act3-takeaway-title" class="act3-takeaway-title">${t.title}</h2>
+          <p class="act3-tk-subtitle">${t.subtitle}</p>
         </header>
         <div class="act3-takeaway-body">
-          <section class="act3-takeaway-section">
-            <h3>Set up before you settle in</h3>
-            <ul class="act3-takeaway-list">
-              ${this.hintsTimeline.map(hint => `<li><strong>${hint.title}</strong>: ${hint.nextTime}</li>`).join('')}
+          <ul class="act3-tk-stats" data-editor-id="act3-tk-stats">
+            ${t.stats.map(st => `
+              <li class="act3-tk-stat">
+                <span class="act3-tk-stat-value">${st.value}</span>
+                <span class="act3-tk-stat-text">${st.text}</span>
+              </li>`).join('')}
+          </ul>
+
+          <section class="act3-tk-band" data-editor-id="act3-tk-habits">
+            <h3 class="act3-tk-band-title">${t.habitsTitle}</h3>
+            <ul class="act3-tk-habits">
+              ${t.habits.map(h => `
+                <li class="act3-tk-habit">
+                  <span class="act3-tk-icon-wrap">${this.takeawayIcon(h.icon)}</span>
+                  <span class="act3-tk-habit-copy"><strong>${h.label}</strong> ${h.text}</span>
+                </li>`).join('')}
             </ul>
           </section>
-          <section class="act3-takeaway-section">
-            <h3>Plan the day</h3>
-            <ul class="act3-takeaway-list">
-              ${this.preventionOptions.map(opt => `<li>${opt.label}</li>`).join('')}
-            </ul>
+
+          <section class="act3-tk-band" data-editor-id="act3-tk-signs">
+            <h3 class="act3-tk-band-title">${t.signsTitle}</h3>
+            <p class="act3-tk-note">${t.signsNote}</p>
+            <ol class="act3-tk-scale">
+              ${t.stages.map((st, i) => `
+                <li class="act3-tk-stage act3-tk-stage-${i + 1}">
+                  <span class="act3-tk-stage-name">${st.stage}</span>
+                  <ul>${st.signs.map(sign => `<li>${sign}</li>`).join('')}</ul>
+                </li>`).join('')}
+            </ol>
           </section>
-          <section class="act3-takeaway-section">
-            <h3>Call the vet on the way if you see</h3>
-            <ul class="act3-takeaway-list">
-              ${this.reportRows.map(row => `<li><strong>${row.sign}</strong>: ${row.reported}</li>`).join('')}
-            </ul>
+
+          <section class="act3-tk-band act3-tk-act" data-editor-id="act3-tk-act">
+            <h3 class="act3-tk-band-title">${t.actTitle}</h3>
+            <ol class="act3-tk-steps">
+              ${t.steps.map((step, i) => `
+                <li class="act3-tk-step"><span class="act3-tk-step-num" aria-hidden="true">${i + 1}</span><span>${step}</span></li>`).join('')}
+            </ol>
+            <p class="act3-tk-footer-line">${t.footer}</p>
           </section>
         </div>
         <footer class="act3-takeaway-footer">
@@ -1487,8 +1567,8 @@ export class Act3Screen {
       e.preventDefault();
       if (this.hasProgress()) {
         const leave = await confirmLeave({
-          title: 'Go back to Act 2?',
-          message: 'Act 2 starts again from the beginning, and your progress in Act 3 will be cleared.',
+          title: 'Go back to Part 2?',
+          message: 'Part 2 starts again from the beginning, and your progress in Part 3 will be cleared.',
           leaveLabel: 'Go back'
         });
         if (!leave) return;
@@ -1503,7 +1583,7 @@ export class Act3Screen {
       if (this.hasProgress()) {
         const leave = await confirmLeave({
           title: 'Leave the story?',
-          message: "You'll go back to the title screen, and everything you've done in Act 3 so far will be cleared.",
+          message: "You'll go back to the title screen, and everything you've done in Part 3 so far will be cleared.",
           leaveLabel: 'Leave anyway'
         });
         if (!leave) return;
@@ -1554,14 +1634,17 @@ export class Act3Screen {
       const root = document.createElement('div');
       root.id = 'act3-print-root';
       root.innerHTML = card.querySelector('.act3-takeaway-header').outerHTML
-        + card.querySelector('.act3-takeaway-body').outerHTML;
+        + card.querySelector('.act3-takeaway-body').outerHTML
+        + '<p class="act3-tk-print-credit">From Callie &amp; Tay: Heat Stroke in Dogs. Facts drawn from the sources listed at the end of the course. This sheet does not replace advice from your vet.</p>';
       document.body.appendChild(root);
       window.addEventListener('afterprint', () => root.remove(), { once: true });
       window.print();
     });
-    on('#act3-btn-replay-act3', () => this.app?.navigateTo('act3', { handoff: this.getHandoff() }));
-    on('#act3-btn-replay-act1', () => this.app?.navigateTo('act1'));
-    on('#act3-btn-end-title', () => this.app?.navigateTo('opening'));
+    // The only way on from the end: the whole story again, from the intro, with nothing carried.
+    on('#act3-btn-start-over', () => {
+      progressStore.clear();
+      this.app?.navigateTo('act0');
+    });
   }
 
   /**
@@ -1742,7 +1825,7 @@ export class Act3Screen {
     if (this.currentBeat === 'report') {
       focusInto(this.container, ['#act3-btn-report-next', '#act3-btn-report-done']);
     } else if (this.currentBeat === 'end') {
-      focusInto(this.container, ['#act3-btn-replay-act3']);
+      focusInto(this.container, ['#act3-btn-takeaway']);
     }
   }
 
