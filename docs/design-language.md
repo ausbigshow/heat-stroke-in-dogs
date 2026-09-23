@@ -269,6 +269,11 @@ table rather than typing a lookalike, or the module ends up with two visually in
 Nothing beyond these five without a deliberate decision recorded here. Emoji in `console.log`
 developer output are out of scope.
 
+**Recorded exception (v1.1):** the plain text arrow `→` U+2192 is permitted *inside a measurement*
+— a truth-stamp metric chip that reports a change in a number (`95% → 43%`). There it is
+mathematical notation, not affordance, and it renders in the text face rather than as a symbol.
+It never appears on a button or in running copy.
+
 The v1.1 pass (2026-09-22) swept every act; the rule now describes current state. Where an
 emoji sat in an icon slot, it became a numeral or time in a §6.7 square badge. The mute toggle
 uses inline SVG.

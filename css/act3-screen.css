@@ -2091,7 +2091,7 @@
 }
 
 .act3-recap-right .act3-truth-stamp-line {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   line-height: 1.35;
 }
 .act3-recap-right .act3-discharge-sheet {
@@ -2154,7 +2154,7 @@
   margin: 1rem 0 0 0;
   padding: 0;
   font-family: var(--font-family-body);
-  font-size: 0.74rem;
+  font-size: 0.8rem;
   line-height: 1.4;
 }
 
@@ -2168,7 +2168,7 @@
 
 @media (max-height: 700px) {
   .act3-mla-list {
-    font-size: 0.72rem;
+    font-size: 0.8rem;
   }
 }
 

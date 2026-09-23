@@ -872,7 +872,7 @@
   align-items: center;
   gap: 0.35rem;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-success-pale);
 }
 
@@ -985,8 +985,9 @@
 .act2-triage-state {
   margin-left: auto;
   font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   opacity: 0.85;
 }
 
