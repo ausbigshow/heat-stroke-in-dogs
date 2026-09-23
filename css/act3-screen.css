@@ -2524,6 +2524,23 @@
   .act3-tk-scale { grid-template-columns: 1fr; }
 }
 
+/* On phones and short screens the scene card is only ~350x260, and a sheet inside it had
+   no room left for its body (it collapsed to 0px). There the sheet leaves the card and takes
+   the whole screen; nothing above it is transformed, so fixed is relative to the viewport. */
+@media (max-width: 768px), (max-height: 560px) {
+  .act3-takeaway-scrim {
+    position: fixed;
+  }
+  .act3-takeaway {
+    position: fixed;
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+  .act3-takeaway-header { padding: 1rem 1rem 0.25rem; }
+  .act3-takeaway-body { padding: 0 1rem; min-height: 0; }
+  .act3-takeaway-footer { padding: 0.75rem 1rem 1rem; }
+}
+
 /* Print copy of the takeaway card, built on demand by the Print button (see act3-screen.js).
    One page, colours kept (it is an infographic, the colour is part of it). */
 #act3-print-root {
