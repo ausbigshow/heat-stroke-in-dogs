@@ -10,6 +10,7 @@ export class EditorState {
     this.lockedElements = new Set();
     this.isDirty = false;
     this.modifiedStyles = new Map(); // editorId -> { prop: value }
+    this.removedOverrides = new Set(); // Explicitly deleted
     this.listeners = new Map();
   }
 
@@ -88,6 +89,7 @@ export class EditorState {
       this.modifiedStyles.set(editorId, {});
     }
     this.modifiedStyles.get(editorId)[property] = value;
+    this.removedOverrides.delete(editorId);
     this.setDirty(true);
   }
 }
