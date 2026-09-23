@@ -1015,7 +1015,7 @@ export class Act1Screen {
                 Done Investigating ➔
               </button>
             ` : `
-              <button id="act1-btn-pov-next" class="act1-hud-btn btn-action-primary" data-editor-id="act1-btn-pov-next" aria-label="Next">
+              <button id="act1-btn-pov-next" class="act1-hud-btn" data-editor-id="act1-btn-pov-next" aria-label="Next">
                 Next ▶
               </button>
             `}
